@@ -9,7 +9,7 @@ import { base44 } from '@/api/base44Client';
  * - Exponential backoff on errors
  * - Change detection via updated_date timestamps
  */
-export function useRealTimeSync(familyId, enabled = true) {
+export function useRealTimeSync(familyId, enabled = true, onUpdate = null) {
   const queryClient = useQueryClient();
   const intervalRef = useRef(null);
   const lastCheckRef = useRef({});
@@ -40,6 +40,11 @@ export function useRealTimeSync(familyId, enabled = true) {
           // Invalidate relevant queries to trigger refetch
           queryClient.invalidateQueries({ queryKey: [entityType.toLowerCase()] });
           console.log(`[RealTimeSync] Detected updates in ${entityType}`);
+          
+          // Call the onUpdate callback if provided (for non-React Query contexts)
+          if (onUpdate) {
+            onUpdate();
+          }
         }
         
         lastCheckRef.current[entityType] = now;

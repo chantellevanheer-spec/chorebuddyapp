@@ -8,6 +8,7 @@ import { User } from "@/entities/User";
 import { FamilyGoal } from "@/entities/FamilyGoal";
 import { ChoreCompletion } from "@/entities/ChoreCompletion";
 import { Family } from "@/entities/Family";
+import { useRealTimeSync } from '../hooks/useRealTimeSync';
 
 const DataContext = createContext();
 
@@ -30,6 +31,9 @@ export const DataProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Enable real-time sync for family data
+  useRealTimeSync(user?.family_id, !!user?.family_id, fetchData);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
