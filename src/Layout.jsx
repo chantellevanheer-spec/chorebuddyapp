@@ -5,6 +5,7 @@ import { createPageUrl } from "@/utils";
 import { Home, Users, ClipboardList, Calendar, Sparkles, Zap, Settings, Loader2, Target, BarChart3, CheckCircle } from "lucide-react";
 import PublicLayout from "./components/layout/PublicLayout";
 import CookieBanner from './components/ui/CookieBanner';
+import RealTimeBadge from './components/ui/RealTimeBadge';
 import { DataProvider } from './components/contexts/DataContext';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 
@@ -364,6 +365,7 @@ export default function LayoutWrapper(props) {
     <ErrorBoundary>
       <DataProvider>
         <AppLayout {...props} />
+        <RealTimeBadge />
         <CookieBanner />
       </DataProvider>
     </ErrorBoundary>
