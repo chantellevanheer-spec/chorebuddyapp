@@ -1,0 +1,100 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.5.0';
+
+Deno.serve(async (req) => {
+    const base44 = createClientFromRequest(req);
+    
+    try {
+        const user = await base44.auth.me();
+
+        if (!user || !user.family_id) {
+            return new Response(JSON.stringify({ error: 'Unauthorized' }), { 
+                status: 401, 
+                headers: { 'Content-Type': 'application/json' } 
+            });
+        }
+
+        if (user.subscription_tier !== 'premium') {
+            return new Response(JSON.stringify({ error: 'Family invitations are a Premium feature.' }), { 
+                status: 403, 
+                headers: { 'Content-Type': 'application/json' } 
+            });
+        }
+
+        const { payload } = await req.json();
+        const { email, name, role } = payload;
+        
+        if (!email || !name || !role) {
+            return new Response(JSON.stringify({ error: 'Missing required fields' }), { 
+                status: 400, 
+                headers: { 'Content-Type': 'application/json' } 
+            });
+        }
+
+        // Generate a unique invite code
+        const inviteCode = `${user.family_id}-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+        
+        // Update family with invite code
+        await base44.asServiceRole.entities.Family.update(user.family_id, { 
+            invite_code: inviteCode 
+        });
+
+        const joinUrl = `https://chorebuddyapp.com/JoinFamily?code=${inviteCode}`;
+
+        // Send invitation email
+        await base44.asServiceRole.integrations.Core.SendEmail({
+            to: email,
+            from_name: "ChoreBuddy",
+            subject: `You're invited to join ${user.full_name}'s family on ChoreBuddy!`,
+            body: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #2B59C3; font-size: 28px; margin: 0;">ChoreBuddy</h1>
+                        <p style="color: #5E3B85; font-size: 16px;">Making household chores fun for the whole family!</p>
+                    </div>
+                    
+                    <p style="font-size: 16px; color: #333;">Hello ${name},</p>
+                    
+                    <p style="font-size: 16px; color: #333; line-height: 1.6;">
+                        You've been invited to join <strong>${user.full_name}'s family</strong> on ChoreBuddy! 
+                        Our app makes household chores fun and rewarding for everyone.
+                    </p>
+                    
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="${joinUrl}" style="background-color: #FF6B35; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-size: 18px; font-weight: bold; display: inline-block;">
+                            Accept Invitation
+                        </a>
+                    </div>
+                    
+                    <p style="font-size: 14px; color: #666; line-height: 1.6;">
+                        Once you join, you'll be able to view your assigned chores, earn points for completing tasks, 
+                        and redeem rewards from your family's store!
+                    </p>
+                    
+                    <p style="font-size: 14px; color: #666;">
+                        If you have any questions, please contact your family manager or visit 
+                        <a href="https://chorebuddyapp.com/Help" target="_blank" style="color: #5E3B85;">our help center</a>.
+                    </p>
+                    
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                    
+                    <p style="font-size: 12px; color: #999; text-align: center;">
+                        Thanks,<br/>The ChoreBuddy Team<br/>
+                        <a href="https://chorebuddyapp.com" style="color: #5E3B85;">chorebuddyapp.com</a>
+                    </p>
+                </div>
+            `
+        });
+
+        return new Response(JSON.stringify({ success: true, message: "Invitation sent successfully." }), { 
+            status: 200,
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+    } catch (error) {
+        console.error('Error in inviteFamilyMember function:', error);
+        return new Response(JSON.stringify({ error: error.message || 'An internal server error occurred.' }), { 
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+});

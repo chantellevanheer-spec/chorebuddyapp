@@ -1,0 +1,236 @@
+
+import React, { useState, useEffect } from 'react';
+import { User } from '@/entities/User';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+// Removed Label as it's not explicitly used in the outline, and Switch component works without it in this context.
+import { createPageUrl } from '@/utils';
+import { Link } from 'react-router-dom';
+import { Loader2, User as UserIcon, Bell, Users, Settings, Shield, CreditCard } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
+import { stripeCheckout } from '@/functions/stripeCheckout';
+
+export default function Account() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isPortalRedirecting, setIsPortalRedirecting] = useState(false);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userData = await User.me();
+        // Initialize user state with fetched data, including notification preferences
+        setUser({
+          ...userData,
+          receives_chore_reminders: userData.receives_chore_reminders ?? true,
+          receives_achievement_alerts: userData.receives_achievement_alerts ?? true,
+          receives_weekly_reports: userData.receives_weekly_reports ?? false
+        });
+      } catch (error) {
+        console.error("Failed to fetch user", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  const handleToggleChange = (field, value) => {
+    setUser(prev => prev ? { ...prev, [field]: value } : null);
+  };
+
+  const handleSaveChanges = async () => {
+    if (!user) return; // Should not happen if component renders
+    setIsSaving(true);
+    try {
+      await User.updateMyUserData({
+        receives_chore_reminders: user.receives_chore_reminders,
+        receives_achievement_alerts: user.receives_achievement_alerts,
+        receives_weekly_reports: user.receives_weekly_reports
+      });
+      toast.success("Preferences saved!");
+    } catch (error) {
+      toast.error("Failed to save preferences.");
+      console.error("Failed to save notification preferences:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    setIsPortalRedirecting(true);
+    try {
+        const { data, error } = await stripeCheckout({ endpoint: 'create-portal-session' });
+        if (error) throw new Error(error.message || "Unknown error creating portal session.");
+        if (data && data.url) {
+            window.location.href = data.url;
+        } else {
+            throw new Error("Could not open customer portal. No URL provided.");
+        }
+    } catch (error) {
+        toast.error(error.message || "Could not connect to subscription manager.");
+        console.error("Error managing subscription:", error);
+        setIsPortalRedirecting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-12 h-12 animate-spin text-[#C3B1E1]" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="funky-card p-8 text-center">
+        <h2 className="header-font text-2xl text-red-600">Could not load user profile.</h2>
+        <p className="body-font-light text-gray-600">Please try logging in again.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-24 pb-32 space-y-8 lg:pb-8">
+      {/* Header */}
+      <div className="funky-card p-6 md:p-8">
+        <div className="flex items-center gap-4 md:gap-6">
+          <div className="funky-button w-16 h-16 md:w-20 md:h-20 bg-[#5E3B85] flex items-center justify-center">
+            <Settings className="w-8 h-8 md:w-10 md:h-10 text-white" />
+          </div>
+          <div>
+            <h1 className="header-font text-4xl md:text-5xl text-[#2B59C3]">Account & Settings</h1>
+            <p className="body-font-light text-gray-600 mt-2">Manage your profile, family, and preferences.</p>
+          </div>
+        </div>
+      </div>
+
+      <Tabs defaultValue="profile" className="w-full">
+        <TabsList className="grid w-full grid-cols-3 funky-card p-2 h-auto">
+          <TabsTrigger value="profile" className="mx-3 my-1 px-3 py-1 text-sm font-medium funky-button inline-flex items-center justify-center whitespace-nowrap rounded-sm ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm md:text-base">
+            <UserIcon className="w-4 h-4 mr-2" /> Profile
+          </TabsTrigger>
+          <TabsTrigger value="preferences" className="mx-3 my-1 px-3 py-1 text-sm font-medium funky-button inline-flex items-center justify-center whitespace-nowrap rounded-sm ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm md:text-base">
+            <Bell className="w-4 h-4 mr-2" /> Preferences
+          </TabsTrigger>
+          <TabsTrigger value="family" className="mx-3 my-1 px-3 py-1 text-sm font-medium funky-button inline-flex items-center justify-center whitespace-nowrap rounded-sm ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm md:text-base">
+            <Users className="w-4 h-4 mr-2" /> Family
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="profile" className="mt-6">
+          {/* Account Details */}
+          <div className="funky-card p-8 mb-6">
+            <h2 className="header-font text-3xl text-[#2B59C3] mb-6 flex items-center gap-3">
+              <UserIcon className="w-8 h-8 text-[#FF6B35]" />
+              Account Details
+            </h2>
+            <div className="space-y-4 body-font-light text-lg text-gray-700">
+              <p><strong>Name:</strong> {user.full_name}</p>
+              <p><strong>Email:</strong> {user.email}</p>
+            </div>
+          </div>
+          
+          {/* Subscription Management */}
+          <div className="funky-card p-8">
+            <h2 className="header-font text-3xl text-[#2B59C3] mb-6 flex items-center gap-3">
+              <Shield className="w-8 h-8 text-[#C3B1E1]" />
+              Subscription
+            </h2>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <p className="body-font text-lg">Your current plan: <span className="header-font text-xl text-[#FF6B35] capitalize">{user.subscription_tier}</span></p>
+                    <p className="body-font-light text-sm text-gray-500">Status: <span className="capitalize">{user.subscription_status}</span></p>
+                </div>
+                {user.subscription_tier !== 'free' ? (
+                    <Button 
+                        onClick={handleManageSubscription} 
+                        disabled={isPortalRedirecting}
+                        className="funky-button bg-[#C3B1E1] text-white px-6 py-3 text-lg header-font"
+                    >
+                        <CreditCard className="w-5 h-5 mr-2" />
+                        {isPortalRedirecting ? 'Redirecting...' : 'Manage Subscription'}
+                    </Button>
+                ) : (
+                    <Link to={createPageUrl("Pricing")}>
+                      <Button className="funky-button bg-green-500 text-white px-6 py-3 text-lg header-font">
+                          Upgrade Plan
+                      </Button>
+                    </Link>
+                )}
+            </div>
+            <div className="flex items-center justify-between mt-8 pt-4 border-t border-gray-200">
+                <label className="body-font text-lg text-[#5E3B85]">Logout</label>
+                <Button variant="destructive" onClick={() => User.logout()} className="funky-button bg-red-500 text-white">
+                  Log Out
+                </Button>
+              </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="preferences" className="mt-6">
+          <div className="funky-card p-8">
+            <h2 className="header-font text-3xl text-[#2B59C3] mb-6">Notification Preferences</h2>
+            <div className="space-y-6">
+              <div className="flex items-center justify-between p-4 funky-card border-2 border-dashed bg-white/50">
+                <div>
+                  <h3 className="body-font text-lg text-[#5E3B85]">Chore Reminders</h3>
+                  <p className="body-font-light text-sm text-gray-600">Get notified about upcoming chores.</p>
+                </div>
+                <Switch
+                  checked={user.receives_chore_reminders}
+                  onCheckedChange={(value) => handleToggleChange('receives_chore_reminders', value)}
+                />
+              </div>
+              <div className="flex items-center justify-between p-4 funky-card border-2 border-dashed bg-white/50">
+                 <div>
+                  <h3 className="body-font text-lg text-[#5E3B85]">Achievement Alerts</h3>
+                  <p className="body-font-light text-sm text-gray-600">Celebrate completed tasks.</p>
+                </div>
+                <Switch
+                  checked={user.receives_achievement_alerts}
+                  onCheckedChange={(value) => handleToggleChange('receives_achievement_alerts', value)}
+                />
+              </div>
+              <div className="flex items-center justify-between p-4 funky-card border-2 border-dashed bg-white/50">
+                 <div>
+                  <h3 className="body-font text-lg text-[#5E3B85]">Weekly Reports</h3>
+                  <p className="body-font-light text-sm text-gray-600">Receive family progress summaries.</p>
+                </div>
+                <Switch
+                  checked={user.receives_weekly_reports}
+                  onCheckedChange={(value) => handleToggleChange('receives_weekly_reports', value)}
+                />
+              </div>
+            </div>
+            <Button
+              onClick={handleSaveChanges}
+              disabled={isSaving}
+              className="funky-button bg-[#5E3B85] text-white px-6 py-3 text-lg header-font mt-6 w-full sm:w-auto"
+            >
+              {isSaving ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="family" className="mt-6">
+           <div className="funky-card p-8 text-center">
+             <h2 className="header-font text-3xl text-[#2B59C3] mb-4">Family Management</h2>
+             <p className="body-font-light text-gray-600 text-lg mb-6 max-w-md mx-auto">
+               Add, view, or remove family members from your ChoreFlow account on the Family page.
+             </p>
+             <Link to={createPageUrl("People")}>
+              <Button className="funky-button bg-[#F7A1C4] text-pink-800 px-8 py-4 header-font text-xl">
+                <Users className="w-6 h-6 mr-3" />
+                Go to Family Page
+              </Button>
+            </Link>
+           </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}

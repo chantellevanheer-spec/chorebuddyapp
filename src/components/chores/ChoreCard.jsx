@@ -1,0 +1,59 @@
+import React from "react";
+import { Star, Clock } from "lucide-react";
+import InteractiveCheckbox from "../ui/InteractiveCheckbox";
+import { CHORE_CATEGORY_COLORS, DIFFICULTY_STARS, AVATAR_COLORS } from '../lib/constants';
+
+function ChoreCard({ assignment, chore, person, onComplete }) {
+  if (!chore || !person) return null;
+
+  return (
+    <div className={`funky-card-hover funky-card p-5 border-4 transition-all duration-200 ${chore.completed ? 'opacity-60 bg-gray-50' : 'bg-white'} ${CHORE_CATEGORY_COLORS[chore.category] || CHORE_CATEGORY_COLORS.other}`}>
+      <div className="flex items-start gap-4">
+        {/* Checkbox */}
+        <div className="flex-shrink-0 mt-1">
+          <InteractiveCheckbox
+            id={`chore-${assignment.id}`}
+            checked={assignment.completed}
+            onCheckedChange={() => !assignment.completed && onComplete(assignment.id, chore.id)}
+            disabled={assignment.completed}
+          />
+        </div>
+
+        {/* Chore Details */}
+        <div className="flex-1">
+          <h3 className={`header-font text-xl text-[#2B59C3] ${assignment.completed ? 'line-through' : ''}`}>
+            {chore.title}
+          </h3>
+          <p className="body-font-light text-gray-600 text-sm mb-3">
+            {chore.description}
+          </p>
+          <div className="flex items-center flex-wrap gap-x-4 gap-y-2">
+            <div className="flex items-center gap-1">
+              {[...Array(DIFFICULTY_STARS[chore.difficulty])].map((_, i) => (
+                <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-500" />
+              ))}
+            </div>
+            {chore.estimated_time && (
+              <div className="flex items-center gap-1.5 text-gray-500">
+                <Clock className="w-4 h-4" />
+                <span className="body-font text-xs">{chore.estimated_time} min</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Person Avatar */}
+        <div className="flex-shrink-0 text-center">
+          <div className={`funky-button w-12 h-12 rounded-full border-3 flex items-center justify-center ${AVATAR_COLORS[person.avatar_color] || 'bg-gray-200'}`}>
+            <span className="header-font text-lg text-white">
+              {person.name.charAt(0).toUpperCase()}
+            </span>
+          </div>
+          <p className="body-font text-xs mt-1 text-[#5E3B85]">{person.name.split(' ')[0]}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default React.memo(ChoreCard);
