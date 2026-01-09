@@ -32,9 +32,6 @@ export const DataProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Enable real-time sync for family data
-  useRealTimeSync(user?.family_id, !!user?.family_id, fetchData);
-
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
@@ -99,6 +96,9 @@ export const DataProvider = ({ children }) => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Enable real-time sync for family data
+  useRealTimeSync(user?.family_id, !!user?.family_id, fetchData);
 
   const wrapProcessing = async (asyncFunction) => {
     setIsProcessing(true);
