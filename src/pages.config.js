@@ -1,45 +1,45 @@
-import Dashboard from './pages/Dashboard';
-import People from './pages/People';
+import Account from './pages/Account';
+import Admin from './pages/Admin';
+import Analytics from './pages/Analytics';
 import Chores from './pages/Chores';
+import Dashboard from './pages/Dashboard';
+import Goals from './pages/Goals';
+import Help from './pages/Help';
+import Home from './pages/Home';
+import Index from './pages/Index';
+import JoinFamily from './pages/JoinFamily';
+import PaymentCancel from './pages/PaymentCancel';
+import PaymentSuccess from './pages/PaymentSuccess';
+import People from './pages/People';
+import Pricing from './pages/Pricing';
+import Privacy from './pages/Privacy';
 import Schedule from './pages/Schedule';
 import Store from './pages/Store';
-import Pricing from './pages/Pricing';
-import Home from './pages/Home';
-import Account from './pages/Account';
-import Privacy from './pages/Privacy';
-import Help from './pages/Help';
-import Index from './pages/Index';
-import Analytics from './pages/Analytics';
-import Goals from './pages/Goals';
-import Admin from './pages/Admin';
-import PaymentSuccess from './pages/PaymentSuccess';
-import PaymentCancel from './pages/PaymentCancel';
-import JoinFamily from './pages/JoinFamily';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Dashboard": Dashboard,
-    "People": People,
+    "Account": Account,
+    "Admin": Admin,
+    "Analytics": Analytics,
     "Chores": Chores,
+    "Dashboard": Dashboard,
+    "Goals": Goals,
+    "Help": Help,
+    "Home": Home,
+    "Index": Index,
+    "JoinFamily": JoinFamily,
+    "PaymentCancel": PaymentCancel,
+    "PaymentSuccess": PaymentSuccess,
+    "People": People,
+    "Pricing": Pricing,
+    "Privacy": Privacy,
     "Schedule": Schedule,
     "Store": Store,
-    "Pricing": Pricing,
-    "Home": Home,
-    "Account": Account,
-    "Privacy": Privacy,
-    "Help": Help,
-    "Index": Index,
-    "Analytics": Analytics,
-    "Goals": Goals,
-    "Admin": Admin,
-    "PaymentSuccess": PaymentSuccess,
-    "PaymentCancel": PaymentCancel,
-    "JoinFamily": JoinFamily,
 }
 
 export const pagesConfig = {
-    mainPage: "Index",
+    mainPage: "Home",
     Pages: PAGES,
     Layout: __Layout,
 };
