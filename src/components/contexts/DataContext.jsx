@@ -70,13 +70,13 @@ export const DataProvider = ({ children }) => {
 
       // Fetch other data only if a user (and potentially a family) exists
       const [peopleData, choresData, assignmentsData, rewardsData, itemsData, goalsData, completionsData] = await Promise.all([
-        Person.list("name"),
-        Chore.list("title"),
-        Assignment.list("-created_date"),
-        Reward.list(),
-        RedeemableItem.list("cost"),
-        FamilyGoal.list("-created_date"),
-        ChoreCompletion.list("-created_date")
+        Person.filter({ family_id: userData.family_id }, "name"),
+        Chore.filter({ family_id: userData.family_id }, "title"),
+        Assignment.filter({ family_id: userData.family_id }, "-created_date"),
+        Reward.filter({ family_id: userData.family_id }),
+        RedeemableItem.filter({ family_id: userData.family_id }, "cost"),
+        FamilyGoal.filter({ family_id: userData.family_id }, "-created_date"),
+        ChoreCompletion.filter({ family_id: userData.family_id }, "-created_date")
       ]);
 
       setPeople(peopleData);
