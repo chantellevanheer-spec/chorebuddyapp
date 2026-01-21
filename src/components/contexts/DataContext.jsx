@@ -37,6 +37,7 @@ export const DataProvider = ({ children }) => {
     try {
       // Fetch user data first
       const userData = await User.me().catch(() => null);
+      console.log("[DataContext] User data:", userData);
       setUser(userData);
 
       if (!userData) {
@@ -47,37 +48,48 @@ export const DataProvider = ({ children }) => {
 
       // Initialize family if user doesn't have one and is a parent
       if (!userData.family_id && userData.family_role === 'parent') {
+        console.log("[DataContext] Creating family for user...");
         try {
           const family = await Family.create({
             name: `${userData.full_name}'s Family`,
             owner_user_id: userData.id,
             members: [userData.id],
-            subscription_tier: userData.subscription_tier || 'free' // Default to 'free' if not set
+            subscription_tier: userData.subscription_tier || 'free'
           });
+          console.log("[DataContext] Family created:", family);
 
           // Update the user's family_id in the backend and locally
           await User.updateMyUserData({ family_id: family.id });
-          // Update the local userData object to reflect the new family_id
           userData.family_id = family.id;
-          setUser(userData); // Update the state with the modified user object
+          setUser(userData);
+          console.log("[DataContext] User updated with family_id:", family.id);
         } catch (error) {
-          console.error("Error creating family:", error);
-          // Decide how to handle this error: maybe log out user, or show an error message
+          console.error("[DataContext] Error creating family:", error);
           setLoading(false);
-          return; // Stop further data fetching if family creation fails
+          return;
         }
       }
 
+      if (!userData.family_id) {
+        console.warn("[DataContext] User has no family_id, skipping data fetch");
+        setLoading(false);
+        return;
+      }
+
+      console.log("[DataContext] Fetching data for family_id:", userData.family_id);
+      
       // Fetch other data only if a user (and potentially a family) exists
       const [peopleData, choresData, assignmentsData, rewardsData, itemsData, goalsData, completionsData] = await Promise.all([
-        Person.filter({ family_id: userData.family_id }, "name"),
-        Chore.filter({ family_id: userData.family_id }, "title"),
-        Assignment.filter({ family_id: userData.family_id }, "-created_date"),
-        Reward.filter({ family_id: userData.family_id }),
-        RedeemableItem.filter({ family_id: userData.family_id }, "cost"),
-        FamilyGoal.filter({ family_id: userData.family_id }, "-created_date"),
-        ChoreCompletion.filter({ family_id: userData.family_id }, "-created_date")
+        Person.list("name"),
+        Chore.list("title"),
+        Assignment.list("-created_date"),
+        Reward.list(),
+        RedeemableItem.list("cost"),
+        FamilyGoal.list("-created_date"),
+        ChoreCompletion.list("-created_date")
       ]);
+
+      console.log("[DataContext] Fetched people:", peopleData);
 
       setPeople(peopleData);
       setChores(choresData);
@@ -87,7 +99,7 @@ export const DataProvider = ({ children }) => {
       setGoals(goalsData);
       setCompletions(completionsData);
     } catch (error) {
-      console.error("Error loading data:", error);
+      console.error("[DataContext] Error loading data:", error);
     } finally {
       setLoading(false);
     }
@@ -104,10 +116,10 @@ export const DataProvider = ({ children }) => {
     setIsProcessing(true);
     try {
       await asyncFunction();
-      await fetchData(); // Refresh all data after any modification
+      await fetchData();
     } catch (error) {
-      console.error("An error occurred during processing:", error);
-      // Here you can also add toast notifications for errors
+      console.error("[DataContext] Error during processing:", error);
+      throw error; // Re-throw so the caller knows there was an error
     } finally {
       setIsProcessing(false);
     }
@@ -115,8 +127,10 @@ export const DataProvider = ({ children }) => {
 
   // Person Actions
   const addPerson = (data) => wrapProcessing(async () => {
-    const currentUser = await User.me(); // Fetch current user to get family_id
-    await Person.create({ ...data, family_id: currentUser.family_id });
+    const currentUser = await User.me();
+    console.log("[DataContext] Adding person with family_id:", currentUser.family_id, "data:", data);
+    const newPerson = await Person.create({ ...data, family_id: currentUser.family_id });
+    console.log("[DataContext] Person created:", newPerson);
   });
 
   const updatePerson = (id, data) => wrapProcessing(() => Person.update(id, data));
@@ -124,7 +138,7 @@ export const DataProvider = ({ children }) => {
 
   // Chore Actions
   const addChore = (data) => wrapProcessing(async () => {
-    const currentUser = await User.me(); // Fetch current user to get family_id
+    const currentUser = await User.me();
     await Chore.create({ ...data, family_id: currentUser.family_id });
   });
 
@@ -136,7 +150,7 @@ export const DataProvider = ({ children }) => {
 
   // Reward Item Actions
   const addItem = (data) => wrapProcessing(async () => {
-    const currentUser = await User.me(); // Fetch current user to get family_id
+    const currentUser = await User.me();
     await RedeemableItem.create({ ...data, family_id: currentUser.family_id });
   });
 
@@ -145,13 +159,13 @@ export const DataProvider = ({ children }) => {
 
   // Reward/Penalty Actions
   const addReward = (data) => wrapProcessing(async () => {
-    const currentUser = await User.me(); // Fetch current user to get family_id
+    const currentUser = await User.me();
     await Reward.create({ ...data, family_id: currentUser.family_id });
   });
 
   // Goal Actions
   const addGoal = (data) => wrapProcessing(async () => {
-    const currentUser = await User.me(); // Fetch current user to get family_id
+    const currentUser = await User.me();
     await FamilyGoal.create({ ...data, family_id: currentUser.family_id });
   });
 
@@ -160,7 +174,7 @@ export const DataProvider = ({ children }) => {
 
   // Completion Actions
   const addCompletion = (data) => wrapProcessing(async () => {
-    const currentUser = await User.me(); // Fetch current user to get family_id
+    const currentUser = await User.me();
     await ChoreCompletion.create({ ...data, family_id: currentUser.family_id });
   });
 
