@@ -46,8 +46,8 @@ export const DataProvider = ({ children }) => {
         return;
       }
 
-      // Initialize family if user doesn't have one and is a parent
-      if (!userData.family_id && userData.family_role === 'parent') {
+      // Initialize family if user doesn't have one
+      if (!userData.family_id) {
         console.log("[DataContext] Creating family for user...");
         try {
           const family = await Family.create({
@@ -59,7 +59,10 @@ export const DataProvider = ({ children }) => {
           console.log("[DataContext] Family created:", family);
 
           // Update the user's family_id in the backend
-          await User.updateMyUserData({ family_id: family.id });
+          await User.updateMyUserData({ 
+            family_id: family.id,
+            family_role: 'parent' // Set as parent when creating new family
+          });
           
           // Re-fetch user to get updated family_id
           const updatedUserData = await User.me();
