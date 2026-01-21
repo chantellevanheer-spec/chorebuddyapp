@@ -9,6 +9,7 @@ import { FamilyGoal } from "@/entities/FamilyGoal";
 import { ChoreCompletion } from "@/entities/ChoreCompletion";
 import { Family } from "@/entities/Family";
 import { useRealTimeSync } from '../hooks/useRealTimeSync';
+import { toast } from "sonner";
 
 const DataContext = createContext();
 
@@ -41,7 +42,6 @@ export const DataProvider = ({ children }) => {
       setUser(userData);
 
       if (!userData) {
-        // If no user is logged in, stop loading and return.
         setLoading(false);
         return;
       }
@@ -58,27 +58,41 @@ export const DataProvider = ({ children }) => {
           });
           console.log("[DataContext] Family created:", family);
 
-          // Update the user's family_id in the backend and locally
+          // Update the user's family_id in the backend
           await User.updateMyUserData({ family_id: family.id });
-          userData.family_id = family.id;
-          setUser(userData);
-          console.log("[DataContext] User updated with family_id:", family.id);
+          
+          // Re-fetch user to get updated family_id
+          const updatedUserData = await User.me();
+          setUser(updatedUserData);
+          console.log("[DataContext] User updated with family_id:", updatedUserData.family_id);
         } catch (error) {
           console.error("[DataContext] Error creating family:", error);
+          toast.error("Failed to create family. Please refresh and try again.");
           setLoading(false);
           return;
         }
       }
 
-      if (!userData.family_id) {
-        console.warn("[DataContext] User has no family_id, skipping data fetch");
+      // Re-fetch user one more time to ensure we have the latest family_id
+      const currentUserData = await User.me();
+      setUser(currentUserData);
+
+      if (!currentUserData.family_id) {
+        console.warn("[DataContext] User has no family_id after initialization");
+        setPeople([]);
+        setChores([]);
+        setAssignments([]);
+        setRewards([]);
+        setItems([]);
+        setGoals([]);
+        setCompletions([]);
         setLoading(false);
         return;
       }
 
-      console.log("[DataContext] Fetching data for family_id:", userData.family_id);
+      console.log("[DataContext] Fetching data for family_id:", currentUserData.family_id);
       
-      // Fetch other data only if a user (and potentially a family) exists
+      // Fetch other data
       const [peopleData, choresData, assignmentsData, rewardsData, itemsData, goalsData, completionsData] = await Promise.all([
         Person.list("name"),
         Chore.list("title"),
@@ -100,6 +114,7 @@ export const DataProvider = ({ children }) => {
       setCompletions(completionsData);
     } catch (error) {
       console.error("[DataContext] Error loading data:", error);
+      toast.error("Failed to load data. Please refresh the page.");
     } finally {
       setLoading(false);
     }
@@ -119,7 +134,8 @@ export const DataProvider = ({ children }) => {
       await fetchData();
     } catch (error) {
       console.error("[DataContext] Error during processing:", error);
-      throw error; // Re-throw so the caller knows there was an error
+      toast.error(error.message || "An error occurred. Please try again.");
+      throw error;
     } finally {
       setIsProcessing(false);
     }
@@ -127,7 +143,13 @@ export const DataProvider = ({ children }) => {
 
   // Person Actions
   const addPerson = (data) => wrapProcessing(async () => {
+    // Re-fetch user to ensure we have the latest family_id
     const currentUser = await User.me();
+    
+    if (!currentUser.family_id) {
+      throw new Error("Cannot add person: No family found. Please refresh the page.");
+    }
+    
     console.log("[DataContext] Adding person with family_id:", currentUser.family_id, "data:", data);
     const newPerson = await Person.create({ ...data, family_id: currentUser.family_id });
     console.log("[DataContext] Person created:", newPerson);
@@ -139,6 +161,9 @@ export const DataProvider = ({ children }) => {
   // Chore Actions
   const addChore = (data) => wrapProcessing(async () => {
     const currentUser = await User.me();
+    if (!currentUser.family_id) {
+      throw new Error("Cannot add chore: No family found. Please refresh the page.");
+    }
     await Chore.create({ ...data, family_id: currentUser.family_id });
   });
 
@@ -151,6 +176,9 @@ export const DataProvider = ({ children }) => {
   // Reward Item Actions
   const addItem = (data) => wrapProcessing(async () => {
     const currentUser = await User.me();
+    if (!currentUser.family_id) {
+      throw new Error("Cannot add item: No family found. Please refresh the page.");
+    }
     await RedeemableItem.create({ ...data, family_id: currentUser.family_id });
   });
 
@@ -160,12 +188,18 @@ export const DataProvider = ({ children }) => {
   // Reward/Penalty Actions
   const addReward = (data) => wrapProcessing(async () => {
     const currentUser = await User.me();
+    if (!currentUser.family_id) {
+      throw new Error("Cannot add reward: No family found. Please refresh the page.");
+    }
     await Reward.create({ ...data, family_id: currentUser.family_id });
   });
 
   // Goal Actions
   const addGoal = (data) => wrapProcessing(async () => {
     const currentUser = await User.me();
+    if (!currentUser.family_id) {
+      throw new Error("Cannot add goal: No family found. Please refresh the page.");
+    }
     await FamilyGoal.create({ ...data, family_id: currentUser.family_id });
   });
 
@@ -175,6 +209,9 @@ export const DataProvider = ({ children }) => {
   // Completion Actions
   const addCompletion = (data) => wrapProcessing(async () => {
     const currentUser = await User.me();
+    if (!currentUser.family_id) {
+      throw new Error("Cannot add completion: No family found. Please refresh the page.");
+    }
     await ChoreCompletion.create({ ...data, family_id: currentUser.family_id });
   });
 
