@@ -36,8 +36,47 @@ const getNextRotationPerson = (chore, currentWeekStart) => {
     };
 };
 
-// A more robust and less error-prone assignment algorithm.
-const simpleAdvancedAssignment = (chores, people, existingAssignments = [], choreUpdates = []) => {
+// Calculate a fairness score for assigning a chore to a person
+const calculateFairnessScore = (person, chore, weeklyWorkload, recentHistory) => {
+    let score = 100; // Start with perfect score
+    
+    // 1. Workload Balance (30 points) - penalize if person has more chores
+    const currentWorkload = weeklyWorkload[person.id] || 0;
+    const maxChores = person.max_weekly_chores || 7;
+    const workloadRatio = currentWorkload / maxChores;
+    score -= workloadRatio * 30;
+    
+    // 2. Category Preferences (25 points)
+    if (person.preferred_categories && person.preferred_categories.includes(chore.category)) {
+        score += 25; // Bonus for preferred category
+    }
+    if (person.avoided_categories && person.avoided_categories.includes(chore.category)) {
+        score -= 40; // Strong penalty for avoided category
+    }
+    
+    // 3. Skill Level Match (20 points)
+    const skillLevels = { beginner: 1, intermediate: 2, expert: 3 };
+    const difficultyLevels = { easy: 1, medium: 2, hard: 3 };
+    const personSkill = skillLevels[person.skill_level] || 2;
+    const choreDifficulty = difficultyLevels[chore.difficulty] || 2;
+    
+    if (personSkill >= choreDifficulty) {
+        score += 20; // Good match
+    } else {
+        score -= (choreDifficulty - personSkill) * 10; // Penalty for mismatch
+    }
+    
+    // 4. Recent Completion History (25 points) - balance who's been doing chores
+    const recentChoreCount = recentHistory[person.id] || 0;
+    const avgRecentChores = Object.values(recentHistory).reduce((a, b) => a + b, 0) / Object.keys(recentHistory).length || 1;
+    const historyRatio = recentChoreCount / avgRecentChores;
+    score -= (historyRatio - 1) * 25; // Penalty if person has done more than average recently
+    
+    return score;
+};
+
+// Advanced assignment algorithm with fairness considerations
+const advancedFairAssignment = (chores, people, existingAssignments = [], recentRewards = []) => {
     if (!people || people.length === 0 || !chores || chores.length === 0) {
         return { assignments: [], choreUpdates: [] };
     }
@@ -48,22 +87,45 @@ const simpleAdvancedAssignment = (chores, people, existingAssignments = [], chor
     const rotationChores = chores.filter(c => c.manual_rotation_enabled);
     const autoAssignChores = chores.filter(c => c.auto_assign !== false && !c.manual_rotation_enabled);
     
-    // Create a map of chores already assigned this week for quick lookup
+    // Create a map of chores already assigned this week
     const assignedChoreIds = new Set(
         existingAssignments
             .filter(a => a.week_start === currentWeekStart)
             .map(a => a.chore_id)
     );
 
-    // Filter out chores that are already assigned
+    // Filter out already assigned chores
     const unassignedRotationChores = rotationChores.filter(c => !assignedChoreIds.has(c.id));
     const unassignedAutoChores = autoAssignChores.filter(c => !assignedChoreIds.has(c.id));
     
-    // Initialize workload for this week
+    // Calculate current workload
     const weeklyWorkload = {};
+    const weeklyTimeLoad = {}; // Track time commitment
     people.forEach(p => {
-        weeklyWorkload[p.id] = existingAssignments.filter(a => a.person_id === p.id && a.week_start === currentWeekStart).length;
+        weeklyWorkload[p.id] = 0;
+        weeklyTimeLoad[p.id] = 0;
     });
+    
+    existingAssignments
+        .filter(a => a.week_start === currentWeekStart)
+        .forEach(a => {
+            weeklyWorkload[a.person_id] = (weeklyWorkload[a.person_id] || 0) + 1;
+            const chore = chores.find(c => c.id === a.chore_id);
+            if (chore && chore.estimated_time) {
+                weeklyTimeLoad[a.person_id] = (weeklyTimeLoad[a.person_id] || 0) + chore.estimated_time;
+            }
+        });
+    
+    // Calculate recent history (last 4 weeks) from rewards
+    const recentHistory = {};
+    people.forEach(p => recentHistory[p.id] = 0);
+    
+    const fourWeeksAgo = format(addWeeks(startOfWeek(new Date()), -4), "yyyy-MM-dd");
+    recentRewards
+        .filter(r => r.reward_type === 'points' && r.week_start >= fourWeeksAgo)
+        .forEach(r => {
+            recentHistory[r.person_id] = (recentHistory[r.person_id] || 0) + 1;
+        });
 
     const newAssignments = [];
     const choreUpdatesToReturn = [];
@@ -73,7 +135,6 @@ const simpleAdvancedAssignment = (chores, people, existingAssignments = [], chor
         const rotationResult = getNextRotationPerson(chore, currentWeekStart);
         
         if (rotationResult && rotationResult.personId) {
-            // Verify the person still exists
             const person = people.find(p => p.id === rotationResult.personId);
             if (person) {
                 newAssignments.push({
@@ -85,39 +146,52 @@ const simpleAdvancedAssignment = (chores, people, existingAssignments = [], chor
                     family_id: chore.family_id,
                 });
                 
-                // Track chore update
                 choreUpdatesToReturn.push({
                     id: chore.id,
                     rotation_current_index: rotationResult.newIndex,
                     rotation_last_assigned_date: currentWeekStart
                 });
 
-                // Increment workload
                 weeklyWorkload[rotationResult.personId]++;
+                weeklyTimeLoad[rotationResult.personId] += chore.estimated_time || 0;
             }
         }
     }
 
-    // Sort auto-assign chores by priority (higher first)
-    unassignedAutoChores.sort((a, b) => (b.priority_weight || 5) - (a.priority_weight || 5));
+    // Sort auto-assign chores by priority and difficulty
+    unassignedAutoChores.sort((a, b) => {
+        const priorityDiff = (b.priority_weight || 5) - (a.priority_weight || 5);
+        if (priorityDiff !== 0) return priorityDiff;
+        
+        // Secondary sort by difficulty (hard first)
+        const difficultyMap = { hard: 3, medium: 2, easy: 1 };
+        return (difficultyMap[b.difficulty] || 2) - (difficultyMap[a.difficulty] || 2);
+    });
 
-    // Then handle auto-assign chores
+    // Assign chores using fairness scoring
     for (const chore of unassignedAutoChores) {
-        // Find the best person for this chore
         let bestPerson = null;
-        let lowestWorkload = Infinity;
-
-        // Sort people by current workload to find the least busy person
-        const sortedPeople = [...people].sort((a, b) => (weeklyWorkload[a.id] || 0) - (weeklyWorkload[b.id] || 0));
-
-        for (const person of sortedPeople) {
-            const workload = weeklyWorkload[person.id] || 0;
-            const maxChores = person.max_weekly_chores || 7; // Default to 7 if not set
-
-            // Check if person is under their max chore limit
-            if (workload < maxChores) {
+        let bestScore = -Infinity;
+        
+        // Find all people under their max chore limit
+        const eligiblePeople = people.filter(p => {
+            const workload = weeklyWorkload[p.id] || 0;
+            const maxChores = p.max_weekly_chores || 7;
+            return workload < maxChores;
+        });
+        
+        if (eligiblePeople.length === 0) {
+            // If everyone is at capacity, find person closest to capacity
+            eligiblePeople.push(...people);
+        }
+        
+        // Calculate fairness score for each eligible person
+        for (const person of eligiblePeople) {
+            const score = calculateFairnessScore(person, chore, weeklyWorkload, recentHistory);
+            
+            if (score > bestScore) {
+                bestScore = score;
                 bestPerson = person;
-                break; // Found the least busy person available
             }
         }
 
@@ -130,8 +204,9 @@ const simpleAdvancedAssignment = (chores, people, existingAssignments = [], chor
                 completed: false,
                 family_id: chore.family_id,
             });
-            // Increment workload for the assigned person
+            
             weeklyWorkload[bestPerson.id]++;
+            weeklyTimeLoad[bestPerson.id] += chore.estimated_time || 0;
         }
     }
     
@@ -143,6 +218,8 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     
     try {
+        const { preview } = await req.json().catch(() => ({ preview: false }));
+        
         let user = await base44.auth.me();
         if (!user) {
             return new Response(JSON.stringify({ error: 'Unauthorized. You must be logged in.' }), { 
@@ -166,10 +243,11 @@ Deno.serve(async (req) => {
             });
         }
 
-        const [people, chores, existingAssignments] = await Promise.all([
+        const [people, chores, existingAssignments, recentRewards] = await Promise.all([
             base44.asServiceRole.entities.Person.filter({ family_id: user.family_id }),
             base44.asServiceRole.entities.Chore.filter({ family_id: user.family_id }),
-            base44.asServiceRole.entities.Assignment.filter({ family_id: user.family_id })
+            base44.asServiceRole.entities.Assignment.filter({ family_id: user.family_id }),
+            base44.asServiceRole.entities.Reward.filter({ family_id: user.family_id })
         ]);
 
         if (people.length === 0) {
@@ -183,8 +261,34 @@ Deno.serve(async (req) => {
             });
         }
 
-        const { assignments: newAssignments, choreUpdates } = simpleAdvancedAssignment(chores, people, existingAssignments);
+        const { assignments: newAssignments, choreUpdates } = advancedFairAssignment(chores, people, existingAssignments, recentRewards);
 
+        // If preview mode, return assignments without creating them
+        if (preview) {
+            // Add rotation update info to assignments for preview
+            const assignmentsWithRotationInfo = newAssignments.map(a => {
+                const choreUpdate = choreUpdates.find(cu => cu.id === a.chore_id);
+                if (choreUpdate) {
+                    return {
+                        ...a,
+                        rotation_update: {
+                            newIndex: choreUpdate.rotation_current_index,
+                            date: choreUpdate.rotation_last_assigned_date
+                        }
+                    };
+                }
+                return a;
+            });
+
+            return new Response(JSON.stringify({ 
+                success: true,
+                preview: true,
+                assignments: assignmentsWithRotationInfo,
+                count: newAssignments.length
+            }), { status: 200, headers: { 'Content-Type': 'application/json' }});
+        }
+
+        // Otherwise, create the assignments
         if (newAssignments.length > 0) {
             await base44.asServiceRole.entities.Assignment.bulkCreate(newAssignments);
         }
