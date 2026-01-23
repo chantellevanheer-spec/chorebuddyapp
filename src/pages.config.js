@@ -15,6 +15,7 @@ import Pricing from './pages/Pricing';
 import Privacy from './pages/Privacy';
 import Schedule from './pages/Schedule';
 import Store from './pages/Store';
+import RoleSelection from './pages/RoleSelection';
 import __Layout from './Layout.jsx';
 
 
@@ -36,6 +37,7 @@ export const PAGES = {
     "Privacy": Privacy,
     "Schedule": Schedule,
     "Store": Store,
+    "RoleSelection": RoleSelection,
 }
 
 export const pagesConfig = {

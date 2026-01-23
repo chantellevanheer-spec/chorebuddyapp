@@ -75,7 +75,7 @@ const navigationItems = [
   active: "bg-[#4a2d6b]"
 }];
 
-const publicPages = ['Home', 'Index', 'Pricing', 'Help', 'Privacy', 'PaymentSuccess', 'PaymentCancel', 'JoinFamily'];
+const publicPages = ['Home', 'Index', 'Pricing', 'Help', 'Privacy', 'PaymentSuccess', 'PaymentCancel', 'JoinFamily', 'RoleSelection'];
 
 function AppLayout({ children, currentPageName }) {
   const location = useLocation();
@@ -94,8 +94,14 @@ function AppLayout({ children, currentPageName }) {
 
     const checkAuth = async () => {
       try {
-        await User.me();
+        const userData = await User.me();
         setIsAuthenticated(true);
+        
+        // Check if user needs to complete role selection
+        if (!userData.family_role && currentPageName !== 'RoleSelection') {
+          navigate(createPageUrl('RoleSelection'));
+          return;
+        }
       } catch (error) {
         setIsAuthenticated(false);
         // If on a private page and not authenticated, redirect to Home

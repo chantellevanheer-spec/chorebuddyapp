@@ -61,7 +61,7 @@ export const DataProvider = ({ children }) => {
           // Update the user's family_id in the backend
           await User.updateMyUserData({ 
             family_id: family.id,
-            family_role: 'parent' // Set as parent when creating new family
+            family_role: userData.family_role || 'parent' // Set as parent when creating new family
           });
           
           // Re-fetch user to get updated family_id

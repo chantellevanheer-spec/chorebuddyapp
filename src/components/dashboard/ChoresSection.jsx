@@ -2,7 +2,7 @@ import React from "react";
 import ChoreCard from "../chores/ChoreCard";
 import { AlertCircle } from "lucide-react";
 
-export default function ChoresSection({ pendingAssignments, completedAssignments, chores, people, completeChore, user }) {
+export default function ChoresSection({ pendingAssignments, completedAssignments, chores, people, completeChore, user, isParent = true }) {
   if (pendingAssignments.length === 0 && completedAssignments.length === 0) {
     return null;
   }

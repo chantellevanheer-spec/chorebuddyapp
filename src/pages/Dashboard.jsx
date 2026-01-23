@@ -34,10 +34,20 @@ export default function Dashboard() {
   const [isReassignModalOpen, setReassignModalOpen] = useState(false);
   const [reassignData, setReassignData] = useState(null);
 
+  const isParent = user?.family_role === 'parent';
+  const isChild = user?.family_role === 'child' || user?.family_role === 'teen';
+
   const currentWeekAssignments = useMemo(() => {
     const currentWeek = format(startOfWeek(new Date()), "yyyy-MM-dd");
-    return assignments.filter((assignment) => assignment.week_start === currentWeek);
-  }, [assignments]);
+    let filtered = assignments.filter((assignment) => assignment.week_start === currentWeek);
+    
+    // For children/teens, only show their own assignments
+    if (isChild && user?.linked_person_id) {
+      filtered = filtered.filter(a => a.person_id === user.linked_person_id);
+    }
+    
+    return filtered;
+  }, [assignments, isChild, user]);
 
   const assignChoresForWeek = useCallback(async () => {
     if (!canAccess('choreai_smart_assignment')) {
@@ -175,11 +185,25 @@ export default function Dashboard() {
       {completedChoreIdWithConfetti && <Confetti />}
       
       <div className="mx-4 md:mx-8 lg:mx-20 pb-32 lg:pb-8">
-        <DashboardHeader
-          assignChoresForWeek={assignChoresForWeek}
-          isAssigning={isAssigning} />
+        {isParent && (
+          <>
+            <DashboardHeader
+              assignChoresForWeek={assignChoresForWeek}
+              isAssigning={isAssigning} />
+            <QuickActions />
+          </>
+        )}
 
-        <QuickActions />
+        {isChild && (
+          <div className="funky-card p-6 mb-8">
+            <h1 className="header-font text-4xl text-[#2B59C3] mb-2">
+              My Chores
+            </h1>
+            <p className="body-font-light text-gray-600">
+              Complete your chores and earn rewards! 🌟
+            </p>
+          </div>
+        )}
 
         <DashboardStats
           currentWeekAssignments={currentWeekAssignments}
@@ -193,19 +217,24 @@ export default function Dashboard() {
           chores={chores}
           people={people}
           completeChore={completeChore}
-          user={user} />
+          user={user}
+          isParent={isParent} />
 
-        <DashboardEmptyState
-          currentWeekAssignments={currentWeekAssignments}
-          people={people}
-          chores={chores}
-          user={user} />
+        {isParent && (
+          <>
+            <DashboardEmptyState
+              currentWeekAssignments={currentWeekAssignments}
+              people={people}
+              chores={chores}
+              user={user} />
 
-        <DashboardSummary
-          currentWeekAssignments={currentWeekAssignments}
-          assignments={assignments}
-          people={people}
-          chores={chores} />
+            <DashboardSummary
+              currentWeekAssignments={currentWeekAssignments}
+              assignments={assignments}
+              people={people}
+              chores={chores} />
+          </>
+        )}
       </div>
     </div>
   );
