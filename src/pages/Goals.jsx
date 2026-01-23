@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from "react";
 import { useData } from '../components/contexts/DataContext';
 import { FamilyGoal } from "@/entities/FamilyGoal";
@@ -41,32 +40,40 @@ export default function Goals() {
     fetchGoals();
   }, []);
 
-  // Update goal progress based on current points
+  // Update goal progress based on current points (debounced to avoid excessive updates)
   useEffect(() => {
     const updateGoalProgress = async () => {
-      for (const goal of goals) {
-        if (goal.status === 'active' && goal.current_points !== familyPoints) {
-          await FamilyGoal.update(goal.id, { current_points: familyPoints });
-          
-          // Check if goal is completed
-          if (familyPoints >= goal.target_points && goal.status !== 'completed') {
-            await FamilyGoal.update(goal.id, { 
-              status: 'completed', 
-              completed_date: new Date().toISOString() 
-            });
-            toast.success(`🎉 Family goal "${goal.title}" completed!`);
-          }
-        }
+      const updates = goals.filter(goal => 
+        goal.status === 'active' && goal.current_points !== familyPoints
+      );
+
+      for (const goal of updates) {
+        await FamilyGoal.update(goal.id, { current_points: familyPoints });
         
-        // Check if goal is expired
-        if (goal.end_date && isAfter(new Date(), parseISO(goal.end_date)) && goal.status === 'active') {
-          await FamilyGoal.update(goal.id, { status: 'expired' });
+        // Check if goal is completed
+        if (familyPoints >= goal.target_points) {
+          await FamilyGoal.update(goal.id, { 
+            status: 'completed', 
+            completed_date: new Date().toISOString() 
+          });
+          toast.success(`🎉 Family goal "${goal.title}" completed!`);
         }
+      }
+
+      // Check for expired goals
+      const now = new Date();
+      const expiredGoals = goals.filter(goal => 
+        goal.status === 'active' && goal.end_date && isAfter(now, parseISO(goal.end_date))
+      );
+      
+      for (const goal of expiredGoals) {
+        await FamilyGoal.update(goal.id, { status: 'expired' });
       }
     };
 
-    if (goals.length > 0 && familyPoints > 0) {
-      updateGoalProgress();
+    if (goals.length > 0 && familyPoints >= 0) {
+      const timer = setTimeout(updateGoalProgress, 500); // Debounce 500ms
+      return () => clearTimeout(timer);
     }
   }, [goals, familyPoints]);
 

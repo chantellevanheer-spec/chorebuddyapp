@@ -1,29 +1,25 @@
-
 import React, { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { User } from '@/entities/User'; // Corrected import path for User
+import { User } from '@/entities/User';
 import { Button } from '@/components/ui/button';
 import { Zap, Users, Gift } from 'lucide-react';
 import FeatureCard from '../components/landing/FeatureCard';
 import StepCard from '../components/landing/StepCard';
 
 export default function Home() {
-  const navigate = useNavigate();
-
   useEffect(() => {
     // Redirect logged-in users to the dashboard
     const checkUserStatus = async () => {
       try {
         await User.me();
-        // Redirect to chorebuddyapp.com dashboard with correct casing
-        window.location.href = createPageUrl("Dashboard"); // Using createPageUrl
+        window.location.href = createPageUrl("Dashboard");
       } catch (error) {
         // User is not logged in, stay on the home page
       }
     };
     checkUserStatus();
-  }, [navigate]);
+  }, []);
 
   return (
     <div className="bg-[#FDFBF5] text-[#5E3B85]">

@@ -24,7 +24,26 @@ export default function Chores() {
   const [choreToEdit, setChoreToEdit] = useState(null);
   const [choreToDelete, setChoreToDelete] = useState(null);
   const [isLimitModalOpen, setLimitModalOpen] = useState(false);
-  const [formData, setFormData] = useState({
+  const getDefaultFormData = () => ({
+    title: "",
+    description: "",
+    difficulty: "medium",
+    frequency: "weekly",
+    estimated_time: "",
+    category: "other",
+    is_recurring: false,
+    recurrence_pattern: undefined,
+    recurrence_day: undefined,
+    recurrence_date: undefined,
+    auto_assign: true,
+    custom_points: "",
+    requires_approval: false,
+    photo_required: false
+  });
+  
+  const [formData, setFormData] = useState(getDefaultFormData());
+
+  const getDefaultFormData = () => ({
     title: "",
     description: "",
     difficulty: "medium",
@@ -46,22 +65,7 @@ export default function Chores() {
       setLimitModalOpen(true);
     } else {
       setChoreToEdit(null);
-      setFormData({
-        title: "",
-        description: "",
-        difficulty: "medium",
-        frequency: "weekly",
-        estimated_time: "",
-        category: "other",
-        is_recurring: false,
-        recurrence_pattern: undefined,
-        recurrence_day: undefined,
-        recurrence_date: undefined,
-        auto_assign: true,
-        custom_points: "",
-        requires_approval: false,
-        photo_required: false
-      });
+      setFormData(getDefaultFormData());
       setShowForm(true);
     }
   };

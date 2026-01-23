@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from "react";
 import { useData } from '../components/contexts/DataContext';
 import { useChoreManagement } from '../components/hooks/useChoreManagement';
@@ -25,7 +24,11 @@ export default function Schedule() {
   };
   
   if (loading) {
-    return <div className="flex items-center justify-center min-h-[400px]"><Loader2 className="w-8 h-8 md:w-12 md:h-12 animate-spin text-[#C3B1E1]" /></div>;
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 md:w-12 md:h-12 animate-spin text-[#C3B1E1]" />
+      </div>
+    );
   }
 
   const isCurrentWeek = format(currentWeek, "yyyy-MM-dd") === format(startOfWeek(new Date()), "yyyy-MM-dd");

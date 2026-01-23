@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from "react";
 import { useData } from '../components/contexts/DataContext';
 import { Button } from "@/components/ui/button";
@@ -110,7 +109,7 @@ export default function Store() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 md:w-12 md:h-12 animate-spin text-[#C3B1E1]" />
+        <Loader2 className="w-8 h-8 md:w-16 md:h-16 animate-spin text-[#C3B1E1]" />
       </div>
     );
   }

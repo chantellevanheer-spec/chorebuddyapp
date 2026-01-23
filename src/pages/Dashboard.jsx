@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useCallback } from "react";
 import { smartAssignChores } from "@/functions/smartAssignChores";
 import { format, startOfWeek } from "date-fns";
@@ -56,7 +55,7 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-       <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-[400px]">
         <Loader2 className="w-8 h-8 md:w-16 md:h-16 animate-spin text-[#C3B1E1]" />
       </div>
     );
