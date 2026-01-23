@@ -5,15 +5,17 @@ Deno.serve(async (req) => {
     
     try {
         const user = await base44.auth.me();
+        const familyId = user?.data?.family_id || user?.family_id;
 
-        if (!user || !user.family_id) {
-            return new Response(JSON.stringify({ error: 'Unauthorized' }), { 
+        if (!user || !familyId) {
+            return new Response(JSON.stringify({ error: 'No family found. Please refresh the page.' }), { 
                 status: 401, 
                 headers: { 'Content-Type': 'application/json' } 
             });
         }
 
-        if (user.subscription_tier !== 'premium') {
+        const subscriptionTier = user?.data?.subscription_tier || user?.subscription_tier || 'free';
+        if (subscriptionTier !== 'premium') {
             return new Response(JSON.stringify({ error: 'Family invitations are a Premium feature.' }), { 
                 status: 403, 
                 headers: { 'Content-Type': 'application/json' } 
@@ -31,10 +33,10 @@ Deno.serve(async (req) => {
         }
 
         // Generate a unique invite code
-        const inviteCode = `${user.family_id}-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+        const inviteCode = `${familyId}-${Date.now()}-${Math.random().toString(36).substring(7)}`;
         
         // Update family with invite code
-        await base44.asServiceRole.entities.Family.update(user.family_id, { 
+        await base44.asServiceRole.entities.Family.update(familyId, { 
             invite_code: inviteCode 
         });
 
