@@ -19,10 +19,20 @@ export default function Schedule() {
   const [assignmentToReassign, setAssignmentToReassign] = useState(null);
   const [isReassigning, setIsReassigning] = useState(false);
 
+  const isParent = user?.family_role === 'parent';
+  const isChild = user?.family_role === 'child' || user?.family_role === 'teen';
+
   const weekAssignments = useMemo(() => {
     const weekString = format(currentWeek, "yyyy-MM-dd");
-    return assignments.filter((assignment) => assignment.week_start === weekString);
-  }, [assignments, currentWeek]);
+    let filtered = assignments.filter((assignment) => assignment.week_start === weekString);
+    
+    // For children/teens, only show their own assignments
+    if (isChild && user?.linked_person_id) {
+      filtered = filtered.filter(a => a.person_id === user.linked_person_id);
+    }
+    
+    return filtered;
+  }, [assignments, currentWeek, isChild, user]);
 
   const navigateWeek = (direction) => {
     setCurrentWeek(prev => direction === 'prev' ? subWeeks(prev, 1) : addWeeks(prev, 1));
@@ -134,16 +144,16 @@ export default function Schedule() {
                       return chore ? (
                         <div key={assignment.id} className="relative group">
                           <ScheduleChoreItem assignment={assignment} chore={chore} onComplete={completeChore} />
-                          {user?.role === 'admin' && !assignment.completed && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleShowReassign(assignment)}
-                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity funky-button bg-white/90 border-2 border-[#F7A1C4] text-pink-700 hover:bg-pink-50"
-                              title="Reassign to someone else"
-                            >
-                              <UserX className="w-4 h-4" />
-                            </Button>
+                          {isParent && !assignment.completed && (
+                           <Button
+                             size="sm"
+                             variant="ghost"
+                             onClick={() => handleShowReassign(assignment)}
+                             className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity funky-button bg-white/90 border-2 border-[#F7A1C4] text-pink-700 hover:bg-pink-50"
+                             title="Reassign to someone else"
+                           >
+                             <UserX className="w-4 h-4" />
+                           </Button>
                           )}
                         </div>
                       ) : null;
@@ -162,10 +172,10 @@ export default function Schedule() {
             {isCurrentWeek ? "No chores have been assigned yet" : "No chores were assigned for this week"}
           </p>
           
-          {user?.role === 'admin' && isCurrentWeek && (
+          {isParent && isCurrentWeek && (
             <div className="bg-purple-50 border-2 border-purple-300 rounded-lg p-4 mb-6 max-w-lg mx-auto">
               <p className="body-font text-sm text-purple-800">
-                👑 <strong>Admin Tip:</strong> Go to the Dashboard and click "Assign Chores" to use ChoreAI, 
+                👑 <strong>Parent Tip:</strong> Go to the Dashboard and click "Assign Chores" to use ChoreAI, 
                 or visit the Chores page to manually assign tasks.
               </p>
             </div>
