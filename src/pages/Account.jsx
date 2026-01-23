@@ -4,7 +4,7 @@ import { Person } from '@/entities/Person';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { createPageUrl } from '@/utils';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, Link } from 'react-router-dom';
 import { Loader2, User as UserIcon, Bell, Users, Settings, Shield, CreditCard, Link as LinkIcon, AlertCircle } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
