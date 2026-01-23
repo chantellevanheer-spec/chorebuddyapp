@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, Link as LinkIcon, CheckCircle } from "lucide-react";
 import { AVATAR_COLORS } from '@/components/lib/constants';
 
 function PersonCard({ person, completedChores, currentChores, onEdit, onDelete }) {
@@ -16,13 +16,26 @@ function PersonCard({ person, completedChores, currentChores, onEdit, onDelete }
       </div>
 
       <div className="flex items-center gap-6">
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 relative">
           <div className={`funky-button w-24 h-24 rounded-full border-4 border-[#5E3B85] flex items-center justify-center text-white ${AVATAR_COLORS[person.avatar_color]}`}>
             <span className="text-4xl header-font">{person.name.charAt(0).toUpperCase()}</span>
           </div>
+          {person.linked_user_id && (
+            <div className="absolute -bottom-1 -right-1 funky-button w-8 h-8 bg-green-500 border-2 border-white rounded-full flex items-center justify-center" title="Account linked">
+              <CheckCircle className="w-5 h-5 text-white" />
+            </div>
+          )}
         </div>
         <div className="flex-1">
-          <span className="funky-button text-xs px-3 py-1 bg-white border-2 border-[#5E3B85] body-font text-[#5E3B85] capitalize">{person.role}</span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="funky-button text-xs px-3 py-1 bg-white border-2 border-[#5E3B85] body-font text-[#5E3B85] capitalize">{person.role}</span>
+            {person.linked_user_id && (
+              <span className="funky-button text-xs px-3 py-1 bg-green-100 border-2 border-green-500 body-font text-green-700 flex items-center gap-1">
+                <LinkIcon className="w-3 h-3" />
+                Linked
+              </span>
+            )}
+          </div>
           <h3 className="header-font text-3xl text-[#2B59C3] mt-1">{person.name}</h3>
           <div className="flex items-center gap-6 mt-3">
             <div className="text-center">
