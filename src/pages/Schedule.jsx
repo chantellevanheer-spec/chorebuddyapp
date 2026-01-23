@@ -155,7 +155,22 @@ export default function Schedule() {
           })}
         </div>
       ) : (
-        <div className="funky-card p-12 text-center border-4 border-dashed border-[#C3B1E1]"><Calendar className="w-24 h-24 mx-auto mb-6 text-[#C3B1E1]" /><h3 className="header-font text-3xl text-[#2B59C3] mb-4">No assignments for this week</h3><p className="body-font-light text-gray-600 text-lg mb-8 max-w-md mx-auto">{isCurrentWeek ? "Go to the dashboard to create this week's chore assignments" : "No chores were assigned for this week"}</p></div>
+        <div className="funky-card p-12 text-center border-4 border-dashed border-[#C3B1E1]">
+          <Calendar className="w-24 h-24 mx-auto mb-6 text-[#C3B1E1]" />
+          <h3 className="header-font text-3xl text-[#2B59C3] mb-4">No assignments for this week</h3>
+          <p className="body-font-light text-gray-600 text-lg mb-6 max-w-md mx-auto">
+            {isCurrentWeek ? "No chores have been assigned yet" : "No chores were assigned for this week"}
+          </p>
+          
+          {user?.role === 'admin' && isCurrentWeek && (
+            <div className="bg-purple-50 border-2 border-purple-300 rounded-lg p-4 mb-6 max-w-lg mx-auto">
+              <p className="body-font text-sm text-purple-800">
+                👑 <strong>Admin Tip:</strong> Go to the Dashboard and click "Assign Chores" to use ChoreAI, 
+                or visit the Chores page to manually assign tasks.
+              </p>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

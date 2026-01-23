@@ -3,6 +3,7 @@ import { smartAssignChores } from "@/functions/smartAssignChores";
 import { format, startOfWeek } from "date-fns";
 import { useData } from '../components/contexts/DataContext';
 import { toast } from "sonner";
+import { User } from '@/entities/User';
 
 import { useSubscriptionAccess } from '../components/hooks/useSubscriptionAccess';
 import { useChoreManagement } from '../components/hooks/useChoreManagement';
@@ -18,7 +19,7 @@ import DashboardSummary from "../components/dashboard/DashboardSummary";
 import { Loader2 } from "lucide-react";
 
 export default function Dashboard() {
-  const { assignments, chores, people, loading, fetchData } = useData();
+  const { assignments, chores, people, user, loading, fetchData } = useData();
   const { canAccess, getRequiredTier, getTierDisplayName } = useSubscriptionAccess();
   const { completeChore, completedChoreIdWithConfetti } = useChoreManagement();
   
@@ -93,12 +94,14 @@ export default function Dashboard() {
           completedAssignments={completedAssignments}
           chores={chores}
           people={people}
-          completeChore={completeChore} />
+          completeChore={completeChore}
+          user={user} />
 
         <DashboardEmptyState
           currentWeekAssignments={currentWeekAssignments}
           people={people}
-          chores={chores} />
+          chores={chores}
+          user={user} />
 
         <DashboardSummary
           currentWeekAssignments={currentWeekAssignments}
