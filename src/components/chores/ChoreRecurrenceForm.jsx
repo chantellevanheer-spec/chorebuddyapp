@@ -36,14 +36,16 @@ export default function ChoreRecurrenceForm({ formData, setFormData }) {
                 <SelectValue placeholder="Select pattern" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="daily">Daily</SelectItem>
                 <SelectItem value="weekly_same_day">Weekly (same day)</SelectItem>
                 <SelectItem value="every_2_weeks">Every 2 weeks</SelectItem>
                 <SelectItem value="monthly_same_date">Monthly (same date)</SelectItem>
+                <SelectItem value="custom">Custom days</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          {formData.recurrence_pattern === 'weekly_same_day' && (
+          {(formData.recurrence_pattern === 'weekly_same_day' || formData.recurrence_pattern === 'every_2_weeks') && (
             <div>
               <label className="body-font text-sm text-[#5E3B85] mb-2 block">Day of Week</label>
               <Select 
@@ -74,6 +76,31 @@ export default function ChoreRecurrenceForm({ formData, setFormData }) {
                 onChange={(e) => setFormData({ ...formData, recurrence_date: parseInt(e.target.value) })}
                 className="funky-button border-2 border-[#5E3B85] body-font bg-white"
               />
+            </div>
+          )}
+
+          {formData.recurrence_pattern === 'custom' && (
+            <div className="md:col-span-2">
+              <label className="body-font text-sm text-[#5E3B85] mb-2 block">Select Days (Custom Pattern)</label>
+              <div className="grid grid-cols-4 gap-2">
+                {dayNames.map((day, index) => (
+                  <label key={index} className="flex items-center gap-2 cursor-pointer">
+                    <Checkbox
+                      checked={(formData.custom_recurrence_days || []).includes(index)}
+                      onCheckedChange={(checked) => {
+                        const days = formData.custom_recurrence_days || [];
+                        if (checked) {
+                          setFormData({ ...formData, custom_recurrence_days: [...days, index].sort() });
+                        } else {
+                          setFormData({ ...formData, custom_recurrence_days: days.filter(d => d !== index) });
+                        }
+                      }}
+                      className="border-2 border-[#5E3B85]"
+                    />
+                    <span className="body-font text-xs">{day.slice(0, 3)}</span>
+                  </label>
+                ))}
+              </div>
             </div>
           )}
         </div>
