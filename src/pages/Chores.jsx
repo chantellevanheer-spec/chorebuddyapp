@@ -12,6 +12,8 @@ import LoadingSpinner from "../components/ui/LoadingSpinner";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import ChoreRecurrenceForm from "../components/chores/ChoreRecurrenceForm";
 import ChoreRotationForm from "../components/chores/ChoreRotationForm";
+import SubTaskManager from "../components/chores/SubTaskManager";
+import TemplateManager from "../components/chores/TemplateManager";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useSubscriptionAccess } from '../components/hooks/useSubscriptionAccess';
@@ -39,6 +41,7 @@ export default function Chores() {
     frequency: "weekly",
     estimated_time: "",
     category: "other",
+    priority: "medium",
     is_recurring: false,
     recurrence_pattern: undefined,
     recurrence_day: undefined,
@@ -50,7 +53,10 @@ export default function Chores() {
     rotation_current_index: 0,
     custom_points: "",
     requires_approval: false,
-    photo_required: false
+    photo_required: false,
+    sub_tasks: [],
+    is_template: false,
+    template_name: ""
   });
   
   const [formData, setFormData] = useState(getDefaultFormData());
@@ -70,8 +76,9 @@ export default function Chores() {
     setFormData({
       ...chore,
       estimated_time: chore.estimated_time || "",
+      priority: chore.priority || "medium",
       is_recurring: chore.is_recurring || false,
-      auto_assign: chore.auto_assign !== false, // Default to true if undefined/null
+      auto_assign: chore.auto_assign !== false,
       recurrence_pattern: chore.recurrence_pattern || undefined,
       recurrence_day: chore.recurrence_day || undefined,
       recurrence_date: chore.recurrence_date || undefined,
@@ -81,7 +88,10 @@ export default function Chores() {
       rotation_current_index: chore.rotation_current_index || 0,
       custom_points: chore.custom_points || "",
       requires_approval: chore.requires_approval || false,
-      photo_required: chore.photo_required || false
+      photo_required: chore.photo_required || false,
+      sub_tasks: chore.sub_tasks || [],
+      is_template: chore.is_template || false,
+      template_name: chore.template_name || ""
     });
     setShowForm(true);
   };
@@ -95,18 +105,24 @@ export default function Chores() {
     e.preventDefault();
     if (!formData.title.trim()) return;
 
+    if (formData.is_template && !formData.template_name.trim()) {
+      toast.error("Please provide a name for your template");
+      return;
+    }
+
     const choreData = {
       ...formData,
       estimated_time: formData.estimated_time ? parseInt(formData.estimated_time) : null,
-      custom_points: formData.custom_points ? parseInt(formData.custom_points) : null
+      custom_points: formData.custom_points ? parseInt(formData.custom_points) : null,
+      priority_weight: formData.priority === 'high' ? 8 : formData.priority === 'medium' ? 5 : 2
     };
 
     if (choreToEdit) {
       await updateChore(choreToEdit.id, choreData);
-      toast.success("Chore updated!");
+      toast.success(choreData.is_template ? "Template updated!" : "Chore updated!");
     } else {
       await addChore(choreData);
-      toast.success("Chore added!");
+      toast.success(choreData.is_template ? "Template saved!" : "Chore added!");
     }
     handleCancel();
   };
@@ -303,7 +319,7 @@ export default function Chores() {
                 className="funky-button border-3 border-[#5E3B85] p-3 md:p-4 h-20 md:h-24 body-font bg-white"
               />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
               <div>
                 <label className="body-font text-base md:text-lg text-[#5E3B85] mb-2 block">Category</label>
                 <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
@@ -317,6 +333,19 @@ export default function Chores() {
                     <SelectItem value="bedroom">Bedroom</SelectItem>
                     <SelectItem value="outdoor">Outdoor</SelectItem>
                     <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="body-font text-base md:text-lg text-[#5E3B85] mb-2 block">Priority</label>
+                <Select value={formData.priority} onValueChange={(value) => setFormData({ ...formData, priority: value })}>
+                  <SelectTrigger className="funky-button border-3 border-[#5E3B85] body-font bg-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">🟢 Low</SelectItem>
+                    <SelectItem value="medium">🟡 Medium</SelectItem>
+                    <SelectItem value="high">🔴 High</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -345,6 +374,23 @@ export default function Chores() {
                 />
               </div>
             </div>
+
+            {/* Sub-tasks */}
+            <SubTaskManager 
+              subTasks={formData.sub_tasks} 
+              setSubTasks={(tasks) => setFormData({ ...formData, sub_tasks: tasks })} 
+            />
+
+            {/* Template Manager */}
+            <TemplateManager
+              chores={chores}
+              onLoadTemplate={(templateData) => setFormData({ ...formData, ...templateData })}
+              onDeleteTemplate={(id) => deleteChore(id)}
+              isTemplate={formData.is_template}
+              templateName={formData.template_name}
+              setIsTemplate={(val) => setFormData({ ...formData, is_template: val })}
+              setTemplateName={(val) => setFormData({ ...formData, template_name: val })}
+            />
 
             {/* Auto-assign toggle */}
             <div className="flex items-center space-x-2">
@@ -491,9 +537,30 @@ export default function Chores() {
                 <div className="flex-1 pr-16">
                   <div className="flex items-center gap-3 mb-2 flex-wrap">
                     <h3 className="header-font text-xl md:text-2xl text-[#2B59C3]">{chore.title}</h3>
+                    {chore.priority && (
+                      <div className={`funky-button px-3 py-1 border-2 ${
+                        chore.priority === 'high' ? 'bg-red-100 border-red-400' :
+                        chore.priority === 'medium' ? 'bg-yellow-100 border-yellow-400' :
+                        'bg-green-100 border-green-400'
+                      }`}>
+                        <span className={`body-font text-xs ${
+                          chore.priority === 'high' ? 'text-red-700' :
+                          chore.priority === 'medium' ? 'text-yellow-700' :
+                          'text-green-700'
+                        }`}>
+                          {chore.priority === 'high' ? '🔴 HIGH' : 
+                           chore.priority === 'medium' ? '🟡 MED' : '🟢 LOW'}
+                        </span>
+                      </div>
+                    )}
                     {chore.is_recurring && (
                       <div className="funky-button px-3 py-1 bg-[#C3B1E1] border-2 border-[#5E3B85]">
                         <span className="body-font text-xs text-white">🔄 RECURRING</span>
+                      </div>
+                    )}
+                    {chore.is_template && (
+                      <div className="funky-button px-3 py-1 bg-blue-100 border-2 border-blue-400">
+                        <span className="body-font text-xs text-blue-700">📋 TEMPLATE</span>
                       </div>
                     )}
                     {!chore.auto_assign && !chore.manual_rotation_enabled && (
@@ -543,9 +610,22 @@ export default function Chores() {
                 )}
               </div>
               {chore.description && (
-                <p className="body-font-light text-base md:text-lg leading-relaxed">
+                <p className="body-font-light text-base md:text-lg leading-relaxed mb-3">
                   {chore.description}
                 </p>
+              )}
+              {chore.sub_tasks && chore.sub_tasks.length > 0 && (
+                <div className="mt-3 p-3 funky-card border-2 border-gray-300 bg-white/50">
+                  <p className="body-font text-sm text-gray-700 mb-2">Sub-tasks:</p>
+                  <ul className="space-y-1">
+                    {chore.sub_tasks.map((task) => (
+                      <li key={task.id} className="body-font-light text-sm text-gray-600 flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#5E3B85]"></span>
+                        {task.title}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
             </div>
           ))}
