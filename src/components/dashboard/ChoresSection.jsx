@@ -11,12 +11,12 @@ export default function ChoresSection({ pendingAssignments, completedAssignments
 
   return (
     <>
-      {isAdmin && (pendingAssignments.length > 0 || completedAssignments.length > 0) && (
+      {isParent && (pendingAssignments.length > 0 || completedAssignments.length > 0) && (
         <div className="funky-card p-4 bg-purple-50 border-2 border-purple-300 mb-6">
           <div className="flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
             <p className="body-font text-sm text-purple-800">
-              <strong>Admin Controls:</strong> Hover over any assignment to see reassignment options. 
+              <strong>Parent Controls:</strong> Hover over any assignment to see reassignment options. 
               Need to make changes? Visit the <strong>Chores</strong> or <strong>Schedule</strong> page.
             </p>
           </div>
