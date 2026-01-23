@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, ClipboardList, Clock, Star, Edit, Trash2, UserPlus } from "lucide-react";
+import { Plus, ClipboardList, Clock, Star, Edit, Trash2, UserPlus, CheckSquare } from "lucide-react";
 import { Assignment } from "@/entities/Assignment";
 import { CHORE_CATEGORY_COLORS, DIFFICULTY_STARS } from '@/components/lib/constants';
 import { toast } from "sonner";
@@ -18,6 +18,7 @@ import LimitReachedModal from "../components/ui/LimitReachedModal";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import ManualAssignmentModal from "../components/chores/ManualAssignmentModal";
+import BulkAssignmentModal from "../components/chores/BulkAssignmentModal";
 
 export default function Chores() {
   const { chores, people, user, loading, isProcessing, addChore, updateChore, deleteChore, fetchData } = useData();
@@ -27,6 +28,7 @@ export default function Chores() {
   const [choreToDelete, setChoreToDelete] = useState(null);
   const [isLimitModalOpen, setLimitModalOpen] = useState(false);
   const [isAssignModalOpen, setAssignModalOpen] = useState(false);
+  const [isBulkAssignModalOpen, setBulkAssignModalOpen] = useState(false);
   const [choreToAssign, setChoreToAssign] = useState(null);
   const [isAssigning, setIsAssigning] = useState(false);
   const getDefaultFormData = () => ({
@@ -136,6 +138,49 @@ export default function Chores() {
     }
   };
 
+  const handleBulkAssign = async ({ choreIds, personIds, week_start, due_date }) => {
+    setIsAssigning(true);
+    try {
+      const assignments = [];
+      for (const choreId of choreIds) {
+        for (const personId of personIds) {
+          assignments.push({
+            chore_id: choreId,
+            person_id: personId,
+            week_start,
+            due_date,
+            family_id: user.family_id,
+            completed: false
+          });
+        }
+      }
+
+      // Create all assignments
+      await Promise.all(assignments.map(a => Assignment.create(a)));
+      
+      toast.success(`Successfully assigned ${assignments.length} chores!`);
+      setBulkAssignModalOpen(false);
+      await fetchData();
+    } catch (error) {
+      console.error("Error bulk assigning chores:", error);
+      toast.error("Failed to assign chores. Please try again.");
+    } finally {
+      setIsAssigning(false);
+    }
+  };
+
+  const handleShowBulkAssign = () => {
+    if (people.length === 0) {
+      toast.error("Add family members first before assigning chores.");
+      return;
+    }
+    if (chores.length === 0) {
+      toast.error("Create some chores first before bulk assigning.");
+      return;
+    }
+    setBulkAssignModalOpen(true);
+  };
+
   if (loading) {
     return <LoadingSpinner size="large" message="Loading chores..." />;
   }
@@ -173,6 +218,15 @@ export default function Chores() {
         isProcessing={isAssigning}
       />
 
+      <BulkAssignmentModal
+        isOpen={isBulkAssignModalOpen}
+        onClose={() => setBulkAssignModalOpen(false)}
+        onBulkAssign={handleBulkAssign}
+        chores={chores}
+        people={people}
+        isProcessing={isAssigning}
+      />
+
       {/* Header */}
       <div className="funky-card p-4 md:p-6 lg:p-8">
         <div className="flex flex-col gap-4 md:gap-6">
@@ -186,15 +240,33 @@ export default function Chores() {
               <p className="body-font-light text-sm md:text-base text-gray-600 mt-1 md:mt-2">{chores.length} {chores.length === 1 ? 'chore' : 'chores'} in your library</p>
             </div>
           </div>
-          <Button
-            onClick={handleShowAddForm}
-            className="funky-button bg-[#C3B1E1] text-white px-4 md:px-6 py-3 md:py-4 text-base md:text-lg lg:text-xl header-font w-full"
-          >
-            <Plus className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
-            Add Chore
-          </Button>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <Button
+              onClick={handleShowAddForm}
+              className="funky-button bg-[#C3B1E1] text-white px-4 md:px-6 py-3 md:py-4 text-base md:text-lg lg:text-xl header-font"
+            >
+              <Plus className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
+              Add Chore
+            </Button>
+            <Button
+              onClick={handleShowBulkAssign}
+              className="funky-button bg-[#FF6B35] text-white px-4 md:px-6 py-3 md:py-4 text-base md:text-lg lg:text-xl header-font"
+            >
+              <CheckSquare className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
+              Bulk Assign
+            </Button>
+          </div>
         </div>
       </div>
+
+      {/* Admin Tooltip */}
+      {user?.role === 'admin' && (
+        <div className="funky-card p-4 bg-purple-50 border-2 border-purple-300">
+          <p className="body-font text-sm text-purple-800">
+            👑 <strong>Admin Mode:</strong> Hover over any chore to assign it, or use <strong>Bulk Assign</strong> to assign multiple chores at once.
+          </p>
+        </div>
+      )}
 
       {/* Add/Edit Chore Form */}
       {showForm && (

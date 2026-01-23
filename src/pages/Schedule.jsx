@@ -1,18 +1,23 @@
 import React, { useState, useMemo } from "react";
 import { useData } from '../components/contexts/DataContext';
 import { useChoreManagement } from '../components/hooks/useChoreManagement';
-import { Calendar, CheckCircle, ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
+import { Calendar, CheckCircle, ArrowLeft, ArrowRight, Loader2, UserX } from "lucide-react";
 import { format, startOfWeek, addWeeks, subWeeks } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { AnimatePresence } from 'framer-motion';
 import ScheduleChoreItem from '../components/schedule/ScheduleChoreItem';
 import Confetti from '../components/ui/Confetti';
 import { AVATAR_COLORS } from '@/components/lib/constants';
+import { toast } from "sonner";
+import ReassignModal from '../components/chores/ReassignModal';
 
 export default function Schedule() {
-  const { assignments, chores, people, loading } = useData();
+  const { assignments, chores, people, user, loading, updateAssignment, fetchData } = useData();
   const { completeChore, completedChoreIdWithConfetti } = useChoreManagement();
   const [currentWeek, setCurrentWeek] = useState(startOfWeek(new Date()));
+  const [isReassignModalOpen, setReassignModalOpen] = useState(false);
+  const [assignmentToReassign, setAssignmentToReassign] = useState(null);
+  const [isReassigning, setIsReassigning] = useState(false);
 
   const weekAssignments = useMemo(() => {
     const weekString = format(currentWeek, "yyyy-MM-dd");
@@ -21,6 +26,27 @@ export default function Schedule() {
 
   const navigateWeek = (direction) => {
     setCurrentWeek(prev => direction === 'prev' ? subWeeks(prev, 1) : addWeeks(prev, 1));
+  };
+
+  const handleShowReassign = (assignment) => {
+    setAssignmentToReassign(assignment);
+    setReassignModalOpen(true);
+  };
+
+  const handleReassign = async (assignmentId, newPersonId) => {
+    setIsReassigning(true);
+    try {
+      await updateAssignment(assignmentId, { person_id: newPersonId });
+      toast.success("Chore reassigned successfully!");
+      setReassignModalOpen(false);
+      setAssignmentToReassign(null);
+      await fetchData();
+    } catch (error) {
+      console.error("Error reassigning chore:", error);
+      toast.error("Failed to reassign chore. Please try again.");
+    } finally {
+      setIsReassigning(false);
+    }
   };
   
   if (loading) {
@@ -33,9 +59,32 @@ export default function Schedule() {
 
   const isCurrentWeek = format(currentWeek, "yyyy-MM-dd") === format(startOfWeek(new Date()), "yyyy-MM-dd");
 
+  const reassignmentData = useMemo(() => {
+    if (!assignmentToReassign) return null;
+    return {
+      assignment: assignmentToReassign,
+      chore: chores.find(c => c.id === assignmentToReassign.chore_id),
+      currentPerson: people.find(p => p.id === assignmentToReassign.person_id)
+    };
+  }, [assignmentToReassign, chores, people]);
+
   return (
     <div className="mx-4 md:mx-8 lg:mx-24 pb-32 space-y-6 md:space-y-8 lg:pb-8 relative">
       {completedChoreIdWithConfetti && <Confetti />}
+      
+      <ReassignModal
+        isOpen={isReassignModalOpen}
+        onClose={() => {
+          setReassignModalOpen(false);
+          setAssignmentToReassign(null);
+        }}
+        onReassign={handleReassign}
+        assignment={reassignmentData?.assignment}
+        chore={reassignmentData?.chore}
+        currentPerson={reassignmentData?.currentPerson}
+        people={people}
+        isProcessing={isReassigning}
+      />
       
       {/* Header & Week Navigation */}
       <div className="funky-card p-4 md:p-6 lg:p-8">
@@ -82,7 +131,22 @@ export default function Schedule() {
                   <AnimatePresence>
                     {personAssignments.map((assignment) => {
                       const chore = chores.find((c) => c.id === assignment.chore_id);
-                      return chore ? <ScheduleChoreItem key={assignment.id} assignment={assignment} chore={chore} onComplete={completeChore} /> : null;
+                      return chore ? (
+                        <div key={assignment.id} className="relative group">
+                          <ScheduleChoreItem assignment={assignment} chore={chore} onComplete={completeChore} />
+                          {user?.role === 'admin' && !assignment.completed && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleShowReassign(assignment)}
+                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity funky-button bg-white/90 border-2 border-[#F7A1C4] text-pink-700 hover:bg-pink-50"
+                              title="Reassign to someone else"
+                            >
+                              <UserX className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ) : null;
                     })}
                   </AnimatePresence>
                 </div>
