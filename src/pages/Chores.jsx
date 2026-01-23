@@ -43,23 +43,6 @@ export default function Chores() {
   
   const [formData, setFormData] = useState(getDefaultFormData());
 
-  const getDefaultFormData = () => ({
-    title: "",
-    description: "",
-    difficulty: "medium",
-    frequency: "weekly",
-    estimated_time: "",
-    category: "other",
-    is_recurring: false,
-    recurrence_pattern: undefined,
-    recurrence_day: undefined,
-    recurrence_date: undefined,
-    auto_assign: true,
-    custom_points: "",
-    requires_approval: false,
-    photo_required: false
-  });
-
   const handleShowAddForm = () => {
     if (hasReachedLimit('max_chores')) {
       setLimitModalOpen(true);
