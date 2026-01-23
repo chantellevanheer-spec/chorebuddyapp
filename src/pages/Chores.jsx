@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, ClipboardList, Clock, Star, Edit, Trash2 } from "lucide-react";
+import { Plus, ClipboardList, Clock, Star, Edit, Trash2, UserPlus } from "lucide-react";
+import { Assignment } from "@/entities/Assignment";
 import { CHORE_CATEGORY_COLORS, DIFFICULTY_STARS } from '@/components/lib/constants';
 import { toast } from "sonner";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
@@ -16,14 +17,18 @@ import { useSubscriptionAccess } from '../components/hooks/useSubscriptionAccess
 import LimitReachedModal from "../components/ui/LimitReachedModal";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import ManualAssignmentModal from "../components/chores/ManualAssignmentModal";
 
 export default function Chores() {
-  const { chores, loading, isProcessing, addChore, updateChore, deleteChore } = useData();
+  const { chores, people, user, loading, isProcessing, addChore, updateChore, deleteChore, fetchData } = useData();
   const { hasReachedLimit, canAccess, getTierDisplayName, getRequiredTier, features } = useSubscriptionAccess();
   const [showForm, setShowForm] = useState(false);
   const [choreToEdit, setChoreToEdit] = useState(null);
   const [choreToDelete, setChoreToDelete] = useState(null);
   const [isLimitModalOpen, setLimitModalOpen] = useState(false);
+  const [isAssignModalOpen, setAssignModalOpen] = useState(false);
+  const [choreToAssign, setChoreToAssign] = useState(null);
+  const [isAssigning, setIsAssigning] = useState(false);
   const getDefaultFormData = () => ({
     title: "",
     description: "",
@@ -103,6 +108,34 @@ export default function Chores() {
     }
   };
 
+  const handleShowAssignModal = (chore) => {
+    if (people.length === 0) {
+      toast.error("Add family members first before assigning chores.");
+      return;
+    }
+    setChoreToAssign(chore);
+    setAssignModalOpen(true);
+  };
+
+  const handleAssignChore = async (assignmentData) => {
+    setIsAssigning(true);
+    try {
+      await Assignment.create({
+        ...assignmentData,
+        family_id: user.family_id
+      });
+      toast.success("Chore assigned successfully!");
+      setAssignModalOpen(false);
+      setChoreToAssign(null);
+      await fetchData();
+    } catch (error) {
+      console.error("Error assigning chore:", error);
+      toast.error("Failed to assign chore. Please try again.");
+    } finally {
+      setIsAssigning(false);
+    }
+  };
+
   if (loading) {
     return <LoadingSpinner size="large" message="Loading chores..." />;
   }
@@ -126,6 +159,18 @@ export default function Chores() {
         currentCount={chores.length}
         maxCount={features.max_chores}
         requiredTier={getTierDisplayName(getRequiredTier('max_chores'))}
+      />
+
+      <ManualAssignmentModal
+        isOpen={isAssignModalOpen}
+        onClose={() => {
+          setAssignModalOpen(false);
+          setChoreToAssign(null);
+        }}
+        onAssign={handleAssignChore}
+        chore={choreToAssign}
+        people={people}
+        isProcessing={isAssigning}
       />
 
       {/* Header */}
@@ -331,6 +376,15 @@ export default function Chores() {
           {chores.map((chore) => (
             <div key={chore.id} className={`funky-card p-4 md:p-6 lg:p-8 border-4 relative group ${CHORE_CATEGORY_COLORS[chore.category] || CHORE_CATEGORY_COLORS.other}`}>
               <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => handleShowAssignModal(chore)}
+                  className="h-8 w-8 rounded-full hover:bg-green-100"
+                  title="Assign to someone"
+                >
+                  <UserPlus className="w-4 h-4 text-green-600" />
+                </Button>
                 <Button
                   size="icon"
                   variant="ghost"
