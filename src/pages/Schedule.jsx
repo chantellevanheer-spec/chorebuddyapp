@@ -122,7 +122,15 @@ export default function Schedule() {
       {/* Schedule Table */}
       {weekAssignments.length > 0 ? (
         <div className="space-y-8">
-          {people.map((person) => {
+          {people
+            .filter(person => {
+              // For children/teens, only show their own person card
+              if (isChild && user?.linked_person_id) {
+                return person.id === user.linked_person_id;
+              }
+              return true;
+            })
+            .map((person) => {
             const personAssignments = weekAssignments.filter((a) => a.person_id === person.id);
             if (personAssignments.length === 0) return null;
             const completedCount = personAssignments.filter((a) => a.completed).length;
