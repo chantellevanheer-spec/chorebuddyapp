@@ -1,40 +1,54 @@
-
 import React, { useState, useEffect } from 'react';
 import { User } from '@/entities/User';
+import { Person } from '@/entities/Person';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-// Removed Label as it's not explicitly used in the outline, and Switch component works without it in this context.
 import { createPageUrl } from '@/utils';
-import { Link } from 'react-router-dom';
-import { Loader2, User as UserIcon, Bell, Users, Settings, Shield, CreditCard } from 'lucide-react';
+import { Link as RouterLink } from 'react-router-dom';
+import { Loader2, User as UserIcon, Bell, Users, Settings, Shield, CreditCard, Link as LinkIcon, AlertCircle } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { stripeCheckout } from '@/functions/stripeCheckout';
+import { linkUserToPerson } from '@/functions/linkUserToPerson';
+import LinkAccountModal from '../components/people/LinkAccountModal';
 
 export default function Account() {
   const [user, setUser] = useState(null);
+  const [linkedPerson, setLinkedPerson] = useState(null);
+  const [people, setPeople] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isPortalRedirecting, setIsPortalRedirecting] = useState(false);
+  const [isLinkModalOpen, setLinkModalOpen] = useState(false);
+  const [isLinking, setIsLinking] = useState(false);
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchData = async () => {
       try {
         const userData = await User.me();
-        // Initialize user state with fetched data, including notification preferences
         setUser({
           ...userData,
           receives_chore_reminders: userData.receives_chore_reminders ?? true,
           receives_achievement_alerts: userData.receives_achievement_alerts ?? true,
           receives_weekly_reports: userData.receives_weekly_reports ?? false
         });
+
+        if (userData.family_id) {
+          // Fetch family people
+          const familyPeople = await Person.list();
+          setPeople(familyPeople);
+
+          // Find linked person
+          const linked = familyPeople.find(p => p.linked_user_id === userData.id);
+          setLinkedPerson(linked || null);
+        }
       } catch (error) {
-        console.error("Failed to fetch user", error);
+        console.error("Failed to fetch user data", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchUser();
+    fetchData();
   }, []);
 
   const handleToggleChange = (field, value) => {
@@ -76,6 +90,30 @@ export default function Account() {
     }
   };
 
+  const handleLinkAccount = async (personId) => {
+    setIsLinking(true);
+    try {
+      const result = await linkUserToPerson({ personId });
+      if (result.data.success) {
+        toast.success("Account linked successfully!");
+        setLinkModalOpen(false);
+        
+        // Refresh data
+        const familyPeople = await Person.list();
+        setPeople(familyPeople);
+        const linked = familyPeople.find(p => p.id === personId);
+        setLinkedPerson(linked || null);
+      } else {
+        toast.error(result.data.error || "Failed to link account");
+      }
+    } catch (error) {
+      console.error("Error linking account:", error);
+      toast.error(error.message || "Failed to link account");
+    } finally {
+      setIsLinking(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -95,6 +133,13 @@ export default function Account() {
 
   return (
     <div className="mx-24 pb-32 space-y-8 lg:pb-8">
+      <LinkAccountModal
+        isOpen={isLinkModalOpen}
+        onClose={() => setLinkModalOpen(false)}
+        people={people}
+        onLink={handleLinkAccount}
+        isProcessing={isLinking}
+      />
       {/* Header */}
       <div className="funky-card p-6 md:p-8">
         <div className="flex items-center gap-4 md:gap-6">
@@ -217,18 +262,68 @@ export default function Account() {
         </TabsContent>
 
         <TabsContent value="family" className="mt-6">
-           <div className="funky-card p-8 text-center">
-             <h2 className="header-font text-3xl text-[#2B59C3] mb-4">Family Management</h2>
-             <p className="body-font-light text-gray-600 text-lg mb-6 max-w-md mx-auto">
-               Add, view, or remove family members from your ChoreFlow account on the Family page.
-             </p>
-             <Link to={createPageUrl("People")}>
+          {/* Account Linking */}
+          <div className="funky-card p-8 mb-6">
+            <h2 className="header-font text-3xl text-[#2B59C3] mb-6 flex items-center gap-3">
+              <LinkIcon className="w-8 h-8 text-[#FF6B35]" />
+              Account Linking
+            </h2>
+            
+            {linkedPerson ? (
+              <div className="bg-green-50 border-2 border-green-300 rounded-lg p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center">
+                    <span className="header-font text-xl text-white">
+                      {linkedPerson.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="body-font text-lg text-green-800">
+                      ✓ Linked to: <strong>{linkedPerson.name}</strong>
+                    </p>
+                    <p className="body-font-light text-sm text-green-600">
+                      Your account is connected to your family member profile
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-orange-50 border-2 border-orange-300 rounded-lg p-6">
+                <div className="flex items-start gap-3 mb-4">
+                  <AlertCircle className="w-6 h-6 text-orange-600 flex-shrink-0 mt-1" />
+                  <div>
+                    <p className="body-font text-orange-800 mb-2">
+                      Your account is not linked to a family member profile
+                    </p>
+                    <p className="body-font-light text-sm text-orange-700 mb-4">
+                      Link your account to see your assigned chores and track your progress.
+                    </p>
+                    <Button
+                      onClick={() => setLinkModalOpen(true)}
+                      className="funky-button bg-[#2B59C3] text-white border-2 border-[#5E3B85]"
+                    >
+                      <LinkIcon className="w-4 h-4 mr-2" />
+                      Link My Account
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Family Management */}
+          <div className="funky-card p-8 text-center">
+            <h2 className="header-font text-3xl text-[#2B59C3] mb-4">Family Management</h2>
+            <p className="body-font-light text-gray-600 text-lg mb-6 max-w-md mx-auto">
+              Add, view, or remove family members from your ChoreBuddy account on the Family page.
+            </p>
+            <RouterLink to={createPageUrl("People")}>
               <Button className="funky-button bg-[#F7A1C4] text-pink-800 px-8 py-4 header-font text-xl">
                 <Users className="w-6 h-6 mr-3" />
                 Go to Family Page
               </Button>
-            </Link>
-           </div>
+            </RouterLink>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.5.0';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
@@ -15,6 +15,29 @@ Deno.serve(async (req) => {
             return new Response(JSON.stringify({ error: 'Invalid or expired invite code' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
         }
         const family = families[0];
+
+        // Check if user already in another family
+        if (user.family_id && user.family_id !== family.id) {
+            return new Response(JSON.stringify({ error: 'You are already in another family. Please contact support to switch families.' }), { 
+                status: 400, 
+                headers: { 'Content-Type': 'application/json' } 
+            });
+        }
+
+        // Check if a Person record already exists for this user
+        const existingPerson = await base44.asServiceRole.entities.Person.filter({ 
+            family_id: family.id, 
+            linked_user_id: user.id 
+        });
+
+        if (existingPerson.length > 0) {
+            return new Response(JSON.stringify({ 
+                success: true, 
+                familyId: family.id, 
+                personId: existingPerson[0].id,
+                message: 'You are already a member of this family.'
+            }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        }
 
         // Update user's record
         await base44.asServiceRole.entities.User.update(user.id, {
@@ -37,7 +60,12 @@ Deno.serve(async (req) => {
             role: (role === 'parent' ? 'adult' : 'child'),
         });
 
-        return new Response(JSON.stringify({ success: true, familyId: family.id, personId: newPerson.id }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        return new Response(JSON.stringify({ 
+            success: true, 
+            familyId: family.id, 
+            personId: newPerson.id,
+            message: 'Successfully joined the family!'
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
 
     } catch (error) {
         console.error('Error joining family:', error);
