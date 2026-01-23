@@ -1,13 +1,17 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { smartAssignChores } from "@/functions/smartAssignChores";
-import { format, startOfWeek } from "date-fns";
+import { format, startOfWeek, addDays } from "date-fns";
 import { useData } from '../components/contexts/DataContext';
 import { toast } from "sonner";
 import { User } from '@/entities/User';
+import { Assignment } from "@/entities/Assignment";
+import { Chore } from "@/entities/Chore";
 
 import { useSubscriptionAccess } from '../components/hooks/useSubscriptionAccess';
 import { useChoreManagement } from '../components/hooks/useChoreManagement';
 import UpgradeModal from "../components/ui/UpgradeModal";
+import AssignmentPreview from "../components/admin/AssignmentPreview";
+import ReassignModal from "../components/chores/ReassignModal";
 
 import Confetti from "../components/ui/Confetti";
 import DashboardHeader from "../components/dashboard/DashboardHeader";
@@ -25,6 +29,10 @@ export default function Dashboard() {
   
   const [isAssigning, setIsAssigning] = useState(false);
   const [isUpgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewAssignments, setPreviewAssignments] = useState([]);
+  const [isReassignModalOpen, setReassignModalOpen] = useState(false);
+  const [reassignData, setReassignData] = useState(null);
 
   const currentWeekAssignments = useMemo(() => {
     const currentWeek = format(startOfWeek(new Date()), "yyyy-MM-dd");
@@ -38,21 +46,82 @@ export default function Dashboard() {
     }
     setIsAssigning(true);
     try {
-      const result = await smartAssignChores();
+      const result = await smartAssignChores({ preview: true });
       
       if (result.status && result.status >= 400) {
         toast.error(result?.data?.error || "Failed to assign chores.");
+        setIsAssigning(false);
+      } else if (result.data.preview && result.data.assignments) {
+        setPreviewAssignments(result.data.assignments);
+        setShowPreview(true);
       } else {
-        await fetchData(); // Refresh data after successful assignment
+        await fetchData();
         toast.success(`ChoreAI successfully created ${result?.data?.created || 0} new assignments!`);
+        setIsAssigning(false);
       }
     } catch (error) {
       console.error("Error assigning chores:", error);
       toast.error("An unexpected error occurred while assigning chores.");
-    } finally {
-        setIsAssigning(false);
+      setIsAssigning(false);
     }
   }, [canAccess, fetchData]);
+
+  const handleConfirmAssignments = async (assignments) => {
+    setIsAssigning(true);
+    try {
+      await Promise.all(
+        assignments.map(a => Assignment.create(a))
+      );
+
+      const rotationUpdates = assignments
+        .filter(a => a.rotation_update)
+        .map(a => ({
+          id: a.chore_id,
+          rotation_current_index: a.rotation_update.newIndex,
+          rotation_last_assigned_date: a.rotation_update.date
+        }));
+
+      if (rotationUpdates.length > 0) {
+        await Promise.all(
+          rotationUpdates.map(update => 
+            Chore.update(update.id, {
+              rotation_current_index: update.rotation_current_index,
+              rotation_last_assigned_date: update.rotation_last_assigned_date
+            })
+          )
+        );
+      }
+
+      toast.success(`Successfully assigned ${assignments.length} chores!`);
+      setShowPreview(false);
+      setPreviewAssignments([]);
+      await fetchData();
+    } catch (error) {
+      console.error("Error confirming assignments:", error);
+      toast.error("Failed to create assignments. Please try again.");
+    } finally {
+      setIsAssigning(false);
+    }
+  };
+
+  const handleReassignFromPreview = (assignment, currentPerson) => {
+    const chore = chores.find(c => c.id === assignment.chore_id);
+    setReassignData({ assignment, chore, currentPerson });
+    setReassignModalOpen(true);
+  };
+
+  const handleReassignConfirm = (assignmentId, newPersonId) => {
+    setPreviewAssignments(prev =>
+      prev.map(a =>
+        a.chore_id === reassignData.assignment.chore_id
+          ? { ...a, person_id: newPersonId }
+          : a
+      )
+    );
+    setReassignModalOpen(false);
+    setReassignData(null);
+    toast.success("Assignment updated!");
+  };
 
   if (loading) {
     return (
@@ -73,6 +142,35 @@ export default function Dashboard() {
         featureName="ChoreAI Smart Assignment"
         requiredTier={getTierDisplayName(getRequiredTier('choreai_smart_assignment'))}
       />
+
+      {showPreview && (
+        <AssignmentPreview
+          proposedAssignments={previewAssignments}
+          onConfirm={handleConfirmAssignments}
+          onCancel={() => {
+            setShowPreview(false);
+            setPreviewAssignments([]);
+            setIsAssigning(false);
+          }}
+          onReassign={handleReassignFromPreview}
+        />
+      )}
+
+      {isReassignModalOpen && reassignData && (
+        <ReassignModal
+          isOpen={isReassignModalOpen}
+          onClose={() => {
+            setReassignModalOpen(false);
+            setReassignData(null);
+          }}
+          onReassign={handleReassignConfirm}
+          assignment={reassignData.assignment}
+          chore={reassignData.chore}
+          currentPerson={reassignData.currentPerson}
+          people={people}
+          isProcessing={false}
+        />
+      )}
 
       {completedChoreIdWithConfetti && <Confetti />}
       
