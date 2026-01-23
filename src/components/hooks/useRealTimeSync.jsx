@@ -81,10 +81,10 @@ export function useRealTimeSync(familyId, enabled = true, onUpdate = null) {
     // Initial check
     checkForUpdates();
 
-    // Poll every 5 seconds (or with backoff if errors)
+    // Poll every 30 seconds (or with backoff if errors) to avoid rate limits
     intervalRef.current = setInterval(() => {
       checkForUpdates();
-    }, 5000 * backoffRef.current);
+    }, 30000 * backoffRef.current);
 
     return () => {
       if (intervalRef.current) {
