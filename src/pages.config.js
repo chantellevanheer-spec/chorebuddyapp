@@ -13,9 +13,9 @@ import PaymentSuccess from './pages/PaymentSuccess';
 import People from './pages/People';
 import Pricing from './pages/Pricing';
 import Privacy from './pages/Privacy';
+import RoleSelection from './pages/RoleSelection';
 import Schedule from './pages/Schedule';
 import Store from './pages/Store';
-import RoleSelection from './pages/RoleSelection';
 import __Layout from './Layout.jsx';
 
 
@@ -35,9 +35,9 @@ export const PAGES = {
     "People": People,
     "Pricing": Pricing,
     "Privacy": Privacy,
+    "RoleSelection": RoleSelection,
     "Schedule": Schedule,
     "Store": Store,
-    "RoleSelection": RoleSelection,
 }
 
 export const pagesConfig = {

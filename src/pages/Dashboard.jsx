@@ -20,12 +20,13 @@ import DashboardStats from "../components/dashboard/DashboardStats";
 import ChoresSection from "../components/dashboard/ChoresSection";
 import DashboardEmptyState from "../components/dashboard/DashboardEmptyState";
 import DashboardSummary from "../components/dashboard/DashboardSummary";
+import PointsEarnedNotification from "../components/gamification/PointsEarnedNotification";
 import { Loader2 } from "lucide-react";
 
 export default function Dashboard() {
   const { assignments, chores, people, user, loading, fetchData } = useData();
   const { canAccess, getRequiredTier, getTierDisplayName } = useSubscriptionAccess();
-  const { completeChore, completedChoreIdWithConfetti } = useChoreManagement();
+  const { completeChore, completedChoreIdWithConfetti, pointsEarned } = useChoreManagement();
   
   const [isAssigning, setIsAssigning] = useState(false);
   const [isUpgradeModalOpen, setUpgradeModalOpen] = useState(false);
@@ -146,6 +147,13 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen relative">
+      <PointsEarnedNotification
+        points={pointsEarned.amount}
+        reason={pointsEarned.reason}
+        isVisible={pointsEarned.visible}
+        onClose={() => {}}
+      />
+      
       <UpgradeModal
         isOpen={isUpgradeModalOpen}
         onClose={() => setUpgradeModalOpen(false)}
