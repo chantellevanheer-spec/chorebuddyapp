@@ -1,14 +1,52 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.5.0';
-import { format, startOfWeek, addDays } from 'npm:date-fns@2.30.0';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { format, startOfWeek, addDays, addWeeks, parseISO, differenceInWeeks } from 'npm:date-fns@3.6.0';
+
+// Handle manual rotation for a chore
+const getNextRotationPerson = (chore, currentWeekStart) => {
+    if (!chore.manual_rotation_enabled || !chore.rotation_person_order || chore.rotation_person_order.length === 0) {
+        return null;
+    }
+
+    let currentIndex = chore.rotation_current_index || 0;
+    const rotationOrder = chore.rotation_person_order;
+
+    // Check if we need to advance the rotation
+    if (chore.rotation_last_assigned_date) {
+        const lastAssignedDate = parseISO(chore.rotation_last_assigned_date);
+        const currentDate = parseISO(currentWeekStart);
+        const weeksDiff = differenceInWeeks(currentDate, lastAssignedDate);
+
+        let shouldAdvance = false;
+        if (chore.rotation_frequency === 'weekly' && weeksDiff >= 1) {
+            shouldAdvance = true;
+        } else if (chore.rotation_frequency === 'bi_weekly' && weeksDiff >= 2) {
+            shouldAdvance = true;
+        } else if (chore.rotation_frequency === 'monthly' && weeksDiff >= 4) {
+            shouldAdvance = true;
+        }
+
+        if (shouldAdvance) {
+            currentIndex = (currentIndex + 1) % rotationOrder.length;
+        }
+    }
+
+    return {
+        personId: rotationOrder[currentIndex],
+        newIndex: currentIndex
+    };
+};
 
 // A more robust and less error-prone assignment algorithm.
-const simpleAdvancedAssignment = (chores, people, existingAssignments = []) => {
+const simpleAdvancedAssignment = (chores, people, existingAssignments = [], choreUpdates = []) => {
     if (!people || people.length === 0 || !chores || chores.length === 0) {
-        return [];
+        return { assignments: [], choreUpdates: [] };
     }
 
     const currentWeekStart = format(startOfWeek(new Date()), "yyyy-MM-dd");
-    const choresToAssign = chores.filter(c => c.auto_assign !== false);
+    
+    // Separate chores into rotation and auto-assign
+    const rotationChores = chores.filter(c => c.manual_rotation_enabled);
+    const autoAssignChores = chores.filter(c => c.auto_assign !== false && !c.manual_rotation_enabled);
     
     // Create a map of chores already assigned this week for quick lookup
     const assignedChoreIds = new Set(
@@ -18,11 +56,9 @@ const simpleAdvancedAssignment = (chores, people, existingAssignments = []) => {
     );
 
     // Filter out chores that are already assigned
-    const unassignedChores = choresToAssign.filter(c => !assignedChoreIds.has(c.id));
+    const unassignedRotationChores = rotationChores.filter(c => !assignedChoreIds.has(c.id));
+    const unassignedAutoChores = autoAssignChores.filter(c => !assignedChoreIds.has(c.id));
     
-    // Sort chores by priority (higher first)
-    unassignedChores.sort((a, b) => (b.priority_weight || 5) - (a.priority_weight || 5));
-
     // Initialize workload for this week
     const weeklyWorkload = {};
     people.forEach(p => {
@@ -30,8 +66,43 @@ const simpleAdvancedAssignment = (chores, people, existingAssignments = []) => {
     });
 
     const newAssignments = [];
+    const choreUpdatesToReturn = [];
 
-    for (const chore of unassignedChores) {
+    // First, handle rotation chores
+    for (const chore of unassignedRotationChores) {
+        const rotationResult = getNextRotationPerson(chore, currentWeekStart);
+        
+        if (rotationResult && rotationResult.personId) {
+            // Verify the person still exists
+            const person = people.find(p => p.id === rotationResult.personId);
+            if (person) {
+                newAssignments.push({
+                    person_id: rotationResult.personId,
+                    chore_id: chore.id,
+                    week_start: currentWeekStart,
+                    due_date: format(addDays(startOfWeek(new Date()), 6), "yyyy-MM-dd"),
+                    completed: false,
+                    family_id: chore.family_id,
+                });
+                
+                // Track chore update
+                choreUpdatesToReturn.push({
+                    id: chore.id,
+                    rotation_current_index: rotationResult.newIndex,
+                    rotation_last_assigned_date: currentWeekStart
+                });
+
+                // Increment workload
+                weeklyWorkload[rotationResult.personId]++;
+            }
+        }
+    }
+
+    // Sort auto-assign chores by priority (higher first)
+    unassignedAutoChores.sort((a, b) => (b.priority_weight || 5) - (a.priority_weight || 5));
+
+    // Then handle auto-assign chores
+    for (const chore of unassignedAutoChores) {
         // Find the best person for this chore
         let bestPerson = null;
         let lowestWorkload = Infinity;
@@ -64,7 +135,7 @@ const simpleAdvancedAssignment = (chores, people, existingAssignments = []) => {
         }
     }
     
-    return newAssignments;
+    return { assignments: newAssignments, choreUpdates: choreUpdatesToReturn };
 };
 
 
@@ -112,13 +183,29 @@ Deno.serve(async (req) => {
             });
         }
 
-        const newAssignments = simpleAdvancedAssignment(chores, people, existingAssignments);
+        const { assignments: newAssignments, choreUpdates } = simpleAdvancedAssignment(chores, people, existingAssignments);
 
         if (newAssignments.length > 0) {
             await base44.asServiceRole.entities.Assignment.bulkCreate(newAssignments);
         }
 
-        return new Response(JSON.stringify({ success: true, created: newAssignments.length }), { status: 200, headers: { 'Content-Type': 'application/json' }});
+        // Update rotation chores with new indices
+        if (choreUpdates.length > 0) {
+            await Promise.all(
+                choreUpdates.map(update => 
+                    base44.asServiceRole.entities.Chore.update(update.id, {
+                        rotation_current_index: update.rotation_current_index,
+                        rotation_last_assigned_date: update.rotation_last_assigned_date
+                    })
+                )
+            );
+        }
+
+        return new Response(JSON.stringify({ 
+            success: true, 
+            created: newAssignments.length,
+            rotations_updated: choreUpdates.length 
+        }), { status: 200, headers: { 'Content-Type': 'application/json' }});
 
     } catch (error) {
         console.error('CRITICAL ERROR in smartAssignChores:', error.message, error.stack);

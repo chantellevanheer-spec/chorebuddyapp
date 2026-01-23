@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import ChoreRecurrenceForm from "../components/chores/ChoreRecurrenceForm";
+import ChoreRotationForm from "../components/chores/ChoreRotationForm";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useSubscriptionAccess } from '../components/hooks/useSubscriptionAccess';
@@ -43,6 +44,10 @@ export default function Chores() {
     recurrence_day: undefined,
     recurrence_date: undefined,
     auto_assign: true,
+    manual_rotation_enabled: false,
+    rotation_frequency: undefined,
+    rotation_person_order: undefined,
+    rotation_current_index: 0,
     custom_points: "",
     requires_approval: false,
     photo_required: false
@@ -70,6 +75,10 @@ export default function Chores() {
       recurrence_pattern: chore.recurrence_pattern || undefined,
       recurrence_day: chore.recurrence_day || undefined,
       recurrence_date: chore.recurrence_date || undefined,
+      manual_rotation_enabled: chore.manual_rotation_enabled || false,
+      rotation_frequency: chore.rotation_frequency || undefined,
+      rotation_person_order: chore.rotation_person_order || undefined,
+      rotation_current_index: chore.rotation_current_index || 0,
       custom_points: chore.custom_points || "",
       requires_approval: chore.requires_approval || false,
       photo_required: chore.photo_required || false
@@ -414,6 +423,9 @@ export default function Chores() {
               <ChoreRecurrenceForm formData={formData} setFormData={setFormData} />
             )}
 
+            {/* Manual Rotation Form */}
+            <ChoreRotationForm formData={formData} setFormData={setFormData} />
+
             <div className="flex flex-col sm:flex-row gap-3 md:gap-4 pt-4">
               <Button
                 type="button"
@@ -484,9 +496,14 @@ export default function Chores() {
                         <span className="body-font text-xs text-white">🔄 RECURRING</span>
                       </div>
                     )}
-                    {!chore.auto_assign && (
+                    {!chore.auto_assign && !chore.manual_rotation_enabled && (
                       <div className="funky-button px-3 py-1 bg-gray-200 border-2 border-gray-400">
                         <span className="body-font text-xs text-gray-600">MANUAL ONLY</span>
+                      </div>
+                    )}
+                    {chore.manual_rotation_enabled && (
+                      <div className="funky-button px-3 py-1 bg-[#2B59C3] border-2 border-[#5E3B85]">
+                        <span className="body-font text-xs text-white">🔄 ROTATING</span>
                       </div>
                     )}
                     {chore.requires_approval && (
