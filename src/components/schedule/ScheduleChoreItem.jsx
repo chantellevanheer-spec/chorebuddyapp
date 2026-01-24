@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Clock, Star } from 'lucide-react';
 import InteractiveCheckbox from '../ui/InteractiveCheckbox';
+import { AVATAR_COLORS } from '../lib/constants';
 
 const difficultyStars = {
   easy: 1,
@@ -18,7 +19,7 @@ const categoryColors = {
   other: "border-gray-400"
 };
 
-export default function ScheduleChoreItem({ assignment, chore, onComplete }) {
+export default function ScheduleChoreItem({ assignment, chore, person, onComplete }) {
   if (!chore) return null;
 
   const isCompleted = assignment.completed;
@@ -64,6 +65,18 @@ export default function ScheduleChoreItem({ assignment, chore, onComplete }) {
           </span>
         </div>
       </div>
+
+      {/* Person Display */}
+      {person && (
+        <div className="flex-shrink-0 text-center">
+          <div className={`funky-button w-14 h-14 rounded-full border-3 flex items-center justify-center ${AVATAR_COLORS[person.avatar_color] || 'bg-gray-200'}`}>
+            <span className="header-font text-xl text-white">
+              {person.name.charAt(0).toUpperCase()}
+            </span>
+          </div>
+          <p className="body-font text-sm mt-1.5 text-[#5E3B85] font-semibold">{person.name}</p>
+        </div>
+      )}
     </motion.div>
   );
 }
