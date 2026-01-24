@@ -41,7 +41,7 @@ export default function RoleSelection() {
     try {
       const userData = await User.me();
       
-      // If parent, create a family
+      // If parent, create a family and set admin role
       if (role === 'parent') {
         const family = await Family.create({
           name: `${userData.full_name}'s Family`,
@@ -50,9 +50,11 @@ export default function RoleSelection() {
           subscription_tier: 'free'
         });
 
+        // Parent who creates family becomes admin
         await User.updateMyUserData({
           family_id: family.id,
-          family_role: role
+          family_role: role,
+          role: 'admin'
         });
       } else {
         // Teen/Child - just set role, they'll join family via invite code
