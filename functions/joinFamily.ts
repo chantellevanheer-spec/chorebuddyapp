@@ -33,7 +33,8 @@ Deno.serve(async (req) => {
         if (existingPerson.length > 0) {
             return new Response(JSON.stringify({ 
                 success: true, 
-                familyId: family.id, 
+                familyId: family.id,
+                familyName: family.name,
                 personId: existingPerson[0].id,
                 message: 'You are already a member of this family.'
             }), { status: 200, headers: { 'Content-Type': 'application/json' } });
@@ -62,7 +63,8 @@ Deno.serve(async (req) => {
 
         return new Response(JSON.stringify({ 
             success: true, 
-            familyId: family.id, 
+            familyId: family.id,
+            familyName: family.name,
             personId: newPerson.id,
             message: 'Successfully joined the family!'
         }), { status: 200, headers: { 'Content-Type': 'application/json' } });

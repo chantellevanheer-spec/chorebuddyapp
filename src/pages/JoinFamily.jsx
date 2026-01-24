@@ -55,21 +55,21 @@ export default function JoinFamily() {
     setError('');
 
     try {
-      const { data, error: joinError } = await joinFamily({
+      const response = await joinFamily({
         inviteCode,
         email,
         name,
         role
       });
 
-      if (joinError) {
-        setError(joinError);
+      if (response.error) {
+        setError(response.error);
       } else {
         setSuccess(true);
-        setFamilyName(data.familyName);
+        setFamilyName(name || 'your family');
       }
     } catch (error) {
-      setError('Failed to join family. Please try again.');
+      setError(error.message || 'Failed to join family. Please try again.');
     } finally {
       setJoining(false);
     }
