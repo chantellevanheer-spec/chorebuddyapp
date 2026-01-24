@@ -7,7 +7,7 @@ import { format, startOfWeek, addDays } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-export default function ManualAssignmentModal({ isOpen, onClose, onAssign, chore, people, isProcessing }) {
+export default function ManualAssignmentModal({ isOpen, onClose, onAssign, chore, people, isProcessing, familyId }) {
   const [selectedPersonId, setSelectedPersonId] = useState('');
   const [weekStart, setWeekStart] = useState(format(startOfWeek(new Date()), 'yyyy-MM-dd'));
   const [dueDate, setDueDate] = useState(format(addDays(new Date(), 3), 'yyyy-MM-dd'));
@@ -21,7 +21,8 @@ export default function ManualAssignmentModal({ isOpen, onClose, onAssign, chore
       chore_id: chore.id,
       week_start: weekStart,
       due_date: dueDate,
-      completed: false
+      completed: false,
+      family_id: familyId
     });
 
     // Reset form
