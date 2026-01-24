@@ -327,6 +327,7 @@ export default function Account() {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+    </>
   );
 }
