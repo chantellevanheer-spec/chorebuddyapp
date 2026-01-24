@@ -21,8 +21,16 @@ Deno.serve(async (req) => {
             });
         }
 
-        // Get the person record
-        const person = await base44.asServiceRole.entities.Person.get(personId);
+        // Get the person record using user's context first (respects RLS)
+        let person;
+        try {
+            person = await base44.entities.Person.get(personId);
+        } catch (error) {
+            return new Response(JSON.stringify({ error: 'Person not found or not accessible' }), { 
+                status: 404, 
+                headers: { 'Content-Type': 'application/json' } 
+            });
+        }
         
         if (!person) {
             return new Response(JSON.stringify({ error: 'Person not found' }), { 
@@ -48,8 +56,7 @@ Deno.serve(async (req) => {
         }
 
         // Check if user is already linked to another person
-        const existingLink = await base44.asServiceRole.entities.Person.filter({
-            family_id: user.family_id,
+        const existingLink = await base44.entities.Person.filter({
             linked_user_id: user.id
         });
 
@@ -60,7 +67,7 @@ Deno.serve(async (req) => {
             });
         }
 
-        // Link the user to the person
+        // Link the user to the person using service role for the update
         await base44.asServiceRole.entities.Person.update(personId, {
             linked_user_id: user.id
         });
