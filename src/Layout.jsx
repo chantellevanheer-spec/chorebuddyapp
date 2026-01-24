@@ -59,14 +59,6 @@ const navigationItems = [
   active: "bg-green-500"
 },
 {
-  title: "Analytics",
-  url: createPageUrl("Analytics"),
-  icon: BarChart3,
-  color: "bg-[#C3B1E1] text-white",
-  hover: "hover:bg-[#b19dcb]",
-  active: "bg-[#b19dcb]"
-},
-{
   title: "Admin",
   url: createPageUrl("Admin"),
   icon: CheckCircle,
