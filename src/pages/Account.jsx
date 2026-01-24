@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { createPageUrl } from '@/utils';
 import { Link as RouterLink, Link } from 'react-router-dom';
-import { Loader2, User as UserIcon, Bell, Users, Settings, Shield, CreditCard, Link as LinkIcon, AlertCircle } from 'lucide-react';
+import { Loader2, User as UserIcon, Bell, Users, Settings, Shield, CreditCard, AlertCircle, Link2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { stripeCheckout } from '@/functions/stripeCheckout';
@@ -265,7 +265,7 @@ export default function Account() {
           {/* Account Linking */}
           <div className="funky-card p-8 mb-6">
             <h2 className="header-font text-3xl text-[#2B59C3] mb-6 flex items-center gap-3">
-              <LinkIcon className="w-8 h-8 text-[#FF6B35]" />
+              <Link2 className="w-8 h-8 text-[#FF6B35]" />
               Account Linking
             </h2>
             
@@ -302,7 +302,7 @@ export default function Account() {
                       onClick={() => setLinkModalOpen(true)}
                       className="funky-button bg-[#2B59C3] text-white border-2 border-[#5E3B85]"
                     >
-                      <LinkIcon className="w-4 h-4 mr-2" />
+                      <Link2 className="w-4 h-4 mr-2" />
                       Link My Account
                     </Button>
                   </div>
