@@ -241,6 +241,7 @@ export default function Chores() {
         chore={choreToAssign}
         people={people}
         isProcessing={isAssigning}
+        familyId={user?.family_id}
       />
 
       <BulkAssignmentModal
