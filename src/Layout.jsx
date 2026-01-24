@@ -43,6 +43,14 @@ const navigationItems = [
   active: "bg-[#b19dcb]"
 },
 {
+  title: "History",
+  url: createPageUrl("ChoreHistory"),
+  icon: CheckCircle,
+  color: "bg-green-500 text-white",
+  hover: "hover:bg-green-600",
+  active: "bg-green-600"
+},
+{
   title: "Store",
   url: createPageUrl("Store"),
   icon: Sparkles,

@@ -15,6 +15,7 @@ import Privacy from './pages/Privacy';
 import RoleSelection from './pages/RoleSelection';
 import Schedule from './pages/Schedule';
 import Store from './pages/Store';
+import ChoreHistory from './pages/ChoreHistory';
 import __Layout from './Layout.jsx';
 
 
@@ -36,6 +37,7 @@ export const PAGES = {
     "RoleSelection": RoleSelection,
     "Schedule": Schedule,
     "Store": Store,
+    "ChoreHistory": ChoreHistory,
 }
 
 export const pagesConfig = {
