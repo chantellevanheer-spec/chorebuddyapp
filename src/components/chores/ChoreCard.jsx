@@ -44,12 +44,12 @@ function ChoreCard({ assignment, chore, person, onComplete }) {
 
         {/* Person Avatar */}
         <div className="flex-shrink-0 text-center">
-          <div className={`funky-button w-12 h-12 rounded-full border-3 flex items-center justify-center ${AVATAR_COLORS[person.avatar_color] || 'bg-gray-200'}`}>
-            <span className="header-font text-lg text-white">
+          <div className={`funky-button w-14 h-14 rounded-full border-3 flex items-center justify-center ${AVATAR_COLORS[person.avatar_color] || 'bg-gray-200'}`}>
+            <span className="header-font text-xl text-white">
               {person.name.charAt(0).toUpperCase()}
             </span>
           </div>
-          <p className="body-font text-xs mt-1 text-[#5E3B85]">{person.name.split(' ')[0]}</p>
+          <p className="body-font text-sm mt-1.5 text-[#5E3B85] font-semibold">{person.name}</p>
         </div>
       </div>
     </div>
