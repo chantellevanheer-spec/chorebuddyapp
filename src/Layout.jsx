@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { User } from '@/entities/User';
 import { createPageUrl } from "@/utils";
-import { Home, Users, ClipboardList, Calendar, Sparkles, Zap, Settings, Loader2, Target, BarChart3, CheckCircle } from "lucide-react";
+import { Home, Users, ClipboardList, Calendar, Sparkles, Zap, Settings, Loader2, Target, CheckCircle } from "lucide-react";
 import PublicLayout from "./components/layout/PublicLayout";
 import CookieBanner from './components/ui/CookieBanner';
 import RealTimeBadge from './components/ui/RealTimeBadge';

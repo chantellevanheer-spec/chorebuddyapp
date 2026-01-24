@@ -1,6 +1,5 @@
 import Account from './pages/Account';
 import Admin from './pages/Admin';
-import Analytics from './pages/Analytics';
 import Chores from './pages/Chores';
 import Dashboard from './pages/Dashboard';
 import Goals from './pages/Goals';
@@ -22,7 +21,6 @@ import __Layout from './Layout.jsx';
 export const PAGES = {
     "Account": Account,
     "Admin": Admin,
-    "Analytics": Analytics,
     "Chores": Chores,
     "Dashboard": Dashboard,
     "Goals": Goals,
