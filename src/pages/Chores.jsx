@@ -146,18 +146,25 @@ export default function Chores() {
 
   const handleAssignChore = async (assignments) => {
     setIsAssigning(true);
+    console.log("[Chores] handleAssignChore called with:", assignments);
+    console.log("[Chores] User family_id:", user?.family_id);
     try {
       // assignments is now an array from the enhanced modal
-      await Promise.all(assignments.map(a => Assignment.create({
-        ...a,
-        family_id: user.family_id
-      })));
+      const createdAssignments = await Promise.all(assignments.map(a => {
+        const assignmentData = {
+          ...a,
+          family_id: user.family_id
+        };
+        console.log("[Chores] Creating assignment:", assignmentData);
+        return Assignment.create(assignmentData);
+      }));
+      console.log("[Chores] Created assignments:", createdAssignments);
       toast.success(`Successfully created ${assignments.length} assignment${assignments.length > 1 ? 's' : ''}!`);
       setAssignModalOpen(false);
       setChoreToAssign(null);
       await fetchData();
     } catch (error) {
-      console.error("Error assigning chore:", error);
+      console.error("[Chores] Error assigning chore:", error);
       toast.error("Failed to assign chore. Please try again.");
     } finally {
       setIsAssigning(false);

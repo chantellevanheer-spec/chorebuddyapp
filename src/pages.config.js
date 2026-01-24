@@ -1,5 +1,6 @@
 import Account from './pages/Account';
 import Admin from './pages/Admin';
+import ChoreHistory from './pages/ChoreHistory';
 import Chores from './pages/Chores';
 import Dashboard from './pages/Dashboard';
 import Goals from './pages/Goals';
@@ -15,13 +16,13 @@ import Privacy from './pages/Privacy';
 import RoleSelection from './pages/RoleSelection';
 import Schedule from './pages/Schedule';
 import Store from './pages/Store';
-import ChoreHistory from './pages/ChoreHistory';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "Account": Account,
     "Admin": Admin,
+    "ChoreHistory": ChoreHistory,
     "Chores": Chores,
     "Dashboard": Dashboard,
     "Goals": Goals,
@@ -37,7 +38,6 @@ export const PAGES = {
     "RoleSelection": RoleSelection,
     "Schedule": Schedule,
     "Store": Store,
-    "ChoreHistory": ChoreHistory,
 }
 
 export const pagesConfig = {
