@@ -138,18 +138,27 @@ export default function EnhancedAssignmentModal({
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    const assignments = assignmentsPreview.map(preview => ({
-      person_id: preview.person_id,
-      chore_id: chore.id,
-      week_start: preview.week_start,
-      due_date: dueDate,
-      completed: false,
-      family_id: familyId,
-      is_shared: preview.is_shared || false,
-      shared_with: preview.shared_with || null,
-      is_rotation: preview.is_rotation || false
-    }));
+    console.log("[EnhancedAssignmentModal] handleSubmit called");
+    console.log("[EnhancedAssignmentModal] chore:", chore);
+    console.log("[EnhancedAssignmentModal] familyId prop:", familyId);
+    console.log("[EnhancedAssignmentModal] assignmentsPreview:", assignmentsPreview);
+    
+    const assignments = assignmentsPreview.map(preview => {
+      const assignment = {
+        person_id: preview.person_id,
+        chore_id: chore.id,
+        week_start: preview.week_start,
+        due_date: dueDate,
+        completed: false,
+        is_shared: preview.is_shared || false,
+        shared_with: preview.shared_with || null,
+        is_rotation: preview.is_rotation || false
+      };
+      console.log("[EnhancedAssignmentModal] Created assignment object:", assignment);
+      return assignment;
+    });
 
+    console.log("[EnhancedAssignmentModal] Calling onAssign with:", assignments);
     onAssign(assignments);
 
     // Reset form
