@@ -20,7 +20,7 @@ import { useSubscriptionAccess } from '../components/hooks/useSubscriptionAccess
 import LimitReachedModal from "../components/ui/LimitReachedModal";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import ManualAssignmentModal from "../components/chores/ManualAssignmentModal";
+import EnhancedAssignmentModal from "../components/chores/EnhancedAssignmentModal";
 import BulkAssignmentModal from "../components/chores/BulkAssignmentModal";
 
 export default function Chores() {
@@ -144,14 +144,15 @@ export default function Chores() {
     setAssignModalOpen(true);
   };
 
-  const handleAssignChore = async (assignmentData) => {
+  const handleAssignChore = async (assignments) => {
     setIsAssigning(true);
     try {
-      await Assignment.create({
-        ...assignmentData,
+      // assignments is now an array from the enhanced modal
+      await Promise.all(assignments.map(a => Assignment.create({
+        ...a,
         family_id: user.family_id
-      });
-      toast.success("Chore assigned successfully!");
+      })));
+      toast.success(`Successfully created ${assignments.length} assignment${assignments.length > 1 ? 's' : ''}!`);
       setAssignModalOpen(false);
       setChoreToAssign(null);
       await fetchData();
@@ -231,7 +232,7 @@ export default function Chores() {
         requiredTier={getTierDisplayName(getRequiredTier('max_chores'))}
       />
 
-      <ManualAssignmentModal
+      <EnhancedAssignmentModal
         isOpen={isAssignModalOpen}
         onClose={() => {
           setAssignModalOpen(false);
