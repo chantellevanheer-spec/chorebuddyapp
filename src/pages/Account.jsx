@@ -5,13 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { createPageUrl } from '@/utils';
 import { Link as RouterLink, Link } from 'react-router-dom';
-import { Loader2, User as UserIcon, Bell, Users, Settings, Shield, CreditCard, AlertCircle, Link2, Sparkles } from 'lucide-react';
+import { Loader2, User as UserIcon, Bell, Users, Settings, Shield, CreditCard, AlertCircle, Link2, Sparkles, Palette, Crown } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { stripeCheckout } from '@/functions/stripeCheckout';
 import { linkUserToPerson } from '@/functions/linkUserToPerson';
 import LinkAccountModal from '../components/people/LinkAccountModal';
 import OnboardingTour from '../components/onboarding/OnboardingTour';
+import AvatarSelector from '../components/profile/AvatarSelector';
+import ThemeSelector from '../components/profile/ThemeSelector';
+import { useTheme } from '../components/contexts/ThemeContext';
 
 export default function Account() {
   const [user, setUser] = useState(null);
@@ -34,6 +37,12 @@ export default function Account() {
           receives_achievement_alerts: userData.receives_achievement_alerts ?? true,
           receives_weekly_reports: userData.receives_weekly_reports ?? false
         });
+
+        // Load personalization settings
+        if (userData.data?.avatar) setAvatarIcon(userData.data.avatar);
+        if (userData.data?.chore_preferences) {
+          setChorePreferences(userData.data.chore_preferences);
+        }
 
         if (userData.family_id) {
           // Fetch family people
@@ -58,18 +67,20 @@ export default function Account() {
   };
 
   const handleSaveChanges = async () => {
-    if (!user) return; // Should not happen if component renders
+    if (!user) return;
     setIsSaving(true);
     try {
       await User.updateMyUserData({
         receives_chore_reminders: user.receives_chore_reminders,
         receives_achievement_alerts: user.receives_achievement_alerts,
-        receives_weekly_reports: user.receives_weekly_reports
+        receives_weekly_reports: user.receives_weekly_reports,
+        avatar: avatarIcon,
+        chore_preferences: chorePreferences
       });
       toast.success("Preferences saved!");
     } catch (error) {
       toast.error("Failed to save preferences.");
-      console.error("Failed to save notification preferences:", error);
+      console.error("Failed to save preferences:", error);
     } finally {
       setIsSaving(false);
     }
@@ -164,10 +175,15 @@ export default function Account() {
       </div>
 
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 funky-card p-2 h-auto">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 funky-card p-2 h-auto">
           <TabsTrigger value="profile" className="mx-3 my-1 px-3 py-1 text-sm font-medium funky-button inline-flex items-center justify-center whitespace-nowrap rounded-sm ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm md:text-base">
             <UserIcon className="w-4 h-4 mr-2" /> Profile
           </TabsTrigger>
+          {isPremium && (
+            <TabsTrigger value="personalize" className="mx-3 my-1 px-3 py-1 text-sm font-medium funky-button inline-flex items-center justify-center whitespace-nowrap rounded-sm ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm md:text-base">
+              <Crown className="w-4 h-4 mr-2" /> Personalize
+            </TabsTrigger>
+          )}
           <TabsTrigger value="preferences" className="mx-3 my-1 px-3 py-1 text-sm font-medium funky-button inline-flex items-center justify-center whitespace-nowrap rounded-sm ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm md:text-base">
             <Bell className="w-4 h-4 mr-2" /> Preferences
           </TabsTrigger>
@@ -224,6 +240,62 @@ export default function Account() {
                 </Button>
               </div>
           </div>
+        </TabsContent>
+
+        <TabsContent value="personalize" className="mt-6">
+          {/* Avatar Selection */}
+          <div className="funky-card p-8 mb-6">
+            <div className="flex items-center gap-3 mb-6">
+              <Crown className="w-8 h-8 text-yellow-500" />
+              <h2 className="header-font text-3xl text-[#2B59C3]">Choose Your Avatar</h2>
+            </div>
+            <AvatarSelector selected={avatarIcon} onSelect={setAvatarIcon} />
+          </div>
+
+          {/* Theme Selection */}
+          <div className="funky-card p-8 mb-6">
+            <div className="flex items-center gap-3 mb-6">
+              <Palette className="w-8 h-8 text-[#C3B1E1]" />
+              <h2 className="header-font text-3xl text-[#2B59C3]">Dashboard Theme</h2>
+            </div>
+            <ThemeSelector selected={currentTheme} onSelect={updateTheme} />
+          </div>
+
+          {/* Chore Preferences */}
+          <div className="funky-card p-8 mb-6">
+            <h2 className="header-font text-3xl text-[#2B59C3] mb-6">Chore Assignment Preferences</h2>
+            <div className="space-y-6">
+              <div className="flex items-center justify-between p-4 funky-card border-2 border-dashed bg-white/50">
+                <div>
+                  <h3 className="body-font text-lg text-[#5E3B85]">Auto-Assign Chores</h3>
+                  <p className="body-font-light text-sm text-gray-600">Let ChoreAI automatically assign chores to you</p>
+                </div>
+                <Switch
+                  checked={chorePreferences.auto_assign_enabled}
+                  onCheckedChange={(value) => setChorePreferences({ ...chorePreferences, auto_assign_enabled: value })}
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 funky-card border-2 border-dashed bg-white/50">
+                <div>
+                  <h3 className="body-font text-lg text-[#5E3B85]">Avoid Weekend Chores</h3>
+                  <p className="body-font-light text-sm text-gray-600">Prefer chores on weekdays when possible</p>
+                </div>
+                <Switch
+                  checked={chorePreferences.avoid_weekends}
+                  onCheckedChange={(value) => setChorePreferences({ ...chorePreferences, avoid_weekends: value })}
+                />
+              </div>
+            </div>
+          </div>
+
+          <Button
+            onClick={handleSaveChanges}
+            disabled={isSaving}
+            className="funky-button bg-[#5E3B85] text-white px-6 py-3 text-lg header-font w-full sm:w-auto"
+          >
+            {isSaving ? 'Saving...' : 'Save All Changes'}
+          </Button>
         </TabsContent>
 
         <TabsContent value="preferences" className="mt-6">

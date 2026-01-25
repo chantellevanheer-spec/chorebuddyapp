@@ -7,6 +7,7 @@ import PublicLayout from "./components/layout/PublicLayout";
 import CookieBanner from './components/ui/CookieBanner';
 import RealTimeBadge from './components/ui/RealTimeBadge';
 import { DataProvider } from './components/contexts/DataContext';
+import { ThemeProvider } from './components/contexts/ThemeContext';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import OnboardingTour from './components/onboarding/OnboardingTour';
 
@@ -403,15 +404,17 @@ export default function LayoutWrapper(props) {
 
   return (
     <ErrorBoundary>
-      <DataProvider>
-        <AppLayout {...props} showOnboarding={showOnboarding} setShowOnboarding={setShowOnboarding} />
-        <RealTimeBadge />
-        <CookieBanner />
-        <OnboardingTour 
-          isOpen={showOnboarding} 
-          onClose={() => setShowOnboarding(false)} 
-        />
-      </DataProvider>
+      <ThemeProvider>
+        <DataProvider>
+          <AppLayout {...props} showOnboarding={showOnboarding} setShowOnboarding={setShowOnboarding} />
+          <RealTimeBadge />
+          <CookieBanner />
+          <OnboardingTour 
+            isOpen={showOnboarding} 
+            onClose={() => setShowOnboarding(false)} 
+          />
+        </DataProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }
