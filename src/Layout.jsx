@@ -172,6 +172,18 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
     <div className="min-h-screen bg-[#FDFBF5] text-[#5E3B85]">
       <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;800&display=swap');
+
+          /* Theme-based dynamic styling */
+          [data-theme="ocean"] .theme-primary { color: var(--color-primary, #2B59C3); }
+          [data-theme="ocean"] .theme-primary-bg { background-color: var(--color-primary, #2B59C3); }
+          [data-theme="sunset"] .theme-primary { color: var(--color-primary, #FF6B35); }
+          [data-theme="sunset"] .theme-primary-bg { background-color: var(--color-primary, #FF6B35); }
+          [data-theme="forest"] .theme-primary { color: var(--color-primary, #3A7D44); }
+          [data-theme="forest"] .theme-primary-bg { background-color: var(--color-primary, #3A7D44); }
+          [data-theme="lavender"] .theme-primary { color: var(--color-primary, #C3B1E1); }
+          [data-theme="lavender"] .theme-primary-bg { background-color: var(--color-primary, #C3B1E1); }
+          [data-theme="candy"] .theme-primary { color: var(--color-primary, #F7A1C4); }
+          [data-theme="candy"] .theme-primary-bg { background-color: var(--color-primary, #F7A1C4); }
           
           .funky-card {
             background-color: white;

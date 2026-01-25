@@ -15,6 +15,7 @@ import OnboardingTour from '@/components/onboarding/OnboardingTour';
 import AvatarSelector from '@/components/profile/AvatarSelector';
 import ThemeSelector from '@/components/profile/ThemeSelector';
 import { useTheme } from '@/components/contexts/ThemeContext';
+import NotificationPreferences from '@/components/profile/NotificationPreferences';
 
 export default function Account() {
   const [user, setUser] = useState(null);
@@ -32,6 +33,7 @@ export default function Account() {
     preferred_days: [],
     avoid_weekends: false
   });
+  const [notificationPreferences, setNotificationPreferences] = useState({});
   const { currentTheme, updateTheme } = useTheme();
   const isPremium = user?.subscription_tier === 'premium';
 
@@ -50,6 +52,9 @@ export default function Account() {
         if (userData.data?.avatar) setAvatarIcon(userData.data.avatar);
         if (userData.data?.chore_preferences) {
           setChorePreferences(userData.data.chore_preferences);
+        }
+        if (userData.data?.notification_preferences) {
+          setNotificationPreferences(userData.data.notification_preferences);
         }
 
         if (userData.family_id) {
@@ -83,7 +88,8 @@ export default function Account() {
         receives_achievement_alerts: user.receives_achievement_alerts,
         receives_weekly_reports: user.receives_weekly_reports,
         avatar: avatarIcon,
-        chore_preferences: chorePreferences
+        chore_preferences: chorePreferences,
+        notification_preferences: notificationPreferences
       });
       toast.success("Preferences saved!");
     } catch (error) {
@@ -309,38 +315,45 @@ export default function Account() {
         <TabsContent value="preferences" className="mt-6">
           <div className="funky-card p-8">
             <h2 className="header-font text-3xl text-[#2B59C3] mb-6">Notification Preferences</h2>
-            <div className="space-y-6">
-              <div className="flex items-center justify-between p-4 funky-card border-2 border-dashed bg-white/50">
-                <div>
-                  <h3 className="body-font text-lg text-[#5E3B85]">Chore Reminders</h3>
-                  <p className="body-font-light text-sm text-gray-600">Get notified about upcoming chores.</p>
+            {isPremium ? (
+              <NotificationPreferences
+                preferences={notificationPreferences}
+                onChange={setNotificationPreferences}
+              />
+            ) : (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between p-4 funky-card border-2 border-dashed bg-white/50">
+                  <div>
+                    <h3 className="body-font text-lg text-[#5E3B85]">Chore Reminders</h3>
+                    <p className="body-font-light text-sm text-gray-600">Get notified about upcoming chores</p>
+                  </div>
+                  <Switch
+                    checked={user.receives_chore_reminders}
+                    onCheckedChange={(value) => handleToggleChange('receives_chore_reminders', value)}
+                  />
                 </div>
-                <Switch
-                  checked={user.receives_chore_reminders}
-                  onCheckedChange={(value) => handleToggleChange('receives_chore_reminders', value)}
-                />
-              </div>
-              <div className="flex items-center justify-between p-4 funky-card border-2 border-dashed bg-white/50">
-                 <div>
-                  <h3 className="body-font text-lg text-[#5E3B85]">Achievement Alerts</h3>
-                  <p className="body-font-light text-sm text-gray-600">Celebrate completed tasks.</p>
+                <div className="flex items-center justify-between p-4 funky-card border-2 border-dashed bg-white/50">
+                   <div>
+                    <h3 className="body-font text-lg text-[#5E3B85]">Achievement Alerts</h3>
+                    <p className="body-font-light text-sm text-gray-600">Celebrate completed tasks</p>
+                  </div>
+                  <Switch
+                    checked={user.receives_achievement_alerts}
+                    onCheckedChange={(value) => handleToggleChange('receives_achievement_alerts', value)}
+                  />
                 </div>
-                <Switch
-                  checked={user.receives_achievement_alerts}
-                  onCheckedChange={(value) => handleToggleChange('receives_achievement_alerts', value)}
-                />
-              </div>
-              <div className="flex items-center justify-between p-4 funky-card border-2 border-dashed bg-white/50">
-                 <div>
-                  <h3 className="body-font text-lg text-[#5E3B85]">Weekly Reports</h3>
-                  <p className="body-font-light text-sm text-gray-600">Receive family progress summaries.</p>
+                <div className="flex items-center justify-between p-4 funky-card border-2 border-dashed bg-white/50">
+                   <div>
+                    <h3 className="body-font text-lg text-[#5E3B85]">Weekly Reports</h3>
+                    <p className="body-font-light text-sm text-gray-600">Receive family progress summaries</p>
+                  </div>
+                  <Switch
+                    checked={user.receives_weekly_reports}
+                    onCheckedChange={(value) => handleToggleChange('receives_weekly_reports', value)}
+                  />
                 </div>
-                <Switch
-                  checked={user.receives_weekly_reports}
-                  onCheckedChange={(value) => handleToggleChange('receives_weekly_reports', value)}
-                />
               </div>
-            </div>
+            )}
             <Button
               onClick={handleSaveChanges}
               disabled={isSaving}
