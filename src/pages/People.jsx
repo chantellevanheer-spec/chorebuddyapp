@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from "react";
 import { useData } from '../components/contexts/DataContext';
 import { Button } from "@/components/ui/button";
@@ -7,9 +6,11 @@ import { toast } from "sonner";
 import PersonCard from "../components/people/PersonCard";
 import PersonFormModal from "../components/people/PersonFormModal";
 import FamilyInviteModal from "../components/people/FamilyInviteModal";
+import LinkAccountModal from "../components/people/LinkAccountModal";
 import { useSubscriptionAccess } from '../components/hooks/useSubscriptionAccess';
 import LimitReachedModal from "../components/ui/LimitReachedModal";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
+import { linkUserToPerson } from '@/functions/linkUserToPerson';
 
 export default function People() {
   const { people, assignments, user, loading, isProcessing, addPerson, updatePerson, deletePerson } = useData();
@@ -19,6 +20,9 @@ export default function People() {
   const [personToEdit, setPersonToEdit] = useState(null);
   const [personToDelete, setPersonToDelete] = useState(null);
   const [isLimitModalOpen, setLimitModalOpen] = useState(false);
+  const [isLinkModalOpen, setLinkModalOpen] = useState(false);
+  const [personToLink, setPersonToLink] = useState(null);
+  const [isLinking, setIsLinking] = useState(false);
 
   const personStats = useMemo(() => {
     const stats = {};
@@ -83,6 +87,31 @@ export default function People() {
     setInviteModalOpen(false);
   };
 
+  const handleShowLinkModal = (person) => {
+    setPersonToLink(person);
+    setLinkModalOpen(true);
+  };
+
+  const handleLinkAccount = async (personId) => {
+    setIsLinking(true);
+    try {
+      const { error } = await linkUserToPerson({ personId });
+      if (error) {
+        toast.error(error.message || 'Failed to link account');
+      } else {
+        toast.success('Account linked successfully!');
+        setLinkModalOpen(false);
+        setPersonToLink(null);
+        // Refresh page to update UI
+        window.location.reload();
+      }
+    } catch (error) {
+      toast.error('Failed to link account');
+    } finally {
+      setIsLinking(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -114,6 +143,16 @@ export default function People() {
         isOpen={isInviteModalOpen}
         onClose={() => setInviteModalOpen(false)}
         onSuccess={handleInviteSuccess}
+      />
+      <LinkAccountModal
+        isOpen={isLinkModalOpen}
+        onClose={() => {
+          setLinkModalOpen(false);
+          setPersonToLink(null);
+        }}
+        people={personToLink ? [personToLink] : people}
+        onLink={handleLinkAccount}
+        isProcessing={isLinking}
       />
       <ConfirmDialog
         isOpen={!!personToDelete}
@@ -166,6 +205,7 @@ export default function People() {
               currentChores={personStats[person.id]?.current || 0}
               onEdit={handleShowEditForm}
               onDelete={() => setPersonToDelete(person)}
+              onLinkAccount={handleShowLinkModal}
             />
           ))}
         </div>

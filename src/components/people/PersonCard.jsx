@@ -1,12 +1,17 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Link as LinkIcon, CheckCircle } from "lucide-react";
+import { Edit, Trash2, Link as LinkIcon, CheckCircle, UserPlus } from "lucide-react";
 import { AVATAR_COLORS } from '@/components/lib/constants';
 
-function PersonCard({ person, completedChores, currentChores, onEdit, onDelete }) {
+function PersonCard({ person, completedChores, currentChores, onEdit, onDelete, onLinkAccount }) {
   return (
     <div className={`funky-card-hover funky-card p-6 border-4 relative group ${AVATAR_COLORS[person.avatar_color]}`}>
       <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        {!person.linked_user_id && onLinkAccount && (
+          <Button size="icon" variant="ghost" onClick={() => onLinkAccount(person)} className="h-8 w-8 rounded-full hover:bg-black/10" title="Link account">
+            <UserPlus className="w-4 h-4 text-green-600" />
+          </Button>
+        )}
         <Button size="icon" variant="ghost" onClick={() => onEdit(person)} className="h-8 w-8 rounded-full hover:bg-black/10">
           <Edit className="w-4 h-4 text-[#5E3B85]" />
         </Button>

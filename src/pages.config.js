@@ -3,6 +3,7 @@ import Admin from './pages/Admin';
 import ChoreHistory from './pages/ChoreHistory';
 import Chores from './pages/Chores';
 import Dashboard from './pages/Dashboard';
+import FamilyLinking from './pages/FamilyLinking';
 import Goals from './pages/Goals';
 import Help from './pages/Help';
 import Home from './pages/Home';
@@ -16,7 +17,6 @@ import Privacy from './pages/Privacy';
 import RoleSelection from './pages/RoleSelection';
 import Schedule from './pages/Schedule';
 import Store from './pages/Store';
-import FamilyLinking from './pages/FamilyLinking';
 import __Layout from './Layout.jsx';
 
 
@@ -26,6 +26,7 @@ export const PAGES = {
     "ChoreHistory": ChoreHistory,
     "Chores": Chores,
     "Dashboard": Dashboard,
+    "FamilyLinking": FamilyLinking,
     "Goals": Goals,
     "Help": Help,
     "Home": Home,
@@ -39,7 +40,6 @@ export const PAGES = {
     "RoleSelection": RoleSelection,
     "Schedule": Schedule,
     "Store": Store,
-    "FamilyLinking": FamilyLinking,
 }
 
 export const pagesConfig = {
