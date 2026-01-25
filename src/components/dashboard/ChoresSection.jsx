@@ -2,7 +2,7 @@ import React from "react";
 import ChoreCard from "../chores/ChoreCard";
 import { AlertCircle } from "lucide-react";
 
-export default function ChoresSection({ pendingAssignments, completedAssignments, chores, people, completeChore, user, isParent = true }) {
+export default function ChoresSection({ pendingAssignments = [], completedAssignments = [], chores = [], people = [], completeChore, user, isParent = true }) {
   // Always show the section - even if empty, so users can see the "To Do" area
   const showEmptyState = pendingAssignments.length === 0 && completedAssignments.length === 0;
 
