@@ -1,7 +1,7 @@
 import React from "react";
 import { Sparkles, Brain, TrendingUp, Clock } from "lucide-react";
 
-export default function ChoreAI({ assignments, people, chores }) {
+export default function ChoreAI({ assignments = [], people = [], chores = [] }) {
   const calculateTimeSaved = () => {
     const completedAssignments = assignments.filter((a) => a.completed);
     const totalMinutes = completedAssignments.reduce((acc, assignment) => {
