@@ -5,12 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { createPageUrl } from '@/utils';
 import { Link as RouterLink, Link } from 'react-router-dom';
-import { Loader2, User as UserIcon, Bell, Users, Settings, Shield, CreditCard, AlertCircle, Link2 } from 'lucide-react';
+import { Loader2, User as UserIcon, Bell, Users, Settings, Shield, CreditCard, AlertCircle, Link2, Sparkles } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { stripeCheckout } from '@/functions/stripeCheckout';
 import { linkUserToPerson } from '@/functions/linkUserToPerson';
 import LinkAccountModal from '../components/people/LinkAccountModal';
+import OnboardingTour from '../components/onboarding/OnboardingTour';
 
 export default function Account() {
   const [user, setUser] = useState(null);
@@ -148,10 +149,17 @@ export default function Account() {
           <div className="funky-button w-16 h-16 md:w-20 md:h-20 bg-[#5E3B85] flex items-center justify-center">
             <Settings className="w-8 h-8 md:w-10 md:h-10 text-white" />
           </div>
-          <div>
+          <div className="flex-1">
             <h1 className="header-font text-4xl md:text-5xl text-[#2B59C3]">Account & Settings</h1>
             <p className="body-font-light text-gray-600 mt-2">Manage your profile, family, and preferences.</p>
           </div>
+          <Button
+            onClick={() => setShowOnboarding(true)}
+            className="funky-button bg-[#C3B1E1] text-white hidden md:flex"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            Restart Tour
+          </Button>
         </div>
       </div>
 
@@ -328,7 +336,23 @@ export default function Account() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Mobile restart tour button */}
+      <div className="md:hidden fixed bottom-20 right-4 z-40">
+        <Button
+          onClick={() => setShowOnboarding(true)}
+          className="funky-button bg-[#C3B1E1] text-white shadow-lg"
+        >
+          <Sparkles className="w-4 h-4 mr-2" />
+          Restart Tour
+        </Button>
       </div>
+      </div>
+
+      <OnboardingTour 
+        isOpen={showOnboarding} 
+        onClose={() => setShowOnboarding(false)} 
+      />
     </>
   );
 }

@@ -77,12 +77,11 @@ const navigationItems = [
 
 const publicPages = ['Home', 'Index', 'Pricing', 'Help', 'Privacy', 'PaymentSuccess', 'PaymentCancel', 'JoinFamily', 'RoleSelection'];
 
-function AppLayout({ children, currentPageName }) {
+function AppLayout({ children, currentPageName, showOnboarding, setShowOnboarding }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
 
   const isPublicPage = publicPages.includes(currentPageName);
@@ -375,10 +374,12 @@ function AppLayout({ children, currentPageName }) {
 }
 
 export default function LayoutWrapper(props) {
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
   return (
     <ErrorBoundary>
       <DataProvider>
-        <AppLayout {...props} />
+        <AppLayout {...props} showOnboarding={showOnboarding} setShowOnboarding={setShowOnboarding} />
         <RealTimeBadge />
         <CookieBanner />
         <OnboardingTour 
