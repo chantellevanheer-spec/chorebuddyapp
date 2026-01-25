@@ -9,6 +9,7 @@ import { FamilyGoal } from "@/entities/FamilyGoal";
 import { ChoreCompletion } from "@/entities/ChoreCompletion";
 import { Family } from "@/entities/Family";
 import { useRealTimeSync } from '../hooks/useRealTimeSync';
+import { useAssignmentNotifications } from '../hooks/useAssignmentNotifications';
 import { toast } from "sonner";
 
 const DataContext = createContext();
