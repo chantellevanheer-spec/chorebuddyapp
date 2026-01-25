@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { ClipboardList, Users, Sparkles, AlertCircle } from "lucide-react";
 
 export default function DashboardEmptyState({ currentWeekAssignments, people, chores, user }) {
-  if (currentWeekAssignments.length > 0) return null;
+  if (currentWeekAssignments?.length > 0) return null;
 
-  const noPeople = people.length === 0;
-  const noChores = chores.length === 0;
+  const noPeople = !people || people.length === 0;
+  const noChores = !chores || chores.length === 0;
   const isAdmin = user?.role === 'admin' || user?.family_role === 'parent';
 
   // Complete Empty State - No People AND No Chores
