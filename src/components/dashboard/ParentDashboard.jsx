@@ -10,7 +10,7 @@ import DashboardSummary from './DashboardSummary';
 import ChoresSection from './ChoresSection';
 import DashboardEmptyState from './DashboardEmptyState';
 
-export default function ParentDashboard() {
+export default function ParentDashboard({ assignChoresForWeek, isAssigning }) {
   const { people = [], chores = [], assignments = [], loading } = useData();
   const [activeTab, setActiveTab] = useState('overview');
 
@@ -32,7 +32,10 @@ export default function ParentDashboard() {
   if (!hasData) {
     return (
       <div className="mx-24 pb-32 lg:pb-8">
-        <DashboardHeader />
+        <DashboardHeader 
+          assignChoresForWeek={assignChoresForWeek}
+          isAssigning={isAssigning}
+        />
         <DashboardEmptyState />
       </div>
     );
@@ -40,8 +43,11 @@ export default function ParentDashboard() {
 
   return (
     <div className="mx-24 pb-32 lg:pb-8">
-      <DashboardHeader />
-      
+      <DashboardHeader 
+        assignChoresForWeek={assignChoresForWeek}
+        isAssigning={isAssigning}
+      />
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4 funky-card p-2 h-auto mb-6">
           <TabsTrigger 

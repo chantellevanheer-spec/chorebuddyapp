@@ -191,7 +191,10 @@ export default function Dashboard() {
 
         {completedChoreIdWithConfetti && <Confetti />}
         
-        <ParentDashboard />
+        <ParentDashboard 
+          assignChoresForWeek={assignChoresForWeek}
+          isAssigning={isAssigning}
+        />
       </div>
     );
   }
