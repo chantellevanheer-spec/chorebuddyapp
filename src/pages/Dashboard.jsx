@@ -211,7 +211,7 @@ export default function Dashboard() {
 
       {completedChoreIdWithConfetti && <Confetti />}
       
-      <div className="mx-4 md:mx-8 lg:mx-20 pb-32 lg:pb-8 space-y-6 md:space-y-8">
+      <div className="pb-32 lg:pb-8 space-y-6 md:space-y-8">
         <div className="funky-card p-6 md:p-8">
           <h1 className="header-font text-3xl md:text-4xl lg:text-5xl text-[#2B59C3] mb-2">
             My Chores
