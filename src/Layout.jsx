@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { User } from '@/entities/User';
 import { createPageUrl } from "@/utils";
-import { Home, Users, ClipboardList, Calendar, Sparkles, Zap, Settings, Loader2, Target, CheckCircle } from "lucide-react";
+import { Home, Users, ClipboardList, Calendar, Sparkles, Zap, Settings, Loader2, Target, CheckCircle, MessageCircle, Megaphone } from "lucide-react";
 import PublicLayout from "./components/layout/PublicLayout";
 import CookieBanner from './components/ui/CookieBanner';
 import RealTimeBadge from './components/ui/RealTimeBadge';
@@ -50,6 +50,30 @@ const navigationItems = [
   color: "bg-green-500 text-white",
   hover: "hover:bg-green-600",
   active: "bg-green-600"
+},
+{
+  title: "Messages",
+  url: createPageUrl("Messages"),
+  icon: MessageCircle,
+  color: "bg-[#C3B1E1] text-white",
+  hover: "hover:bg-[#b19dcb]",
+  active: "bg-[#b19dcb]"
+},
+{
+  title: "Calendar",
+  url: createPageUrl("FamilyCalendar"),
+  icon: Calendar,
+  color: "bg-[#FF6B35] text-white",
+  hover: "hover:bg-[#fa5a1f]",
+  active: "bg-[#fa5a1f]"
+},
+{
+  title: "Notices",
+  url: createPageUrl("NoticeBoard"),
+  icon: Megaphone,
+  color: "bg-[#F7A1C4] text-pink-800",
+  hover: "hover:bg-[#f590b8]",
+  active: "bg-[#f590b8]"
 },
 {
   title: "Store",
