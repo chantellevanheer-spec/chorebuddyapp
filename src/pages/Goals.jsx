@@ -21,7 +21,7 @@ export default function Goals() {
 
   // Calculate current family points
   const familyPoints = useMemo(() => {
-    return rewards.filter(r => r.points > 0).reduce((sum, r) => sum + r.points, 0);
+    return rewards.filter((r) => r.points > 0).reduce((sum, r) => sum + r.points, 0);
   }, [rewards]);
 
   const fetchGoals = async () => {
@@ -43,18 +43,18 @@ export default function Goals() {
   // Update goal progress based on current points (debounced to avoid excessive updates)
   useEffect(() => {
     const updateGoalProgress = async () => {
-      const updates = goals.filter(goal => 
-        goal.status === 'active' && goal.current_points !== familyPoints
+      const updates = goals.filter((goal) =>
+      goal.status === 'active' && goal.current_points !== familyPoints
       );
 
       for (const goal of updates) {
         await FamilyGoal.update(goal.id, { current_points: familyPoints });
-        
+
         // Check if goal is completed
         if (familyPoints >= goal.target_points) {
-          await FamilyGoal.update(goal.id, { 
-            status: 'completed', 
-            completed_date: new Date().toISOString() 
+          await FamilyGoal.update(goal.id, {
+            status: 'completed',
+            completed_date: new Date().toISOString()
           });
           toast.success(`🎉 Family goal "${goal.title}" completed!`);
         }
@@ -62,10 +62,10 @@ export default function Goals() {
 
       // Check for expired goals
       const now = new Date();
-      const expiredGoals = goals.filter(goal => 
-        goal.status === 'active' && goal.end_date && isAfter(now, parseISO(goal.end_date))
+      const expiredGoals = goals.filter((goal) =>
+      goal.status === 'active' && goal.end_date && isAfter(now, parseISO(goal.end_date))
       );
-      
+
       for (const goal of expiredGoals) {
         await FamilyGoal.update(goal.id, { status: 'expired' });
       }
@@ -139,22 +139,22 @@ export default function Goals() {
     return <LoadingSpinner size="large" message="Loading family goals..." />;
   }
 
-  const activeGoals = goals.filter(g => g.status === 'active');
-  const completedGoals = goals.filter(g => g.status === 'completed');
+  const activeGoals = goals.filter((g) => g.status === 'active');
+  const completedGoals = goals.filter((g) => g.status === 'completed');
 
   return (
-    <FeatureGate 
+    <FeatureGate
       feature="family_goals"
-      customMessage="Family Goals help your household work together towards shared rewards. Available on Basic and Premium plans."
-    >
-      <div className="mx-20 pb-32 space-y-8 lg:pb-8">
+      customMessage="Family Goals help your household work together towards shared rewards. Available on Basic and Premium plans.">
+
+      <div className="mx-1 pb-2 space-y-8 lg:pb-8">
         <GoalFormModal
           isOpen={isFormModalOpen}
           onClose={() => setFormModalOpen(false)}
           onSubmit={handleSubmit}
           goalToEdit={goalToEdit}
-          currentFamilyPoints={familyPoints}
-        />
+          currentFamilyPoints={familyPoints} />
+
 
         {/* Header */}
         <div className="funky-card p-6 md:p-8">
@@ -173,8 +173,8 @@ export default function Goals() {
             </div>
             <Button
               onClick={handleShowAddForm}
-              className="funky-button bg-[#C3B1E1] text-white px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl header-font w-full md:w-auto"
-            >
+              className="funky-button bg-[#C3B1E1] text-white px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl header-font w-full md:w-auto">
+
               <Plus className="w-6 h-6 mr-3" />
               Create Goal
             </Button>
@@ -196,65 +196,65 @@ export default function Goals() {
         </div>
 
         {/* Active Goals */}
-        {activeGoals.length > 0 && (
-          <div className="space-y-6">
+        {activeGoals.length > 0 &&
+        <div className="space-y-6">
             <h2 className="header-font text-3xl text-[#2B59C3]">Active Goals</h2>
             <div className="grid lg:grid-cols-2 gap-6">
-              {activeGoals.map((goal) => (
-                <FamilyGoalCard
-                  key={goal.id}
-                  goal={goal}
-                  onEdit={handleShowEditForm}
-                  onDelete={handleDelete}
-                  onClaim={handleClaimReward}
-                  currentPoints={familyPoints}
-                />
-              ))}
+              {activeGoals.map((goal) =>
+            <FamilyGoalCard
+              key={goal.id}
+              goal={goal}
+              onEdit={handleShowEditForm}
+              onDelete={handleDelete}
+              onClaim={handleClaimReward}
+              currentPoints={familyPoints} />
+
+            )}
             </div>
           </div>
-        )}
+        }
 
         {/* Completed Goals */}
-        {completedGoals.length > 0 && (
-          <div className="space-y-6">
+        {completedGoals.length > 0 &&
+        <div className="space-y-6">
             <h2 className="header-font text-3xl text-green-600 flex items-center gap-2">
               <Trophy className="w-8 h-8" />
               Completed Goals
             </h2>
             <div className="grid lg:grid-cols-2 gap-6">
-              {completedGoals.map((goal) => (
-                <FamilyGoalCard
-                  key={goal.id}
-                  goal={goal}
-                  onEdit={() => {}}
-                  onDelete={handleDelete}
-                  onClaim={() => {}}
-                  currentPoints={familyPoints}
-                  isCompleted
-                />
-              ))}
+              {completedGoals.map((goal) =>
+            <FamilyGoalCard
+              key={goal.id}
+              goal={goal}
+              onEdit={() => {}}
+              onDelete={handleDelete}
+              onClaim={() => {}}
+              currentPoints={familyPoints}
+              isCompleted />
+
+            )}
             </div>
           </div>
-        )}
+        }
 
         {/* Empty State */}
-        {goals.length === 0 && (
-          <div className="funky-card p-12 text-center border-4 border-dashed border-green-400">
+        {goals.length === 0 &&
+        <div className="funky-card p-12 text-center border-4 border-dashed border-green-400">
             <Target className="w-24 h-24 mx-auto mb-6 text-green-400" />
             <h3 className="header-font text-3xl text-[#2B59C3] mb-4">No Family Goals Yet</h3>
             <p className="body-font-light text-gray-600 text-lg mb-8 max-w-md mx-auto">
               Create shared goals that the whole family can work towards together
             </p>
             <Button
-              onClick={handleShowAddForm}
-              className="funky-button bg-green-400 text-white px-8 py-4 header-font text-xl"
-            >
+            onClick={handleShowAddForm}
+            className="funky-button bg-green-400 text-white px-8 py-4 header-font text-xl">
+
               <Plus className="w-6 h-6 mr-3" />
               Create Your First Goal
             </Button>
           </div>
-        )}
+        }
       </div>
-    </FeatureGate>
-  );
+    </FeatureGate>);
+
 }
