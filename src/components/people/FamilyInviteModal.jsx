@@ -1,12 +1,13 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Mail } from "lucide-react";
+import { Loader2, Mail, Link as LinkIcon, Copy } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from "sonner";
 import { inviteFamilyMember } from '@/functions/inviteFamilyMember';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import moment from 'moment';
 
 export default function FamilyInviteModal({ isOpen, onClose, onSuccess }) {
   const [formData, setFormData] = useState({
@@ -15,6 +16,36 @@ export default function FamilyInviteModal({ isOpen, onClose, onSuccess }) {
     role: 'child'
   });
   const [isInviting, setIsInviting] = useState(false);
+  const [activeTab, setActiveTab] = useState('email');
+  const [generatedLinkingCode, setGeneratedLinkingCode] = useState(null);
+  const [linkingCodeExpiry, setLinkingCodeExpiry] = useState(null);
+  const [isGeneratingCode, setIsGeneratingCode] = useState(false);
+
+  const handleGenerateLinkingCode = async () => {
+    setIsGeneratingCode(true);
+    try {
+      const { data, error } = await inviteFamilyMember({ generateLinkingCode: true });
+
+      if (error) {
+        toast.error(error.message || 'Failed to generate linking code');
+      } else {
+        setGeneratedLinkingCode(data.linkingCode);
+        setLinkingCodeExpiry(data.linkingCodeExpires);
+        toast.success('Linking code generated successfully!');
+      }
+    } catch (error) {
+      toast.error('Failed to generate linking code');
+    } finally {
+      setIsGeneratingCode(false);
+    }
+  };
+
+  const handleCopyCode = () => {
+    if (generatedLinkingCode) {
+      navigator.clipboard.writeText(generatedLinkingCode);
+      toast.success('Linking code copied to clipboard!');
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,10 +53,10 @@ export default function FamilyInviteModal({ isOpen, onClose, onSuccess }) {
 
     setIsInviting(true);
     try {
-      const { data, error } = await inviteFamilyMember({ payload: formData });
+      const { data, error } = await inviteFamilyMember(formData);
       
       if (error) {
-        toast.error(error);
+        toast.error(error.message || 'Failed to send invitation');
       } else {
         toast.success('Family invitation sent successfully!');
         setFormData({ email: '', name: '', role: 'child' });
@@ -40,8 +71,11 @@ export default function FamilyInviteModal({ isOpen, onClose, onSuccess }) {
   };
 
   const handleClose = () => {
-    if (!isInviting) {
+    if (!isInviting && !isGeneratingCode) {
       setFormData({ email: '', name: '', role: 'child' });
+      setGeneratedLinkingCode(null);
+      setLinkingCodeExpiry(null);
+      setActiveTab('email');
       onClose();
     }
   };
@@ -75,7 +109,26 @@ export default function FamilyInviteModal({ isOpen, onClose, onSuccess }) {
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 funky-card p-2 h-auto mb-6">
+                <TabsTrigger
+                  value="email"
+                  className="mx-1 my-1 px-3 py-2 text-sm font-medium funky-button inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm transition-all data-[state=active]:bg-[#FF6B35] data-[state=active]:text-white"
+                >
+                  <Mail className="w-4 h-4" />
+                  Email Invite
+                </TabsTrigger>
+                <TabsTrigger
+                  value="linking_code"
+                  className="mx-1 my-1 px-3 py-2 text-sm font-medium funky-button inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm transition-all data-[state=active]:bg-[#C3B1E1] data-[state=active]:text-white"
+                >
+                  <LinkIcon className="w-4 h-4" />
+                  Linking Code
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="email">
+                <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="body-font text-base text-[#5E3B85] mb-2 block">Email Address *</label>
                 <Input
