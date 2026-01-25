@@ -199,6 +199,74 @@ export default function FamilyInviteModal({ isOpen, onClose, onSuccess }) {
                 </Button>
               </div>
             </form>
+          </TabsContent>
+
+          <TabsContent value="linking_code">
+            <div className="space-y-4">
+              <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-3">
+                <p className="body-font-light text-xs text-orange-800">
+                  💡 Generate a temporary linking code. Share this code with the family member, who can use it to join your family. The code expires in 24 hours.
+                </p>
+              </div>
+
+              {!generatedLinkingCode ? (
+                <Button
+                  onClick={handleGenerateLinkingCode}
+                  disabled={isGeneratingCode}
+                  className="funky-button w-full bg-[#C3B1E1] hover:bg-[#b19dcb] text-white py-3 header-font text-base"
+                >
+                  {isGeneratingCode ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <LinkIcon className="w-4 h-4 mr-2" />
+                      Generate Linking Code
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <div className="space-y-3">
+                  <div>
+                    <label className="body-font text-base text-[#5E3B85] mb-2 block">Linking Code</label>
+                    <div className="relative">
+                      <Input
+                        type="text"
+                        value={generatedLinkingCode}
+                        readOnly
+                        className="funky-button border-3 border-[#5E3B85] text-xl p-3 body-font bg-white text-center font-bold tracking-widest"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleCopyCode}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-[#5E3B85] hover:bg-gray-100"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    {linkingCodeExpiry && (
+                      <p className="body-font-light text-xs text-gray-500 mt-1 text-center">
+                        Expires: {moment(linkingCodeExpiry).format('MMM D, YYYY h:mm A')}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex gap-3 pt-4">
+                    <Button
+                      type="button"
+                      onClick={handleClose}
+                      className="funky-button flex-1 bg-gray-200 hover:bg-gray-300 text-[#5E3B85] border-3 border-[#5E3B85] py-3 header-font text-base"
+                    >
+                      Close
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
           </motion.div>
         </motion.div>
       )}
