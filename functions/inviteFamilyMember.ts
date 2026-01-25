@@ -22,11 +22,26 @@ Deno.serve(async (req) => {
             });
         }
 
-        const { payload } = await req.json();
-        const { email, name, role } = payload;
+        const { email, name, role, generateLinkingCode } = await req.json();
+        
+        // Handle linking code generation
+        if (generateLinkingCode) {
+            const linkingCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+            const linkingCodeExpires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+            
+            await base44.asServiceRole.entities.Family.update(familyId, {
+                linking_code: linkingCode,
+                linking_code_expires: linkingCodeExpires
+            });
+
+            return new Response(JSON.stringify({ success: true, linkingCode, linkingCodeExpires }), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
         
         if (!email || !name || !role) {
-            return new Response(JSON.stringify({ error: 'Missing required fields' }), { 
+            return new Response(JSON.stringify({ error: 'Missing required fields for email invitation' }), { 
                 status: 400, 
                 headers: { 'Content-Type': 'application/json' } 
             });
