@@ -26,11 +26,11 @@ export default function People() {
 
   const personStats = useMemo(() => {
     const stats = {};
-    people.forEach(p => {
+    people.forEach((p) => {
       const personAssignments = assignments.filter((a) => a.person_id === p.id);
       stats[p.id] = {
         completed: personAssignments.filter((a) => a.completed).length,
-        current: personAssignments.filter((a) => !a.completed).length,
+        current: personAssignments.filter((a) => !a.completed).length
       };
     });
     return stats;
@@ -54,7 +54,7 @@ export default function People() {
     setFormModalOpen(false);
     setPersonToEdit(null);
   };
-  
+
   const handleSubmit = async (personData) => {
     if (personToEdit) {
       await updatePerson(personToEdit.id, personData);
@@ -116,20 +116,20 @@ export default function People() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="funky-card p-6 md:p-8 text-center"><Loader2 className="w-8 h-8 md:w-12 md:h-12 animate-spin text-[#C3B1E1] mx-auto mb-4" /><p className="body-font text-base md:text-lg text-gray-600">Loading family members...</p></div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
-    <div className="mx-4 md:mx-8 lg:mx-20 pb-32 space-y-6 md:space-y-8 lg:pb-8">
+    <div className="mx-1 my-1 pb-10 md:mx-8 lg:mx-20 space-y-6 md:space-y-8 lg:pb-8">
       <LimitReachedModal
         isOpen={isLimitModalOpen}
         onClose={() => setLimitModalOpen(false)}
         limitType="max_family_members"
         currentCount={people.length}
         maxCount={user?.subscription_tier === 'free' ? 2 : 6}
-        requiredTier={getTierDisplayName(getRequiredTier('max_family_members'))}
-      />
+        requiredTier={getTierDisplayName(getRequiredTier('max_family_members'))} />
+
       <PersonFormModal
         isOpen={isFormModalOpen}
         onClose={handleCloseModal}
@@ -137,13 +137,13 @@ export default function People() {
         personToEdit={personToEdit}
         isProcessing={isProcessing}
         currentUser={user}
-        peopleCount={people.length}
-      />
+        peopleCount={people.length} />
+
       <FamilyInviteModal
         isOpen={isInviteModalOpen}
         onClose={() => setInviteModalOpen(false)}
-        onSuccess={handleInviteSuccess}
-      />
+        onSuccess={handleInviteSuccess} />
+
       <LinkAccountModal
         isOpen={isLinkModalOpen}
         onClose={() => {
@@ -152,8 +152,8 @@ export default function People() {
         }}
         people={personToLink ? [personToLink] : people}
         onLink={handleLinkAccount}
-        isProcessing={isLinking}
-      />
+        isProcessing={isLinking} />
+
       <ConfirmDialog
         isOpen={!!personToDelete}
         onClose={() => setPersonToDelete(null)}
@@ -161,8 +161,8 @@ export default function People() {
         title="Delete Family Member"
         message={`Are you sure you want to delete ${personToDelete?.name}? This action cannot be undone.`}
         confirmText="Delete"
-        cancelText="Cancel"
-      />
+        cancelText="Cancel" />
+
 
       <div className="funky-card p-4 md:p-6 lg:p-8">
         <div className="flex flex-col gap-4 md:gap-6">
@@ -175,19 +175,19 @@ export default function People() {
             </div>
           </div>
           <div className="flex flex-col gap-3 w-full">
-            {canAccess('family_invitations') && (
-              <Button 
-                onClick={handleShowInviteModal}
-                className="funky-button bg-[#C3B1E1] text-white px-4 md:px-6 py-3 md:py-4 text-base md:text-lg lg:text-xl header-font w-full"
-              >
+            {canAccess('family_invitations') &&
+            <Button
+              onClick={handleShowInviteModal}
+              className="funky-button bg-[#C3B1E1] text-white px-4 md:px-6 py-3 md:py-4 text-base md:text-lg lg:text-xl header-font w-full">
+
                 <Mail className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
                 Invite Member
               </Button>
-            )}
-            <Button 
-              onClick={handleShowAddForm} 
-              className="funky-button bg-[#F7A1C4] text-pink-800 px-4 md:px-6 py-3 md:py-4 text-base md:text-lg lg:text-xl header-font w-full"
-            >
+            }
+            <Button
+              onClick={handleShowAddForm}
+              className="funky-button bg-[#F7A1C4] text-pink-800 px-4 md:px-6 py-3 md:py-4 text-base md:text-lg lg:text-xl header-font w-full">
+
               <Plus className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
               Add Person
             </Button>
@@ -195,26 +195,26 @@ export default function People() {
         </div>
       </div>
 
-      {people.length > 0 ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
-          {people.map((person) => (
-            <PersonCard
-              key={person.id}
-              person={person}
-              completedChores={personStats[person.id]?.completed || 0}
-              currentChores={personStats[person.id]?.current || 0}
-              onEdit={handleShowEditForm}
-              onDelete={() => setPersonToDelete(person)}
-              onLinkAccount={handleShowLinkModal}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="funky-card p-8 md:p-12 text-center border-4 border-dashed border-[#F7A1C4] bg-pink-50">
+      {people.length > 0 ?
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+          {people.map((person) =>
+        <PersonCard
+          key={person.id}
+          person={person}
+          completedChores={personStats[person.id]?.completed || 0}
+          currentChores={personStats[person.id]?.current || 0}
+          onEdit={handleShowEditForm}
+          onDelete={() => setPersonToDelete(person)}
+          onLinkAccount={handleShowLinkModal} />
+
+        )}
+        </div> :
+
+      <div className="funky-card p-8 md:p-12 text-center border-4 border-dashed border-[#F7A1C4] bg-pink-50">
           <div className="mb-6 md:mb-8"><Users className="w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 md:mb-6 text-[#F7A1C4]" /><h3 className="header-font text-2xl md:text-3xl text-[#2B59C3] mb-3 md:mb-4">No family members yet</h3><p className="body-font-light text-base md:text-lg mb-2 max-w-md mx-auto">Add people to your household to get started with chore assignments</p><p className="body-font text-sm text-[#5E3B85] mb-6 md:mb-8">💡 Tip: Start with adults, then add teens and children</p></div>
           <Button onClick={handleShowAddForm} className="funky-button bg-[#F7A1C4] text-white px-6 md:px-8 py-3 md:py-4 header-font text-lg md:text-xl"><Plus className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />Add Your First Person</Button>
         </div>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 }
