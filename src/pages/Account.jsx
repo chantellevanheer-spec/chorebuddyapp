@@ -10,11 +10,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { stripeCheckout } from '@/functions/stripeCheckout';
 import { linkUserToPerson } from '@/functions/linkUserToPerson';
-import LinkAccountModal from '../components/people/LinkAccountModal';
-import OnboardingTour from '../components/onboarding/OnboardingTour';
-import AvatarSelector from '../components/profile/AvatarSelector';
-import ThemeSelector from '../components/profile/ThemeSelector';
-import { useTheme } from '../components/contexts/ThemeContext';
+import LinkAccountModal from '@/components/people/LinkAccountModal';
+import OnboardingTour from '@/components/onboarding/OnboardingTour';
+import AvatarSelector from '@/components/profile/AvatarSelector';
+import ThemeSelector from '@/components/profile/ThemeSelector';
+import { useTheme } from '@/components/contexts/ThemeContext';
 
 export default function Account() {
   const [user, setUser] = useState(null);

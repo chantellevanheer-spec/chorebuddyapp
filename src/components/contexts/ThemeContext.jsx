@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { themeOptions } from '../profile/ThemeSelector';
+import { themeOptions } from '@/components/profile/ThemeSelector';
 
 const ThemeContext = createContext();
 
