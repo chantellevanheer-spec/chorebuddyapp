@@ -10,7 +10,7 @@ const tourSteps = [
   {
     id: 'welcome',
     title: 'Welcome to ChoreBuddy! 🎉',
-    description: "Let's get your family organized in just a few simple steps. This tour will show you everything you need to know!",
+    description: "Your dashboard is the home base for managing family chores. Here's everything you need to get started!",
     targetPage: 'Dashboard',
     highlight: null,
     action: null
@@ -18,47 +18,23 @@ const tourSteps = [
   {
     id: 'add-family',
     title: 'Add Your Family Members',
-    description: 'First, add everyone in your household. Click the Family tab to get started. You can add adults, teens, and children.',
-    targetPage: 'People',
-    highlight: 'family-tab',
-    action: { label: 'Go to Family', page: 'People' }
-  },
-  {
-    id: 'create-chore',
-    title: 'Create Your First Chore',
-    description: 'Now add chores your family needs to do. Set difficulty, category, and how often they should be done.',
-    targetPage: 'Chores',
-    highlight: 'chores-tab',
-    action: { label: 'Go to Chores', page: 'Chores' }
-  },
-  {
-    id: 'assign-chores',
-    title: 'Assign Chores',
-    description: 'Use ChoreAI to automatically assign chores fairly, or assign them manually. Everyone gets a fair share!',
-    targetPage: 'Chores',
+    description: 'Start by adding everyone in your household using the Family tab in the sidebar. You can add adults, teens, and children.',
+    targetPage: 'Dashboard',
     highlight: null,
     action: null
   },
   {
-    id: 'check-schedule',
-    title: 'View the Schedule',
-    description: 'Check the calendar to see who\'s doing what this week. Everyone can see their own tasks here.',
-    targetPage: 'Schedule',
-    highlight: 'schedule-tab',
-    action: { label: 'Go to Schedule', page: 'Schedule' }
-  },
-  {
-    id: 'rewards',
-    title: 'Set Up Rewards',
-    description: 'Kids earn points for completing chores! Create rewards they can redeem in the Store.',
-    targetPage: 'Store',
-    highlight: 'store-tab',
-    action: { label: 'Go to Store', page: 'Store' }
+    id: 'create-chores',
+    title: 'Create Chores',
+    description: 'Next, add chores using the Chores tab. Set difficulty, category, and frequency for each task.',
+    targetPage: 'Dashboard',
+    highlight: null,
+    action: null
   },
   {
     id: 'complete',
     title: 'You\'re All Set! 🎊',
-    description: 'That\'s it! You\'re ready to make chores fun and fair. Need help? Check the Help page anytime.',
+    description: 'Navigate using the sidebar to explore all features. Have fun making chores fair and rewarding!',
     targetPage: 'Dashboard',
     highlight: null,
     action: null
