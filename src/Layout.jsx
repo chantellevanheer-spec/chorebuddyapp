@@ -8,6 +8,7 @@ import CookieBanner from './components/ui/CookieBanner';
 import RealTimeBadge from './components/ui/RealTimeBadge';
 import { DataProvider } from './components/contexts/DataContext';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
+import OnboardingTour from './components/onboarding/OnboardingTour';
 
 const navigationItems = [
 {
