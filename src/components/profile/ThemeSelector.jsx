@@ -64,36 +64,18 @@ const themeOptions = [
   }
 ];
 
+import ThemePreview from './ThemePreview';
+
 export default function ThemeSelector({ selected, onSelect }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {themeOptions.map((theme) => (
-        <button
+        <ThemePreview
           key={theme.id}
-          type="button"
+          theme={theme}
+          isSelected={selected === theme.id}
           onClick={() => onSelect(theme.id)}
-          className={`funky-button p-4 text-left transition-all ${
-            selected === theme.id 
-              ? 'bg-[#C3B1E1] scale-105' 
-              : 'bg-white hover:bg-gray-50'
-          }`}
-        >
-          <div className="flex items-center gap-3 mb-3">
-            <Palette className={`w-5 h-5 ${selected === theme.id ? 'text-white' : 'text-gray-600'}`} />
-            <span className={`body-font text-lg ${selected === theme.id ? 'text-white' : 'text-[#5E3B85]'}`}>
-              {theme.name}
-            </span>
-          </div>
-          <div className="flex gap-2">
-            {Object.values(theme.colors).map((color, idx) => (
-              <div
-                key={idx}
-                className="w-8 h-8 rounded-lg border-2 border-white shadow-sm"
-                style={{ backgroundColor: color }}
-              />
-            ))}
-          </div>
-        </button>
+        />
       ))}
     </div>
   );

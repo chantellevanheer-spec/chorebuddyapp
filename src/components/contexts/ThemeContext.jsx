@@ -36,8 +36,12 @@ export function ThemeProvider({ children }) {
 
   const applyTheme = (themeId) => {
     const theme = themeOptions.find(t => t.id === themeId) || themeOptions[0];
-    const root = document.documentElement;
     
+    // Apply theme as data attribute for CSS targeting
+    document.documentElement.setAttribute('data-theme', themeId);
+    
+    // Also apply as CSS variables for custom styling
+    const root = document.documentElement;
     root.style.setProperty('--color-primary', theme.colors.primary);
     root.style.setProperty('--color-secondary', theme.colors.secondary);
     root.style.setProperty('--color-accent', theme.colors.accent);

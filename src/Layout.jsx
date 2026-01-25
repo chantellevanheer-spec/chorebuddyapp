@@ -10,6 +10,7 @@ import { DataProvider } from './components/contexts/DataContext';
 import { ThemeProvider } from './components/contexts/ThemeContext';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import OnboardingTour from './components/onboarding/OnboardingTour';
+import UserAvatar from './components/profile/UserAvatar';
 
 const navigationItems = [
 {
@@ -234,14 +235,25 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
         {/* Desktop Sidebar */}
         <div className="hidden lg:block w-72 flex-shrink-0">
           <div className="sticky top-8 space-y-6">
-            {/* Logo */}
-            <div className="flex items-center gap-4 p-4">
-              <div className="funky-button w-16 h-16 bg-[#C3B1E1] flex items-center justify-center">
-                <Sparkles className="w-8 h-8 text-white" />
+            {/* Logo & User */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-4 p-4">
+                <div className="funky-button w-16 h-16 bg-[#C3B1E1] flex items-center justify-center">
+                  <Sparkles className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h1 className="header-font text-4xl no-underline uppercase">CHOREBUDDY</h1>
+                </div>
               </div>
-              <div>
-                <h1 className="header-font text-4xl no-underline uppercase">CHOREBUDDY</h1>
-              </div>
+              {currentUser?.data?.avatar && (
+                <div className="flex items-center gap-3 px-4 py-2 bg-white/50 rounded-lg">
+                  <UserAvatar avatarId={currentUser.data.avatar} size="md" />
+                  <div>
+                    <p className="body-font text-sm text-[#5E3B85]">{currentUser.full_name}</p>
+                    <p className="text-xs text-gray-500 capitalize">{currentUser.subscription_tier}</p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Navigation */}
