@@ -140,7 +140,7 @@ export default function Account() {
         onLink={handleLinkAccount}
         isProcessing={isLinking}
       />
-      <div className="mx-24 pb-32 space-y-8 lg:pb-8">
+      <div className="mx-4 md:mx-8 lg:mx-24 pb-32 space-y-8 lg:pb-8">
       {/* Header */}
       <div className="funky-card p-6 md:p-8">
         <div className="flex items-center gap-4 md:gap-6">
