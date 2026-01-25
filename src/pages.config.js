@@ -16,6 +16,7 @@ import Privacy from './pages/Privacy';
 import RoleSelection from './pages/RoleSelection';
 import Schedule from './pages/Schedule';
 import Store from './pages/Store';
+import FamilyLinking from './pages/FamilyLinking';
 import __Layout from './Layout.jsx';
 
 
@@ -38,6 +39,7 @@ export const PAGES = {
     "RoleSelection": RoleSelection,
     "Schedule": Schedule,
     "Store": Store,
+    "FamilyLinking": FamilyLinking,
 }
 
 export const pagesConfig = {

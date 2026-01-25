@@ -1,0 +1,380 @@
+import React, { useState, useEffect } from 'react';
+import { User } from '@/entities/User';
+import { Family } from '@/entities/Family';
+import { createPageUrl } from '@/utils';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { 
+    Loader2, 
+    Copy, 
+    Check, 
+    RefreshCw, 
+    Link2, 
+    Sparkles, 
+    Users,
+    ArrowRight,
+    Clock,
+    Shield,
+    CheckCircle2
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { familyLinking } from '@/functions/familyLinking';
+
+export default function FamilyLinking() {
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState(null);
+    const [family, setFamily] = useState(null);
+    const [linkingCode, setLinkingCode] = useState('');
+    const [inputCode, setInputCode] = useState('');
+    const [codeExpiry, setCodeExpiry] = useState(null);
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [isJoining, setIsJoining] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const [joinSuccess, setJoinSuccess] = useState(false);
+    const [joinedFamilyName, setJoinedFamilyName] = useState('');
+
+    const isParent = user?.family_role === 'parent';
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const userData = await User.me();
+                setUser(userData);
+
+                // If no family role, redirect to role selection
+                if (!userData.family_role) {
+                    navigate(createPageUrl('RoleSelection'));
+                    return;
+                }
+
+                // If user already has a family (and is not a parent), go to dashboard
+                if (userData.family_id && userData.family_role !== 'parent') {
+                    navigate(createPageUrl('Dashboard'));
+                    return;
+                }
+
+                // For parents, fetch their family data
+                if (userData.family_role === 'parent' && userData.family_id) {
+                    const families = await Family.filter({ id: userData.family_id });
+                    if (families.length > 0) {
+                        const familyData = families[0];
+                        setFamily(familyData);
+                        if (familyData.linking_code) {
+                            setLinkingCode(familyData.linking_code);
+                            setCodeExpiry(familyData.linking_code_expires);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+                navigate(createPageUrl('Home'));
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, [navigate]);
+
+    const generateNewCode = async () => {
+        if (!family) return;
+        setIsGenerating(true);
+        try {
+            const result = await familyLinking({
+                action: 'generate',
+                familyId: family.id
+            });
+
+            if (result.data.success) {
+                setLinkingCode(result.data.linkingCode);
+                setCodeExpiry(result.data.expiresAt);
+                toast.success('New linking code generated!');
+            } else {
+                toast.error(result.data.error || 'Failed to generate code');
+            }
+        } catch (error) {
+            console.error('Error generating code:', error);
+            toast.error('Failed to generate linking code');
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
+    const copyCode = () => {
+        navigator.clipboard.writeText(linkingCode);
+        setCopied(true);
+        toast.success('Code copied to clipboard!');
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    const handleJoinFamily = async () => {
+        if (!inputCode.trim()) {
+            toast.error('Please enter a linking code');
+            return;
+        }
+
+        setIsJoining(true);
+        try {
+            const result = await familyLinking({
+                action: 'join',
+                linkingCode: inputCode.trim()
+            });
+
+            if (result.data.success) {
+                setJoinSuccess(true);
+                setJoinedFamilyName(result.data.familyName);
+                toast.success(`Welcome to ${result.data.familyName}!`);
+                
+                // Redirect after a short delay to show success animation
+                setTimeout(() => {
+                    navigate(createPageUrl('Dashboard'));
+                }, 2000);
+            } else {
+                toast.error(result.data.error || 'Failed to join family');
+            }
+        } catch (error) {
+            console.error('Error joining family:', error);
+            toast.error(error.response?.data?.error || 'Failed to join family. Please check your code.');
+        } finally {
+            setIsJoining(false);
+        }
+    };
+
+    const skipLinking = () => {
+        navigate(createPageUrl('Dashboard'));
+    };
+
+    const formatExpiry = (expiryDate) => {
+        if (!expiryDate) return '';
+        const expiry = new Date(expiryDate);
+        const now = new Date();
+        const hoursLeft = Math.max(0, Math.floor((expiry - now) / (1000 * 60 * 60)));
+        if (hoursLeft > 1) return `${hoursLeft} hours`;
+        const minutesLeft = Math.max(0, Math.floor((expiry - now) / (1000 * 60)));
+        return `${minutesLeft} minutes`;
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-[#FDFBF5] flex items-center justify-center">
+                <Loader2 className="w-16 h-16 animate-spin text-[#C3B1E1]" />
+            </div>
+        );
+    }
+
+    // Success state after joining
+    if (joinSuccess) {
+        return (
+            <div className="min-h-screen bg-[#FDFBF5] flex items-center justify-center p-4">
+                <div className="funky-card p-8 md:p-12 text-center max-w-md">
+                    <div className="w-24 h-24 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center animate-bounce">
+                        <CheckCircle2 className="w-12 h-12 text-green-600" />
+                    </div>
+                    <h1 className="header-font text-4xl text-green-600 mb-4">You're In!</h1>
+                    <p className="body-font text-xl text-gray-600 mb-2">
+                        Welcome to <span className="font-bold text-[#2B59C3]">{joinedFamilyName}</span>
+                    </p>
+                    <p className="body-font-light text-gray-500">
+                        Taking you to your dashboard...
+                    </p>
+                    <Loader2 className="w-6 h-6 animate-spin text-[#C3B1E1] mx-auto mt-4" />
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-[#FDFBF5] flex items-center justify-center p-4">
+            <div className="max-w-2xl w-full">
+                {/* Header */}
+                <div className="text-center mb-8">
+                    <div className="flex justify-center mb-6">
+                        <div className="funky-button w-20 h-20 bg-[#C3B1E1] flex items-center justify-center">
+                            <Link2 className="w-10 h-10 text-white" />
+                        </div>
+                    </div>
+                    <h1 className="header-font text-4xl md:text-5xl text-[#2B59C3] mb-4">
+                        {isParent ? 'Share Your Family Code' : 'Join Your Family'}
+                    </h1>
+                    <p className="body-font text-lg text-gray-600">
+                        {isParent 
+                            ? 'Share this code with your family members so they can join your household.'
+                            : 'Enter the code your parent shared with you to join your family.'
+                        }
+                    </p>
+                </div>
+
+                {/* Main Content Card */}
+                <div className="funky-card p-6 md:p-8">
+                    {isParent ? (
+                        /* Parent View - Show/Generate Code */
+                        <div className="space-y-6">
+                            {/* Code Display */}
+                            <div className="bg-gradient-to-br from-[#2B59C3]/10 to-[#C3B1E1]/20 rounded-2xl p-6 text-center">
+                                <p className="body-font text-sm text-gray-600 mb-3">Your Family Linking Code</p>
+                                
+                                {linkingCode ? (
+                                    <>
+                                        <div className="flex justify-center items-center gap-2 mb-4">
+                                            <div className="bg-white rounded-xl px-6 py-4 border-3 border-[#5E3B85] shadow-md">
+                                                <span className="header-font text-4xl md:text-5xl tracking-[0.3em] text-[#2B59C3]">
+                                                    {linkingCode}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="flex justify-center gap-3 mb-4">
+                                            <Button
+                                                onClick={copyCode}
+                                                className="funky-button bg-[#2B59C3] text-white"
+                                            >
+                                                {copied ? (
+                                                    <>
+                                                        <Check className="w-4 h-4 mr-2" />
+                                                        Copied!
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Copy className="w-4 h-4 mr-2" />
+                                                        Copy Code
+                                                    </>
+                                                )}
+                                            </Button>
+                                            <Button
+                                                onClick={generateNewCode}
+                                                disabled={isGenerating}
+                                                variant="outline"
+                                                className="funky-button border-2 border-[#5E3B85]"
+                                            >
+                                                {isGenerating ? (
+                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                ) : (
+                                                    <>
+                                                        <RefreshCw className="w-4 h-4 mr-2" />
+                                                        New Code
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </div>
+
+                                        {codeExpiry && (
+                                            <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+                                                <Clock className="w-4 h-4" />
+                                                <span>Expires in {formatExpiry(codeExpiry)}</span>
+                                            </div>
+                                        )}
+                                    </>
+                                ) : (
+                                    <Button
+                                        onClick={generateNewCode}
+                                        disabled={isGenerating}
+                                        className="funky-button bg-[#2B59C3] text-white px-8 py-4 text-lg"
+                                    >
+                                        {isGenerating ? (
+                                            <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                                        ) : (
+                                            <Sparkles className="w-5 h-5 mr-2" />
+                                        )}
+                                        Generate Linking Code
+                                    </Button>
+                                )}
+                            </div>
+
+                            {/* Instructions */}
+                            <div className="space-y-4">
+                                <h3 className="body-font text-lg text-[#5E3B85]">How it works:</h3>
+                                <div className="grid gap-3">
+                                    <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-xl">
+                                        <div className="w-8 h-8 rounded-full bg-[#2B59C3] text-white flex items-center justify-center flex-shrink-0 header-font">1</div>
+                                        <p className="body-font-light text-gray-700">Share this code with your children or family members</p>
+                                    </div>
+                                    <div className="flex items-start gap-3 p-3 bg-purple-50 rounded-xl">
+                                        <div className="w-8 h-8 rounded-full bg-[#C3B1E1] text-white flex items-center justify-center flex-shrink-0 header-font">2</div>
+                                        <p className="body-font-light text-gray-700">They enter the code on their device after selecting their role</p>
+                                    </div>
+                                    <div className="flex items-start gap-3 p-3 bg-green-50 rounded-xl">
+                                        <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center flex-shrink-0 header-font">3</div>
+                                        <p className="body-font-light text-gray-700">They'll automatically join your family and you can assign chores!</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Security Note */}
+                            <div className="flex items-start gap-3 p-4 bg-amber-50 border-2 border-amber-200 rounded-xl">
+                                <Shield className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                                <p className="body-font-light text-sm text-amber-800">
+                                    <strong>Security tip:</strong> Codes expire after 24 hours. Only share with people you want in your family.
+                                </p>
+                            </div>
+
+                            {/* Continue Button */}
+                            <Button
+                                onClick={skipLinking}
+                                className="w-full funky-button bg-[#5E3B85] text-white py-4 text-lg header-font"
+                            >
+                                Continue to Dashboard
+                                <ArrowRight className="w-5 h-5 ml-2" />
+                            </Button>
+                        </div>
+                    ) : (
+                        /* Teen/Child View - Enter Code */
+                        <div className="space-y-6">
+                            {/* Code Input */}
+                            <div className="space-y-4">
+                                <label className="body-font text-lg text-[#5E3B85]">
+                                    Enter the code from your parent:
+                                </label>
+                                <Input
+                                    value={inputCode}
+                                    onChange={(e) => setInputCode(e.target.value.toUpperCase())}
+                                    placeholder="XXXXXX"
+                                    maxLength={6}
+                                    className="text-center header-font text-3xl tracking-[0.3em] py-6 border-3 border-[#5E3B85] rounded-xl uppercase"
+                                    disabled={isJoining}
+                                />
+                            </div>
+
+                            {/* Join Button */}
+                            <Button
+                                onClick={handleJoinFamily}
+                                disabled={isJoining || inputCode.length < 6}
+                                className="w-full funky-button bg-[#2B59C3] text-white py-4 text-lg header-font"
+                            >
+                                {isJoining ? (
+                                    <>
+                                        <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                                        Joining...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Users className="w-5 h-5 mr-2" />
+                                        Join Family
+                                    </>
+                                )}
+                            </Button>
+
+                            {/* Instructions */}
+                            <div className="p-4 bg-blue-50 rounded-xl">
+                                <h3 className="body-font text-[#2B59C3] mb-2">Don't have a code?</h3>
+                                <p className="body-font-light text-sm text-gray-600">
+                                    Ask your parent to open ChoreBuddy on their device and share their family linking code with you.
+                                </p>
+                            </div>
+
+                            {/* Skip Option */}
+                            <div className="text-center">
+                                <button
+                                    onClick={() => navigate(createPageUrl('RoleSelection'))}
+                                    className="body-font-light text-gray-500 hover:text-[#2B59C3] underline text-sm"
+                                >
+                                    ← Go back to role selection
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}

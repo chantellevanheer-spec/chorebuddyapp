@@ -56,20 +56,19 @@ export default function RoleSelection() {
           family_role: role,
           role: 'admin'
         });
+
+        toast.success(`Welcome! You're set up as a ${role}.`);
+        // Navigate to family linking page to generate/share code
+        navigate(createPageUrl('FamilyLinking'));
       } else {
-        // Teen/Child - just set role, they'll join family via invite code
+        // Teen/Child - just set role, they'll join family via linking code
         await User.updateMyUserData({
           family_role: role
         });
-      }
 
-      toast.success(`Welcome! You're set up as a ${role}.`);
-      
-      // Navigate based on role
-      if (role === 'parent') {
-        navigate(createPageUrl('Dashboard'));
-      } else {
-        navigate(createPageUrl('JoinFamily'));
+        toast.success(`Welcome! You're set up as a ${role}.`);
+        // Navigate to family linking page to enter code
+        navigate(createPageUrl('FamilyLinking'));
       }
     } catch (error) {
       console.error("Error setting up role:", error);
