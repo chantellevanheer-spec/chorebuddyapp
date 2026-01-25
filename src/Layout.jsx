@@ -82,6 +82,8 @@ function AppLayout({ children, currentPageName }) {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   const isPublicPage = publicPages.includes(currentPageName);
 
@@ -96,11 +98,17 @@ function AppLayout({ children, currentPageName }) {
       try {
         const userData = await User.me();
         setIsAuthenticated(true);
+        setCurrentUser(userData);
         
         // Check if user needs to complete role selection
         if (!userData.family_role && currentPageName !== 'RoleSelection') {
           navigate(createPageUrl('RoleSelection'));
           return;
+        }
+
+        // Show onboarding for new users (after role selection)
+        if (userData.family_role && !userData.data?.onboarding_completed && currentPageName !== 'RoleSelection') {
+          setShowOnboarding(true);
         }
       } catch (error) {
         setIsAuthenticated(false);
@@ -373,6 +381,10 @@ export default function LayoutWrapper(props) {
         <AppLayout {...props} />
         <RealTimeBadge />
         <CookieBanner />
+        <OnboardingTour 
+          isOpen={showOnboarding} 
+          onClose={() => setShowOnboarding(false)} 
+        />
       </DataProvider>
     </ErrorBoundary>
   );

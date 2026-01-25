@@ -21,6 +21,7 @@ export default function Account() {
   const [isPortalRedirecting, setIsPortalRedirecting] = useState(false);
   const [isLinkModalOpen, setLinkModalOpen] = useState(false);
   const [isLinking, setIsLinking] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
