@@ -1,4 +1,3 @@
-
 import { useMemo } from 'react';
 import { useData } from '../contexts/DataContext';
 
@@ -21,27 +20,6 @@ const SUBSCRIPTION_FEATURES = {
     photo_verification: false,
     custom_points: false,
     weekly_reports: false,
-    priority_assignment: false,
-    early_completion_bonus: false,
-    family_invitations: false
-  },
-  basic: {
-    // Core limits  
-    max_family_members: 6,
-    max_redeemable_items: 15,
-    max_chores: 50,
-    
-    // Feature access
-    choreai_smart_assignment: true,
-    advanced_chore_settings: false,
-    family_goals: true,
-    analytics_export: true,
-    premium_support: false,
-    recurring_chores: true,
-    chore_approval_system: false,
-    photo_verification: false,
-    custom_points: false,
-    weekly_reports: true,
     priority_assignment: false,
     early_completion_bonus: false,
     family_invitations: false
@@ -116,7 +94,6 @@ export const useSubscriptionAccess = () => {
   const getTierDisplayName = (tier) => {
     const names = {
       free: 'Free',
-      basic: 'Basic',
       premium: 'Premium'
     };
     return names[tier] || 'Premium';
@@ -132,7 +109,6 @@ export const useSubscriptionAccess = () => {
     getTierDisplayName,
     // Convenience getters
     isPremium: currentTier === 'premium' && isActive,
-    isBasicOrHigher: (currentTier === 'basic' || currentTier === 'premium') && isActive,
     isFree: currentTier === 'free'
   };
 };

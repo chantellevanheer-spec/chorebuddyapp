@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { User } from '@/entities/User';
 import { Loader2, Zap, Star, ShieldCheck } from 'lucide-react';
@@ -13,40 +12,32 @@ const plans = [
     price: 0,
     features: [
       'Up to 2 family members',
-      'Up to 5 chores',
+      'Up to 10 chores',
       'Manual chore assignment',
-      'Basic point tracking'
+      'Basic point tracking',
+      'Basic rewards store'
     ],
     icon: Star,
     color: { border: 'border-gray-400', bg: 'bg-gray-200', icon: 'text-gray-600', button: 'bg-gray-500' }
   },
   {
-    id: 'basic',
-    name: 'Basic',
-    price: 10,
-    yearlyPrice: 96,
-    features: [
-      'Up to 5 family members',
-      'Up to 20 chores',
-      'ChoreAI Lite assignments',
-      'Full Rewards Store access'
-    ],
-    icon: Zap,
-    color: { border: 'border-[#FF6B35]', bg: 'bg-[#FF6B35]', icon: 'text-white', button: 'bg-[#FF6B35]' }
-  },
-  {
     id: 'premium',
     name: 'Premium',
-    price: 15,
-    yearlyPrice: 144,
+    price: 12,
+    yearlyPrice: 115,
     features: [
       'Unlimited family members',
       'Invite family members to join',
       'Individual logins for family',
       'Unlimited chores',
-      'ChoreAI Pro assignments',
-      'Customizable Rewards Store',
-      'Advanced analytics & reports'
+      'ChoreAI smart assignments',
+      'Recurring chores & rotations',
+      'Photo verification',
+      'Custom points & bonuses',
+      'Family goals & challenges',
+      'Advanced analytics & reports',
+      'Weekly email reports',
+      'Priority support'
     ],
     icon: ShieldCheck,
     color: { border: 'border-[#C3B1E1]', bg: 'bg-[#C3B1E1]', icon: 'text-white', button: 'bg-[#C3B1E1]' },
@@ -163,7 +154,7 @@ export default function Pricing() {
       </div>
 
       {/* Plans Grid */}
-      <div className="mx-4 md:mx-8 lg:mx-32 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-start">
+      <div className="mx-4 md:mx-8 lg:mx-32 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-stretch max-w-4xl mx-auto">
         {plans.map((plan) => (
           <PlanCard
             key={plan.id}

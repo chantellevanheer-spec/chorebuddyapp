@@ -36,10 +36,6 @@ export const SUBSCRIPTION_LIMITS = {
     family_members: 2,
     redeemable_items: 3
   },
-  basic: {
-    family_members: 6,
-    redeemable_items: 10
-  },
   premium: {
     family_members: -1, // unlimited
     redeemable_items: -1 // unlimited
