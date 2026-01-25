@@ -14,12 +14,9 @@ import AssignmentPreview from "../components/admin/AssignmentPreview";
 import ReassignModal from "../components/chores/ReassignModal";
 
 import Confetti from "../components/ui/Confetti";
-import DashboardHeader from "../components/dashboard/DashboardHeader";
-import QuickActions from "../components/dashboard/QuickActions";
+import ParentDashboard from "../components/dashboard/ParentDashboard";
 import DashboardStats from "../components/dashboard/DashboardStats";
 import ChoresSection from "../components/dashboard/ChoresSection";
-import DashboardEmptyState from "../components/dashboard/DashboardEmptyState";
-import DashboardSummary from "../components/dashboard/DashboardSummary";
 import PointsEarnedNotification from "../components/gamification/PointsEarnedNotification";
 import { Loader2 } from "lucide-react";
 
@@ -145,6 +142,61 @@ export default function Dashboard() {
   const pendingAssignments = currentWeekAssignments.filter((a) => !a.completed);
   const completedAssignments = currentWeekAssignments.filter((a) => a.completed);
 
+  // Show ParentDashboard for parents
+  if (isParent) {
+    return (
+      <div className="min-h-screen relative">
+        <PointsEarnedNotification
+          points={pointsEarned.amount}
+          reason={pointsEarned.reason}
+          isVisible={pointsEarned.visible}
+          onClose={() => {}}
+        />
+        
+        <UpgradeModal
+          isOpen={isUpgradeModalOpen}
+          onClose={() => setUpgradeModalOpen(false)}
+          featureName="ChoreAI Smart Assignment"
+          requiredTier={getTierDisplayName(getRequiredTier('choreai_smart_assignment'))}
+        />
+
+        {showPreview && (
+          <AssignmentPreview
+            proposedAssignments={previewAssignments}
+            onConfirm={handleConfirmAssignments}
+            onCancel={() => {
+              setShowPreview(false);
+              setPreviewAssignments([]);
+              setIsAssigning(false);
+            }}
+            onReassign={handleReassignFromPreview}
+          />
+        )}
+
+        {isReassignModalOpen && reassignData && (
+          <ReassignModal
+            isOpen={isReassignModalOpen}
+            onClose={() => {
+              setReassignModalOpen(false);
+              setReassignData(null);
+            }}
+            onReassign={handleReassignConfirm}
+            assignment={reassignData.assignment}
+            chore={reassignData.chore}
+            currentPerson={reassignData.currentPerson}
+            people={people}
+            isProcessing={false}
+          />
+        )}
+
+        {completedChoreIdWithConfetti && <Confetti />}
+        
+        <ParentDashboard />
+      </div>
+    );
+  }
+
+  // Child/Teen Dashboard
   return (
     <div className="min-h-screen relative">
       <PointsEarnedNotification
@@ -153,65 +205,18 @@ export default function Dashboard() {
         isVisible={pointsEarned.visible}
         onClose={() => {}}
       />
-      
-      <UpgradeModal
-        isOpen={isUpgradeModalOpen}
-        onClose={() => setUpgradeModalOpen(false)}
-        featureName="ChoreAI Smart Assignment"
-        requiredTier={getTierDisplayName(getRequiredTier('choreai_smart_assignment'))}
-      />
-
-      {showPreview && (
-        <AssignmentPreview
-          proposedAssignments={previewAssignments}
-          onConfirm={handleConfirmAssignments}
-          onCancel={() => {
-            setShowPreview(false);
-            setPreviewAssignments([]);
-            setIsAssigning(false);
-          }}
-          onReassign={handleReassignFromPreview}
-        />
-      )}
-
-      {isReassignModalOpen && reassignData && (
-        <ReassignModal
-          isOpen={isReassignModalOpen}
-          onClose={() => {
-            setReassignModalOpen(false);
-            setReassignData(null);
-          }}
-          onReassign={handleReassignConfirm}
-          assignment={reassignData.assignment}
-          chore={reassignData.chore}
-          currentPerson={reassignData.currentPerson}
-          people={people}
-          isProcessing={false}
-        />
-      )}
 
       {completedChoreIdWithConfetti && <Confetti />}
       
       <div className="mx-4 md:mx-8 lg:mx-20 pb-32 lg:pb-8">
-        {isParent && (
-          <>
-            <DashboardHeader
-              assignChoresForWeek={assignChoresForWeek}
-              isAssigning={isAssigning} />
-            <QuickActions />
-          </>
-        )}
-
-        {isChild && (
-          <div className="funky-card p-6 mb-8">
-            <h1 className="header-font text-4xl text-[#2B59C3] mb-2">
-              My Chores
-            </h1>
-            <p className="body-font-light text-gray-600">
-              Complete your chores and earn rewards! 🌟
-            </p>
-          </div>
-        )}
+        <div className="funky-card p-6 mb-8">
+          <h1 className="header-font text-4xl text-[#2B59C3] mb-2">
+            My Chores
+          </h1>
+          <p className="body-font-light text-gray-600">
+            Complete your chores and earn rewards! 🌟
+          </p>
+        </div>
 
         <DashboardStats
           currentWeekAssignments={currentWeekAssignments}
@@ -227,22 +232,6 @@ export default function Dashboard() {
           completeChore={completeChore}
           user={user}
           isParent={isParent} />
-
-        {isParent && (
-          <>
-            <DashboardEmptyState
-              currentWeekAssignments={currentWeekAssignments}
-              people={people}
-              chores={chores}
-              user={user} />
-
-            <DashboardSummary
-              currentWeekAssignments={currentWeekAssignments}
-              assignments={assignments}
-              people={people}
-              chores={chores} />
-          </>
-        )}
       </div>
     </div>
   );
