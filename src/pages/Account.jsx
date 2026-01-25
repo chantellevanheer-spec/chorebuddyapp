@@ -26,6 +26,14 @@ export default function Account() {
   const [isLinkModalOpen, setLinkModalOpen] = useState(false);
   const [isLinking, setIsLinking] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [avatarIcon, setAvatarIcon] = useState('user');
+  const [chorePreferences, setChorePreferences] = useState({
+    auto_assign_enabled: true,
+    preferred_days: [],
+    avoid_weekends: false
+  });
+  const { currentTheme, updateTheme } = useTheme();
+  const isPremium = user?.subscription_tier === 'premium';
 
   useEffect(() => {
     const fetchData = async () => {
