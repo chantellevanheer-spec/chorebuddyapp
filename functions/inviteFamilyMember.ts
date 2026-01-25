@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
             invite_code: inviteCode 
         });
 
-        const appUrl = Deno.env.get('BASE44_APP_URL') || 'https://chorebuddyapp.com';
+        const appUrl = 'https://chorebuddyapp.com';
         const joinUrl = `${appUrl}/JoinFamily?code=${inviteCode}`;
 
         // Send invitation email
