@@ -11,7 +11,7 @@ import ChoresSection from './ChoresSection';
 import DashboardEmptyState from './DashboardEmptyState';
 
 export default function ParentDashboard() {
-  const { people, chores, assignments, loading } = useData();
+  const { people = [], chores = [], assignments = [], loading } = useData();
   const [activeTab, setActiveTab] = useState('overview');
 
   const hasData = people.length > 0 || chores.length > 0;

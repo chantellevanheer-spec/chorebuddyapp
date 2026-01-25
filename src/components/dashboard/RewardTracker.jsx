@@ -8,7 +8,7 @@ import { format, parseISO } from 'date-fns';
 const COLORS = ['#2B59C3', '#FF6B35', '#C3B1E1', '#F7A1C4', '#4ADE80', '#FBBF24'];
 
 export default function RewardTracker() {
-  const { people, rewards, items } = useData();
+  const { people = [], rewards = [], items = [] } = useData();
   const [selectedPerson, setSelectedPerson] = useState('all');
 
   const filteredRewards = useMemo(() => {

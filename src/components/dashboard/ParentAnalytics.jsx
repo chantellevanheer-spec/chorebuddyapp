@@ -9,7 +9,7 @@ import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfQuarter, endOf
 const COLORS = ['#2B59C3', '#FF6B35', '#C3B1E1', '#F7A1C4', '#4ADE80', '#FBBF24'];
 
 export default function ParentAnalytics() {
-  const { people, assignments, rewards, completions } = useData();
+  const { people = [], assignments = [], rewards = [], completions = [] } = useData();
   const [selectedPerson, setSelectedPerson] = useState('all');
   const [timePeriod, setTimePeriod] = useState('month');
 
