@@ -5,9 +5,9 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    if (!user || user.role !== 'admin') {
+    if (!user || user.data?.family_role !== 'parent') {
       return Response.json(
-        { error: 'Forbidden: Admin access required' },
+        { error: 'Forbidden: Parent access required' },
         { status: 403 }
       );
     }
@@ -99,43 +99,57 @@ Deno.serve(async (req) => {
         }
 
         if (assignToPersonId) {
-          // Create the assignment
+          // Check if assignment already exists
           const weekStart = new Date(today);
           weekStart.setDate(today.getDate() - today.getDay()); // Start of week (Sunday)
           const weekStartString = weekStart.toISOString().split('T')[0];
           
-          // Calculate due date based on frequency
-          const dueDate = new Date(today);
-          switch (chore.frequency) {
-            case 'daily':
-              dueDate.setDate(today.getDate() + 1);
-              break;
-            case 'weekly':
-              dueDate.setDate(today.getDate() + 7);
-              break;
-            case 'monthly':
-              dueDate.setMonth(today.getMonth() + 1);
-              break;
-            default:
-              dueDate.setDate(today.getDate() + 7);
-          }
-          
-          await base44.asServiceRole.entities.Assignment.create({
+          const existingAssignment = await base44.asServiceRole.entities.Assignment.filter({
             chore_id: chore.id,
             person_id: assignToPersonId,
-            week_start: weekStartString,
-            due_date: dueDate.toISOString().split('T')[0],
-            family_id: chore.family_id,
-            completed: false
+            week_start: weekStartString
           });
           
-          assignmentsCreated++;
-          results.push({
-            chore_id: chore.id,
-            chore_title: chore.title,
-            assigned_to: assignToPersonId,
-            action: 'assigned'
-          });
+          if (existingAssignment.length === 0) {
+            // Calculate due date based on frequency
+            const dueDate = new Date(today);
+            switch (chore.frequency) {
+              case 'daily':
+                dueDate.setDate(today.getDate() + 1);
+                break;
+              case 'weekly':
+                dueDate.setDate(today.getDate() + 7);
+                break;
+              case 'monthly':
+                dueDate.setMonth(today.getMonth() + 1);
+                break;
+              default:
+                dueDate.setDate(today.getDate() + 7);
+            }
+            
+            await base44.asServiceRole.entities.Assignment.create({
+              chore_id: chore.id,
+              person_id: assignToPersonId,
+              week_start: weekStartString,
+              due_date: dueDate.toISOString().split('T')[0],
+              family_id: chore.family_id,
+              completed: false
+            });
+            
+            assignmentsCreated++;
+            results.push({
+              chore_id: chore.id,
+              chore_title: chore.title,
+              assigned_to: assignToPersonId,
+              action: 'assigned'
+            });
+          } else {
+            results.push({
+              chore_id: chore.id,
+              chore_title: chore.title,
+              action: 'skipped_duplicate'
+            });
+          }
         }
       }
     }

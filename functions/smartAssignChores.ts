@@ -174,15 +174,19 @@ const advancedFairAssignment = (chores, people, existingAssignments = [], recent
         let bestScore = -Infinity;
         
         // Find all people under their max chore limit
-        const eligiblePeople = people.filter(p => {
+        let eligiblePeople = people.filter(p => {
             const workload = weeklyWorkload[p.id] || 0;
             const maxChores = p.max_weekly_chores || 7;
             return workload < maxChores;
         });
         
         if (eligiblePeople.length === 0) {
-            // If everyone is at capacity, find person closest to capacity
-            eligiblePeople.push(...people);
+            // If everyone is at capacity, assign to person with lowest current workload
+            eligiblePeople = [...people].sort((a, b) => {
+                const workloadA = weeklyWorkload[a.id] || 0;
+                const workloadB = weeklyWorkload[b.id] || 0;
+                return workloadA - workloadB;
+            }).slice(0, 1);
         }
         
         // Calculate fairness score for each eligible person

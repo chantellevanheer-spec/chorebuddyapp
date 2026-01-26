@@ -1,6 +1,6 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.5.0';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { jsPDF } from 'npm:jspdf@2.5.1';
-import { format, subWeeks, parseISO } from 'npm:date-fns@2.30.0';
+import { format, subWeeks, parseISO } from 'npm:date-fns@3.6.0';
 
 Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);

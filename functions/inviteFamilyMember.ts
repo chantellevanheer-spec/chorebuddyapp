@@ -29,28 +29,21 @@ Deno.serve(async (req) => {
             const linkingCode = Math.random().toString(36).substring(2, 8).toUpperCase();
             const linkingCodeExpires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
             
-            // Try to get the family first, create if doesn't exist
-            try {
-                await base44.asServiceRole.entities.Family.update(familyId, {
-                    linking_code: linkingCode,
-                    linking_code_expires: linkingCodeExpires
+            // Verify family exists before generating code
+            const families = await base44.asServiceRole.entities.Family.filter({ id: familyId });
+            if (families.length === 0) {
+                return new Response(JSON.stringify({ 
+                    error: 'Family not found. Please create your family profile first.' 
+                }), { 
+                    status: 404, 
+                    headers: { 'Content-Type': 'application/json' } 
                 });
-            } catch (error) {
-                if (error.status === 404) {
-                    // Family doesn't exist, create it
-                    await base44.asServiceRole.entities.Family.create({
-                        id: familyId,
-                        name: `${user.full_name}'s Family`,
-                        owner_user_id: user.id,
-                        members: [user.id],
-                        subscription_tier: subscriptionTier,
-                        linking_code: linkingCode,
-                        linking_code_expires: linkingCodeExpires
-                    });
-                } else {
-                    throw error;
-                }
             }
+            
+            await base44.asServiceRole.entities.Family.update(familyId, {
+                linking_code: linkingCode,
+                linking_code_expires: linkingCodeExpires
+            });
 
             return new Response(JSON.stringify({ success: true, linkingCode, linkingCodeExpires }), {
                 status: 200,
