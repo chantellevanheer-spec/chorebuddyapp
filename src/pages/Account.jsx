@@ -37,7 +37,17 @@ export default function Account() {
   });
   const [notificationPreferences, setNotificationPreferences] = useState({});
   const { currentTheme, updateTheme } = useTheme();
-  const isPremium = user?.subscription_tier === 'premium';
+
+  // Determine effective subscription tier (child inherits parent's)
+  const getEffectiveSubscriptionTier = () => {
+    if (user?.family_role === 'child' && linkedPerson) {
+      // Child uses parent's subscription
+      return user?.data?.parent_subscription_tier || 'free';
+    }
+    return user?.subscription_tier || 'free';
+  };
+
+  const isPremium = getEffectiveSubscriptionTier() === 'premium';
 
   useEffect(() => {
     const fetchData = async () => {
@@ -272,10 +282,15 @@ export default function Account() {
             </h2>
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <p className="body-font text-lg">Your current plan: <span className="header-font text-xl text-[#FF6B35] capitalize">{user.subscription_tier}</span></p>
-                    <p className="body-font-light text-sm text-gray-500">Status: <span className="capitalize">{user.subscription_status}</span></p>
+                    <p className="body-font text-lg">
+                      Your current plan: <span className="header-font text-xl text-[#FF6B35] capitalize">{getEffectiveSubscriptionTier()}</span>
+                      {user?.family_role === 'child' && linkedPerson && <span className="body-font-light text-sm text-gray-500 ml-2">(from parent's account)</span>}
+                    </p>
+                    <p className="body-font-light text-sm text-gray-500">Status: <span className="capitalize">{user.subscription_status || 'active'}</span></p>
                 </div>
-                {user.subscription_tier !== 'free' ? (
+                {user?.family_role === 'child' && linkedPerson ? (
+                    <p className="body-font-light text-gray-600">Your parent manages the subscription. Contact them to upgrade.</p>
+                ) : getEffectiveSubscriptionTier() !== 'free' ? (
                     <Button 
                         onClick={handleManageSubscription} 
                         disabled={isPortalRedirecting}
