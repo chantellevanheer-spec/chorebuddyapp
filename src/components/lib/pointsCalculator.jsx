@@ -29,8 +29,11 @@ export function calculateChorePoints(chore, assignment) {
 
   // Early completion bonus
   if (assignment.due_date && chore.early_completion_bonus) {
-    const dueDate = parseISO(assignment.due_date);
+    // Use UTC dates to avoid timezone issues
+    const dueDate = new Date(assignment.due_date + 'T23:59:59Z');
     const now = new Date();
+    now.setHours(0, 0, 0, 0); // Normalize to start of day
+    
     const daysEarly = differenceInDays(dueDate, now);
     
     if (daysEarly > 0) {

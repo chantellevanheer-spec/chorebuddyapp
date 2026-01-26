@@ -23,10 +23,18 @@ export default function ChoreCompletionModal({
   const handlePhotoChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        toast.error('Please upload a valid image file (JPEG, PNG, GIF, or WebP)');
+        return;
+      }
+      
       if (file.size > 5 * 1024 * 1024) {
         toast.error('Photo must be less than 5MB');
         return;
       }
+      
       setPhotoFile(file);
       setPhotoPreview(URL.createObjectURL(file));
     }

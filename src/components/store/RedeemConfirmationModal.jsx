@@ -39,7 +39,7 @@ export default function RedeemConfirmationModal({
                 key={person.id}
                 onClick={() => onConfirm(person.id)}
                 disabled={isProcessing}
-                className={`w-full text-left funky-button p-4 flex items-center justify-between border-3 transition-colors ${AVATAR_COLORS[person.avatar_color] || AVATAR_COLORS.lavender}`}
+                className={`w-full text-left funky-button p-4 flex items-center justify-between border-3 transition-colors ${AVATAR_COLORS[person.avatar_color] || AVATAR_COLORS.lavender} ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <div className="flex items-center gap-4">
                   <div className="funky-button w-10 h-10 rounded-full bg-white border-3 border-[#5E3B85] flex items-center justify-center">
@@ -48,8 +48,14 @@ export default function RedeemConfirmationModal({
                   <span className="body-font text-lg text-[#5E3B85]">{person.name}</span>
                 </div>
                 <div className="flex items-center gap-2 text-yellow-600">
-                  <Star className="w-5 h-5 text-yellow-500 fill-yellow-400" />
-                  <span className="header-font text-lg">{personPoints[person.id] || 0}</span>
+                  {isProcessing ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>
+                      <Star className="w-5 h-5 text-yellow-500 fill-yellow-400" />
+                      <span className="header-font text-lg">{personPoints[person.id] || 0}</span>
+                    </>
+                  )}
                 </div>
               </button>
             ))
