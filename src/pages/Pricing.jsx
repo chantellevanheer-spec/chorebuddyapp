@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { User } from '@/entities/User';
-import { Loader2, Zap, Star, ShieldCheck } from 'lucide-react';
+import { Loader2, Zap, Star, ShieldCheck, AlertCircle } from 'lucide-react';
 import PlanCard from '../components/pricing/PlanCard';
 import { stripeCheckout } from '@/functions/stripeCheckout';
 import { toast } from 'sonner';
@@ -46,6 +47,10 @@ const plans = [
 ];
 
 export default function Pricing() {
+  const location = useLocation();
+  const blockedFeature = location.state?.feature;
+  const customMessage = location.state?.message;
+  
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isRedirecting, setIsRedirecting] = useState(false);
@@ -126,10 +131,29 @@ export default function Pricing() {
         </div>
       )}
 
+      {/* Premium Feature Alert */}
+      {blockedFeature && (
+        <div className="funky-card p-6 mb-8 border-4 border-[#FF6B35] bg-orange-50 mx-4 md:mx-8">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 funky-button bg-[#FF6B35] flex items-center justify-center flex-shrink-0">
+              <AlertCircle className="w-6 h-6 text-white" />
+            </div>
+            <div className="flex-1">
+              <h3 className="header-font text-xl text-[#FF6B35] mb-2">
+                Premium Feature Required
+              </h3>
+              <p className="body-font-light text-gray-700">
+                {customMessage || 'The feature you tried to access requires a Premium subscription. Upgrade now to unlock all features!'}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="text-center mt-8 md:mt-16 px-4 md:px-8">
         <h1 className="header-font text-4xl md:text-6xl text-[#2B59C3] leading-tight">
-          Find the Perfect Plan
+          {blockedFeature ? 'Upgrade to Premium' : 'Find the Perfect Plan'}
         </h1>
         <p className="body-font-light text-lg md:text-xl text-gray-600 mt-4 max-w-2xl mx-auto">
           Choose the plan that fits your family's needs and unlock powerful features to make chore management a breeze.
