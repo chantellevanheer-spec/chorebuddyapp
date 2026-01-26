@@ -237,12 +237,12 @@ export default function Account() {
             </div>
             
             <div className="mt-6 pt-6 border-t border-gray-200">
-              <h3 className="body-font text-lg text-[#5E3B85] mb-4">Family Role</h3>
+              <label htmlFor="family-role" className="body-font text-lg text-[#5E3B85] mb-4 block">Family Role</label>
               <Select 
                 value={user.family_role || 'parent'} 
                 onValueChange={(value) => handleToggleChange('family_role', value)}
               >
-                <SelectTrigger className="funky-button border-3 border-[#5E3B85] body-font bg-white max-w-xs">
+                <SelectTrigger id="family-role" className="funky-button border-3 border-[#5E3B85] body-font bg-white max-w-xs">
                   <SelectValue placeholder="Select your role..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -325,22 +325,24 @@ export default function Account() {
             <h2 className="header-font text-3xl text-[#2B59C3] mb-6">Chore Assignment Preferences</h2>
             <div className="space-y-6">
               <div className="flex items-center justify-between p-4 funky-card border-2 border-dashed bg-white/50">
-                <div>
+                <label htmlFor="auto-assign-chores" className="flex-1 cursor-pointer">
                   <h3 className="body-font text-lg text-[#5E3B85]">Auto-Assign Chores</h3>
                   <p className="body-font-light text-sm text-gray-600">Let ChoreAI automatically assign chores to you</p>
-                </div>
+                </label>
                 <Switch
+                  id="auto-assign-chores"
                   checked={chorePreferences.auto_assign_enabled}
                   onCheckedChange={(value) => setChorePreferences({ ...chorePreferences, auto_assign_enabled: value })}
                 />
               </div>
 
               <div className="flex items-center justify-between p-4 funky-card border-2 border-dashed bg-white/50">
-                <div>
+                <label htmlFor="avoid-weekend-chores" className="flex-1 cursor-pointer">
                   <h3 className="body-font text-lg text-[#5E3B85]">Avoid Weekend Chores</h3>
                   <p className="body-font-light text-sm text-gray-600">Prefer chores on weekdays when possible</p>
-                </div>
+                </label>
                 <Switch
+                  id="avoid-weekend-chores"
                   checked={chorePreferences.avoid_weekends}
                   onCheckedChange={(value) => setChorePreferences({ ...chorePreferences, avoid_weekends: value })}
                 />
@@ -368,31 +370,34 @@ export default function Account() {
             ) : (
               <div className="space-y-6">
                 <div className="flex items-center justify-between p-4 funky-card border-2 border-dashed bg-white/50">
-                  <div>
+                  <label htmlFor="chore-reminders" className="flex-1 cursor-pointer">
                     <h3 className="body-font text-lg text-[#5E3B85]">Chore Reminders</h3>
                     <p className="body-font-light text-sm text-gray-600">Get notified about upcoming chores</p>
-                  </div>
+                  </label>
                   <Switch
+                    id="chore-reminders"
                     checked={user.receives_chore_reminders}
                     onCheckedChange={(value) => handleToggleChange('receives_chore_reminders', value)}
                   />
                 </div>
                 <div className="flex items-center justify-between p-4 funky-card border-2 border-dashed bg-white/50">
-                   <div>
+                  <label htmlFor="achievement-alerts" className="flex-1 cursor-pointer">
                     <h3 className="body-font text-lg text-[#5E3B85]">Achievement Alerts</h3>
                     <p className="body-font-light text-sm text-gray-600">Celebrate completed tasks</p>
-                  </div>
+                  </label>
                   <Switch
+                    id="achievement-alerts"
                     checked={user.receives_achievement_alerts}
                     onCheckedChange={(value) => handleToggleChange('receives_achievement_alerts', value)}
                   />
                 </div>
                 <div className="flex items-center justify-between p-4 funky-card border-2 border-dashed bg-white/50">
-                   <div>
+                  <label htmlFor="weekly-reports" className="flex-1 cursor-pointer">
                     <h3 className="body-font text-lg text-[#5E3B85]">Weekly Reports</h3>
                     <p className="body-font-light text-sm text-gray-600">Receive family progress summaries</p>
-                  </div>
+                  </label>
                   <Switch
+                    id="weekly-reports"
                     checked={user.receives_weekly_reports}
                     onCheckedChange={(value) => handleToggleChange('receives_weekly_reports', value)}
                   />
