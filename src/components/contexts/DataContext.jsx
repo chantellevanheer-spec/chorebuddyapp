@@ -33,35 +33,51 @@ export const DataProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [familyInitialized, setFamilyInitialized] = useState(false);
+  
+  // Use refs to prevent race conditions during family initialization
+  const initializeFamilyRef = React.useRef(null);
+  const familyInitializedRef = React.useRef(false);
 
   const initializeFamily = useCallback(async (userData) => {
-    if (familyInitialized || userData.family_id) return userData.family_id;
+    if (familyInitializedRef.current || userData.family_id) {
+      return userData.family_id;
+    }
+    
+    // Return existing promise if already in progress (prevents duplicate families)
+    if (initializeFamilyRef.current) {
+      return initializeFamilyRef.current;
+    }
     
     console.log("[DataContext] Creating family for user...");
-    try {
-      const family = await Family.create({
-        name: `${userData.full_name}'s Family`,
-        owner_user_id: userData.id,
-        members: [userData.id],
-        subscription_tier: userData.subscription_tier || 'free'
-      });
-      console.log("[DataContext] Family created:", family);
+    
+    initializeFamilyRef.current = (async () => {
+      try {
+        const family = await Family.create({
+          name: `${userData.full_name}'s Family`,
+          owner_user_id: userData.id,
+          members: [userData.id],
+          subscription_tier: userData.subscription_tier || 'free'
+        });
+        console.log("[DataContext] Family created:", family);
 
-      await User.updateMyUserData({ 
-        family_id: family.id,
-        family_role: 'parent'
-      });
-      
-      console.log("[DataContext] User updated with family_id:", family.id);
-      setFamilyInitialized(true);
-      return family.id;
-    } catch (error) {
-      console.error("[DataContext] Error creating family:", error);
-      toast.error("Failed to create family. Please refresh and try again.");
-      throw error;
-    }
-  }, [familyInitialized]);
+        await User.updateMyUserData({ 
+          family_id: family.id,
+          family_role: 'parent'
+        });
+        
+        console.log("[DataContext] User updated with family_id:", family.id);
+        familyInitializedRef.current = true;
+        return family.id;
+      } catch (error) {
+        console.error("[DataContext] Error creating family:", error);
+        initializeFamilyRef.current = null; // Reset on error to allow retry
+        toast.error("Failed to create family. Please refresh and try again.");
+        throw error;
+      }
+    })();
+    
+    return initializeFamilyRef.current;
+  }, []);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
