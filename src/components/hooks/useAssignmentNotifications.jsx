@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Assignment } from '@/entities/Assignment';
+import { base44 } from '@/api/base44Client';
 import { Person } from '@/entities/Person';
 import { Chore } from '@/entities/Chore';
 import { toast } from 'sonner';
@@ -43,7 +43,7 @@ export function useAssignmentNotifications(familyId, enabled = true) {
     loadReferenceData();
 
     // Subscribe to assignment changes
-    const unsubscribe = Assignment.subscribe((event) => {
+    const unsubscribe = base44.entities.Assignment.subscribe((event) => {
       if (!initializedRef.current) return;
       
       const { type, data } = event;
