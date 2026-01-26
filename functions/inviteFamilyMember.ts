@@ -29,17 +29,7 @@ Deno.serve(async (req) => {
             const linkingCode = Math.random().toString(36).substring(2, 8).toUpperCase();
             const linkingCodeExpires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
             
-            // Verify family exists before generating code
-            const families = await base44.asServiceRole.entities.Family.filter({ id: familyId });
-            if (families.length === 0) {
-                return new Response(JSON.stringify({ 
-                    error: 'Family not found. Please create your family profile first.' 
-                }), { 
-                    status: 404, 
-                    headers: { 'Content-Type': 'application/json' } 
-                });
-            }
-            
+            // Update family with linking code
             await base44.asServiceRole.entities.Family.update(familyId, {
                 linking_code: linkingCode,
                 linking_code_expires: linkingCodeExpires
