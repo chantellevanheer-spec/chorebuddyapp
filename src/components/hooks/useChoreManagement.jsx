@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useData } from '../contexts/DataContext';
 import { calculateChorePoints } from '../lib/pointsCalculator';
 
