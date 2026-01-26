@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,10 +54,16 @@ export default function PersonFormModal({
     }
   }, [personToEdit, isOpen]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!person.name.trim()) return;
-    onSubmit(person);
+    
+    try {
+      await onSubmit(person);
+    } catch (error) {
+      console.error('Error submitting person form:', error);
+      // Error message shown by parent component via DataContext
+    }
   };
 
   const canAddMore = currentUser?.subscription_tier !== 'free' || peopleCount < FREE_PLAN_LIMIT;

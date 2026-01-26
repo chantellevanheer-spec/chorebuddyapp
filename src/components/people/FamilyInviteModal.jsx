@@ -28,13 +28,15 @@ export default function FamilyInviteModal({ isOpen, onClose, onSuccess }) {
 
       if (error) {
         toast.error(error.message || 'Failed to generate linking code');
-      } else {
-        setGeneratedLinkingCode(data.linkingCode);
-        setLinkingCodeExpiry(data.linkingCodeExpires);
-        toast.success('Linking code generated successfully!');
+        return;
       }
+      
+      setGeneratedLinkingCode(data.linkingCode);
+      setLinkingCodeExpiry(data.linkingCodeExpires);
+      toast.success('Linking code generated successfully!');
     } catch (error) {
-      toast.error('Failed to generate linking code');
+      console.error('Error generating linking code:', error);
+      toast.error(error?.message || 'Failed to generate linking code. Please try again.');
     } finally {
       setIsGeneratingCode(false);
     }
@@ -57,14 +59,16 @@ export default function FamilyInviteModal({ isOpen, onClose, onSuccess }) {
       
       if (error) {
         toast.error(error.message || 'Failed to send invitation');
-      } else {
-        toast.success('Family invitation sent successfully!');
-        setFormData({ email: '', name: '', role: 'child' });
-        onSuccess?.();
-        onClose();
+        return;
       }
+      
+      toast.success('Family invitation sent successfully!');
+      setFormData({ email: '', name: '', role: 'child' });
+      onSuccess?.();
+      onClose();
     } catch (error) {
-      toast.error('Failed to send invitation');
+      console.error('Error sending invitation:', error);
+      toast.error(error?.message || 'Failed to send invitation. Please try again.');
     } finally {
       setIsInviting(false);
     }
