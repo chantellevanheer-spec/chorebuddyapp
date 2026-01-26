@@ -40,31 +40,48 @@ export default function CalendarView({
   const assignmentsByDate = useMemo(() => {
     const map = new Map();
     
+    // Pre-filter assignments by month range for better performance
+    const monthStart = startOfMonth(currentMonth);
+    const monthEnd = endOfMonth(currentMonth);
+    
+    const relevantAssignments = assignments.filter(a => {
+      const weekStart = new Date(a.week_start);
+      const weekEnd = addDays(weekStart, 6);
+      return weekEnd >= monthStart && weekStart <= monthEnd;
+    });
+    
+    // Pre-parse dates once to avoid creating Date objects repeatedly
+    const assignmentsWithDates = relevantAssignments.map(a => ({
+      ...a,
+      weekStart: new Date(a.week_start),
+      weekEnd: addDays(new Date(a.week_start), 6),
+      dueDate: a.due_date ? new Date(a.due_date) : null
+    }));
+    
     calendarDays.forEach(day => {
-      let filtered = assignments.filter(a => {
-        const weekStart = new Date(a.week_start);
-        const weekEnd = addDays(weekStart, 6);
-        return day >= weekStart && day <= weekEnd;
-      });
+      const dayStr = format(day, 'yyyy-MM-dd');
+      
+      let filtered = assignmentsWithDates.filter(a => 
+        day >= a.weekStart && day <= a.weekEnd
+      );
 
       if (isChildMemo && linkedPersonId) {
         filtered = filtered.filter(a => a.person_id === linkedPersonId);
       }
 
       const dayAssignments = filtered.filter(a => {
-        if (a.due_date) {
-          return isSameDay(new Date(a.due_date), day);
+        if (a.dueDate) {
+          return isSameDay(a.dueDate, day);
         }
-        const weekStart = new Date(a.week_start);
-        const defaultDue = addDays(weekStart, 6);
+        const defaultDue = addDays(a.weekStart, 6);
         return isSameDay(defaultDue, day);
       });
 
-      map.set(format(day, 'yyyy-MM-dd'), dayAssignments);
+      map.set(dayStr, dayAssignments);
     });
     
     return map;
-  }, [calendarDays, assignments, isChildMemo, linkedPersonId]);
+  }, [calendarDays, assignments, isChildMemo, linkedPersonId, currentMonth]);
 
   const navigateMonth = (direction) => {
     setCurrentMonth(prev => direction === 'prev' ? subMonths(prev, 1) : addMonths(prev, 1));
