@@ -39,10 +39,19 @@ Deno.serve(async (req) => {
             const linkingCode = Math.random().toString(36).substring(2, 8).toUpperCase();
             const linkingCodeExpires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
             
-            // Update family with linking code
+            // Get current family data to preserve existing codes
+            const family = await base44.asServiceRole.entities.Family.get(familyId, { data_env: "dev" });
+            const userLinkingCodes = family.user_linking_codes || {};
+            
+            // Add/update this user's linking code
+            userLinkingCodes[user.id] = {
+                code: linkingCode,
+                expires: linkingCodeExpires
+            };
+            
+            // Update family with user-specific linking code
             await base44.asServiceRole.entities.Family.update(familyId, {
-                linking_code: linkingCode,
-                linking_code_expires: linkingCodeExpires
+                user_linking_codes: userLinkingCodes
             }, { data_env: "dev" });
 
             return new Response(JSON.stringify({ success: true, linkingCode, linkingCodeExpires }), {
