@@ -21,40 +21,53 @@ export function useRealTimeSync(familyId, enabled = true, onUpdate = null) {
 
     try {
       const now = new Date().toISOString();
-      
-      // Check each entity type for updates
       const entityTypes = ['Person', 'Chore', 'Assignment', 'Reward', 'RedeemableItem', 'FamilyGoal'];
       
-      for (const entityType of entityTypes) {
-        const lastCheck = lastCheckRef.current[entityType] || new Date(0).toISOString();
-        
-        // Query for items updated since last check
-        const updated = await base44.entities[entityType].filter({
-          family_id: familyId,
-        });
-
-        // Check if any items were updated after our last check
-        const hasUpdates = updated.some(item => item.updated_date > lastCheck);
-        
-        if (hasUpdates) {
-          // Invalidate relevant queries to trigger refetch
-          queryClient.invalidateQueries({ queryKey: [entityType.toLowerCase()] });
-          console.log(`[RealTimeSync] Detected updates in ${entityType}`);
+      // Use Promise.all for parallel requests - much more efficient
+      const results = await Promise.all(
+        entityTypes.map(async (entityType) => {
+          const lastCheck = lastCheckRef.current[entityType] || new Date(0).toISOString();
           
-          // Call the onUpdate callback if provided (for non-React Query contexts)
-          if (onUpdate) {
-            onUpdate();
-          }
-        }
-        
-        lastCheckRef.current[entityType] = now;
-      }
+          try {
+            // Fetch only recently updated items with server-side filtering
+            const updated = await base44.entities[entityType].filter({
+              family_id: familyId,
+              updated_date__gt: lastCheck,
+            });
 
+            return { 
+              entityType, 
+              hasUpdates: updated.length > 0, 
+              count: updated.length 
+            };
+          } catch (error) {
+            console.error(`[RealTimeSync] Error checking ${entityType}:`, error);
+            return { entityType, hasUpdates: false, error };
+          }
+        })
+      );
+
+      // Process results and invalidate queries
+      let totalUpdates = 0;
+      results.forEach(({ entityType, hasUpdates, count }) => {
+        if (hasUpdates) {
+          queryClient.invalidateQueries({ queryKey: [entityType.toLowerCase()] });
+          console.log(`[RealTimeSync] Detected ${count} update(s) in ${entityType}`);
+          totalUpdates += count || 0;
+        }
+        lastCheckRef.current[entityType] = now;
+      });
+
+      // Call onUpdate callback once if any updates detected
+      if (totalUpdates > 0 && onUpdate) {
+        onUpdate();
+      }
+      
       // Reset backoff on success
       backoffRef.current = 1;
       
     } catch (error) {
-      console.error('[RealTimeSync] Error checking for updates:', error);
+      console.error('[RealTimeSync] Critical error:', error);
       // Exponential backoff on error (up to 32 seconds)
       backoffRef.current = Math.min(backoffRef.current * 2, 32);
     }
