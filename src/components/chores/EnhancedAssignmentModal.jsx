@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { DISPLAY_LIMITS } from '@/components/lib/appConstants';
 
 export default function EnhancedAssignmentModal({ 
   isOpen, 
@@ -463,20 +464,20 @@ export default function EnhancedAssignmentModal({
                     </span>
                   </div>
                   <div className="max-h-32 overflow-y-auto space-y-1">
-                    {assignmentsPreview.slice(0, 10).map((a, i) => (
-                      <div key={i} className="body-font-light text-xs text-green-700 flex items-center gap-2">
-                        <span className="w-20">{format(new Date(a.week_start), 'MMM d')}</span>
-                        <span>→</span>
-                        <span className="font-medium">{a.personName}</span>
-                        {a.is_shared && <span className="text-purple-600">(shared)</span>}
-                        {a.is_rotation && <span className="text-blue-600">(rotation #{a.rotation_index + 1})</span>}
-                      </div>
-                    ))}
-                    {assignmentsPreview.length > 10 && (
-                      <div className="body-font-light text-xs text-green-600 italic">
-                        ...and {assignmentsPreview.length - 10} more
-                      </div>
-                    )}
+                   {assignmentsPreview.slice(0, DISPLAY_LIMITS.RECENT_ITEMS).map((a, i) => (
+                     <div key={i} className="body-font-light text-xs text-green-700 flex items-center gap-2">
+                       <span className="w-20">{format(new Date(a.week_start), 'MMM d')}</span>
+                       <span>→</span>
+                       <span className="font-medium">{a.personName}</span>
+                       {a.is_shared && <span className="text-purple-600">(shared)</span>}
+                       {a.is_rotation && <span className="text-blue-600">(rotation #{a.rotation_index + 1})</span>}
+                     </div>
+                   ))}
+                   {assignmentsPreview.length > DISPLAY_LIMITS.RECENT_ITEMS && (
+                     <div className="body-font-light text-xs text-green-600 italic">
+                       ...and {assignmentsPreview.length - DISPLAY_LIMITS.RECENT_ITEMS} more
+                     </div>
+                   )}
                   </div>
                 </div>
               )}

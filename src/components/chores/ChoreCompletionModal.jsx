@@ -5,6 +5,8 @@ import { X, Camera, Upload, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
+import { sanitizeHTML } from '@/components/lib/sanitization';
+import { VALIDATION } from '@/components/lib/appConstants';
 
 export default function ChoreCompletionModal({ 
   isOpen, 
@@ -46,6 +48,12 @@ export default function ChoreCompletionModal({
       return;
     }
 
+    // Validate and sanitize notes
+    if (notes.length > VALIDATION.MAX_NOTES_LENGTH) {
+      toast.error(`Notes must be less than ${VALIDATION.MAX_NOTES_LENGTH} characters`);
+      return;
+    }
+
     setIsUploading(true);
     try {
       let photoUrl = null;
@@ -55,11 +63,13 @@ export default function ChoreCompletionModal({
         photoUrl = uploadResult.file_url;
       }
 
-      await onComplete(assignment.id, notes, photoUrl);
+      // Sanitize notes before submission
+      const sanitizedNotes = sanitizeHTML(notes);
+      await onComplete(assignment.id, sanitizedNotes, photoUrl);
       onClose();
     } catch (error) {
       console.error('Error completing chore:', error);
-      toast.error('Failed to complete chore');
+      toast.error(error?.message || 'Failed to complete chore. Please try again.');
     } finally {
       setIsUploading(false);
     }

@@ -58,7 +58,7 @@ export function useRealTimeSync(familyId, enabled = true, onUpdate = null) {
       // Exponential backoff on error (up to 32 seconds)
       backoffRef.current = Math.min(backoffRef.current * 2, 32);
     }
-  }, [familyId, enabled, queryClient]);
+  }, [familyId, enabled, queryClient, onUpdate]);
 
   // Handle tab visibility
   useEffect(() => {

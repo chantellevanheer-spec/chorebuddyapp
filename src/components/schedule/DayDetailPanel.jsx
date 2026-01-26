@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, CheckCircle, Clock, Star, User, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AVATAR_COLORS, DIFFICULTY_STARS } from '@/components/lib/constants';
+import { sanitizeHTML } from '@/components/lib/sanitization';
 
 export default function DayDetailPanel({
   selectedDate,
@@ -142,9 +143,10 @@ export default function DayDetailPanel({
                       </div>
 
                       {chore.description && (
-                        <p className="body-font-light text-sm text-gray-600 mt-2">
-                          {chore.description}
-                        </p>
+                        <p 
+                          className="body-font-light text-sm text-gray-600 mt-2"
+                          dangerouslySetInnerHTML={{ __html: sanitizeHTML(chore.description) }}
+                        />
                       )}
                     </div>
 
