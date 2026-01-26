@@ -24,15 +24,16 @@ export default function FamilyInviteModal({ isOpen, onClose, onSuccess }) {
   const handleGenerateLinkingCode = async () => {
     setIsGeneratingCode(true);
     try {
-      const { data, error } = await inviteFamilyMember({ generateLinkingCode: true });
+      const response = await inviteFamilyMember({ generateLinkingCode: true });
+      const result = response.data;
 
-      if (error) {
-        toast.error(error.message || 'Failed to generate linking code');
+      if (result.error) {
+        toast.error(result.error || 'Failed to generate linking code');
         return;
       }
       
-      setGeneratedLinkingCode(data.linkingCode);
-      setLinkingCodeExpiry(data.linkingCodeExpires);
+      setGeneratedLinkingCode(result.linkingCode);
+      setLinkingCodeExpiry(result.linkingCodeExpires);
       toast.success('Linking code generated successfully!');
     } catch (error) {
       console.error('Error generating linking code:', error);
@@ -55,10 +56,11 @@ export default function FamilyInviteModal({ isOpen, onClose, onSuccess }) {
 
     setIsInviting(true);
     try {
-      const { data, error } = await inviteFamilyMember(formData);
+      const response = await inviteFamilyMember(formData);
+      const result = response.data;
       
-      if (error) {
-        toast.error(error.message || 'Failed to send invitation');
+      if (result.error) {
+        toast.error(result.error || 'Failed to send invitation');
         return;
       }
       
