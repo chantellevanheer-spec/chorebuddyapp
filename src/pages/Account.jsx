@@ -4,6 +4,7 @@ import { Person } from '@/entities/Person';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { createPageUrl } from '@/utils';
 import { Link as RouterLink, Link } from 'react-router-dom';
 import { Loader2, User as UserIcon, Bell, Users, Settings, Shield, CreditCard, AlertCircle, Link2, Sparkles, Palette, Crown } from 'lucide-react';
@@ -90,7 +91,8 @@ export default function Account() {
         receives_weekly_reports: user.receives_weekly_reports,
         avatar: avatarIcon,
         chore_preferences: chorePreferences,
-        notification_preferences: notificationPreferences
+        notification_preferences: notificationPreferences,
+        family_role: user.family_role
       });
       toast.success("Preferences saved!");
     } catch (error) {
@@ -218,7 +220,34 @@ export default function Account() {
               <p><strong>Name:</strong> {user.full_name}</p>
               <p><strong>Email:</strong> {user.email}</p>
             </div>
+            
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <h3 className="body-font text-lg text-[#5E3B85] mb-4">Family Role</h3>
+              <Select 
+                value={user.family_role || 'parent'} 
+                onValueChange={(value) => handleToggleChange('family_role', value)}
+              >
+                <SelectTrigger className="funky-button border-3 border-[#5E3B85] body-font bg-white max-w-xs">
+                  <SelectValue placeholder="Select your role..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="parent">Parent / Guardian</SelectItem>
+                  <SelectItem value="child">Teen / Child</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="body-font-light text-sm text-gray-500 mt-2">
+                Your role determines what features and permissions you have in the app
+              </p>
+            </div>
           </div>
+          
+          <Button
+            onClick={handleSaveChanges}
+            disabled={isSaving}
+            className="funky-button bg-[#5E3B85] text-white px-6 py-3 text-lg header-font w-full sm:w-auto mb-6"
+          >
+            {isSaving ? 'Saving...' : 'Save Changes'}
+          </Button>
           
           {/* Subscription Management */}
           <div className="funky-card p-8">
