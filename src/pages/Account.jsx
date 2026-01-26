@@ -106,10 +106,10 @@ export default function Account() {
   const handleManageSubscription = async () => {
     setIsPortalRedirecting(true);
     try {
-        const { data, error } = await stripeCheckout({ endpoint: 'create-portal-session' });
-        if (error) throw new Error(error.message || "Unknown error creating portal session.");
-        if (data && data.url) {
-            window.location.href = data.url;
+        const response = await stripeCheckout({ endpoint: 'create-portal-session' });
+        if (response.data?.error) throw new Error(response.data.error);
+        if (response.data?.url) {
+            window.location.href = response.data.url;
         } else {
             throw new Error("Could not open customer portal. No URL provided.");
         }

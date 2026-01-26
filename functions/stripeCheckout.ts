@@ -62,7 +62,7 @@ const handleCreateCheckoutSession = async (payload, user, base44, origin) => {
     return new Response(JSON.stringify({ url: session.url }), { status: 200, headers: { 'Content-Type': 'application/json' } });
 };
 
-const handleCreatePortalSession = async (user, origin) => {
+const handleCreatePortalSession = async (user, base44, origin) => {
     if (!user.stripe_customer_id) {
         return new Response(JSON.stringify({ error: "No customer ID found" }), { status: 400 });
     }
@@ -163,7 +163,7 @@ Deno.serve(async (req) => {
             case 'create-checkout-session':
                 return handleCreateCheckoutSession(payload, user, base44, origin);
             case 'create-portal-session':
-                return handleCreatePortalSession(user, origin);
+                return handleCreatePortalSession(user, base44, origin);
             default:
                 return new Response(JSON.stringify({ error: "Endpoint not found" }), { status: 404 });
         }
