@@ -66,9 +66,9 @@ export default function OnboardingTour({ isOpen, onClose, startAtStep = 0 }) {
   const handleComplete = async () => {
     try {
       await base44.auth.updateMe({ onboarding_completed: true });
-      onClose();
     } catch (error) {
       console.error('Error completing onboarding:', error);
+    } finally {
       onClose();
     }
   };
@@ -76,9 +76,9 @@ export default function OnboardingTour({ isOpen, onClose, startAtStep = 0 }) {
   const handleSkip = async () => {
     try {
       await base44.auth.updateMe({ onboarding_completed: true });
-      onClose();
     } catch (error) {
       console.error('Error skipping onboarding:', error);
+    } finally {
       onClose();
     }
   };

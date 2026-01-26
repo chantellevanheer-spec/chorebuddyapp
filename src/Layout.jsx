@@ -110,6 +110,7 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const onboardingShownRef = React.useRef(false);
 
   const isPublicPage = publicPages.includes(currentPageName);
 
@@ -132,9 +133,15 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
           return;
         }
 
-        // Show onboarding for new users (after role selection)
-        if (userData.family_role && !userData.data?.onboarding_completed && currentPageName !== 'RoleSelection') {
+        // Show onboarding ONCE per session for new users (after role selection)
+        if (
+          userData.family_role && 
+          !userData.data?.onboarding_completed && 
+          currentPageName !== 'RoleSelection' &&
+          !onboardingShownRef.current
+        ) {
           setShowOnboarding(true);
+          onboardingShownRef.current = true;
         }
       } catch (error) {
         setIsAuthenticated(false);
