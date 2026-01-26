@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { TIME } from './lib/constants.js';
 
 // Generate a random 6-character alphanumeric code (uppercase for readability)
 function generateLinkingCode() {
@@ -37,7 +38,7 @@ Deno.serve(async (req) => {
 
             // Generate new code with 24-hour expiry
             const newCode = generateLinkingCode();
-            const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+            const expiresAt = new Date(Date.now() + TIME.ONE_DAY_MS).toISOString();
 
             await base44.asServiceRole.entities.Family.update(familyId, {
                 linking_code: newCode,

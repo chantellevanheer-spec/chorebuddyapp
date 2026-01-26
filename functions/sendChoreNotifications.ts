@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
       const emailBody = `
         <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background: #FDFBF5; padding: 30px; border-radius: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #2B59C3; font-size: 32px; margin: 0;">🏠 ChoreBuddy</h1>
+            <h1 style="color: #2B59C3; font-size: 32px; margin: 0;">🏠 ${APP.NAME}</h1>
             <p style="color: #5E3B85; font-size: 16px; margin: 10px 0 0 0;">Your Chore Reminders</p>
           </div>
           
@@ -82,14 +82,14 @@ Deno.serve(async (req) => {
             ${assignmentsList}
             
             <div style="text-align: center; margin-top: 25px;">
-              <a href="https://www.chorebuddyapp.com" style="display: inline-block; background: #2B59C3; color: white; padding: 12px 30px; text-decoration: none; border-radius: 12px; font-weight: bold; border: 3px solid #5E3B85; box-shadow: 3px 3px 0px #5E3B85;">
+              <a href="${APP.URL}" style="display: inline-block; background: #2B59C3; color: white; padding: 12px 30px; text-decoration: none; border-radius: 12px; font-weight: bold; border: 3px solid #5E3B85; box-shadow: 3px 3px 0px #5E3B85;">
                 View My Chores
               </a>
             </div>
           </div>
           
           <div style="text-align: center; margin-top: 20px; color: #999; font-size: 12px;">
-            <p>You're receiving this because you enabled chore reminders in your ChoreBuddy settings.</p>
+            <p>You're receiving this because you enabled chore reminders in your ${APP.NAME} settings.</p>
           </div>
         </div>
       `;
@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
       try {
         await base44.asServiceRole.functions.invoke('sendGmailNotification', {
           to: recipient.email,
-          subject: `🏠 ChoreBuddy: ${userAssignments.length} Chore${userAssignments.length > 1 ? 's' : ''} This Week`,
+          subject: `🏠 ${APP.NAME}: ${userAssignments.length} Chore${userAssignments.length > 1 ? 's' : ''} This Week`,
           body: emailBody,
           notificationType: 'chore_reminder'
         });

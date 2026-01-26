@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { format, addDays, startOfWeek, isBefore, parseISO } from 'npm:date-fns@3.6.0';
+import { TIME, APP } from './lib/constants.js';
 
 Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
@@ -12,26 +13,20 @@ Deno.serve(async (req) => {
         
         if (!expectedApiKey) {
             console.error('Security Alert: NOTIFICATIONS_API_KEY is not set in environment variables.');
-            return new Response(JSON.stringify({ 
+            return Response.json({ 
                 success: false, 
                 error: 'Server configuration error: Notification service is not properly configured.' 
-            }), {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' },
-            });
+            }, { status: 500 });
         }
 
         // Check for API key in either Authorization header or X-API-Key header
         const providedKey = authHeader?.replace('Bearer ', '') || apiKey;
         
         if (!providedKey || providedKey !== expectedApiKey) {
-            return new Response(JSON.stringify({ 
+            return Response.json({ 
                 success: false, 
                 error: 'Unauthorized: Valid API key required' 
-            }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' },
-            });
+            }, { status: 401 });
         }
         
         // Fetch all users and their notification preferences
@@ -96,13 +91,13 @@ Deno.serve(async (req) => {
                     }
                     
                     emailBody += `<p>Keep up the great work! 💪</p>`;
-                    emailBody += `<p><a href="https://chorebuddyapp.com/Dashboard">View Dashboard</a></p>`;
+                    emailBody += `<p><a href="${APP.URL}/Dashboard">View Dashboard</a></p>`;
                     
                     await base44.asServiceRole.integrations.Core.SendEmail({
                         to: user.email,
-                        subject: `ChoreBuddy: ${overdueAssignments.length + dueSoonAssignments.length} chore${overdueAssignments.length + dueSoonAssignments.length > 1 ? 's' : ''} need${overdueAssignments.length + dueSoonAssignments.length === 1 ? 's' : ''} attention`,
+                        subject: `${APP.NAME}: ${overdueAssignments.length + dueSoonAssignments.length} chore${overdueAssignments.length + dueSoonAssignments.length > 1 ? 's' : ''} need${overdueAssignments.length + dueSoonAssignments.length === 1 ? 's' : ''} attention`,
                         body: emailBody,
-                        from_name: "ChoreBuddy"
+                        from_name: APP.NAME
                     });
                     
                     totalNotificationsSent++;
@@ -115,18 +110,18 @@ Deno.serve(async (req) => {
                 const recentCompletions = assignments.filter(a => 
                     a.completed && 
                     a.completed_date &&
-                    (new Date().getTime() - new Date(a.completed_date).getTime()) < 24 * 60 * 60 * 1000
+                    (new Date().getTime() - new Date(a.completed_date).getTime()) < TIME.ONE_DAY_MS
                 );
                 
                 // Find recent high-point achievements
                 const recentHighPointRewards = rewards.filter(r => 
                     r.points >= 50 && 
                     r.created_date &&
-                    (new Date().getTime() - new Date(r.created_date).getTime()) < 24 * 60 * 60 * 1000
+                    (new Date().getTime() - new Date(r.created_date).getTime()) < TIME.ONE_DAY_MS
                 );
                 
                 if (recentCompletions.length >= 3 || recentHighPointRewards.length > 0) {
-                    let emailBody = `<h2>🎉 ChoreBuddy Achievements!</h2>`;
+                    let emailBody = `<h2>🎉 ${APP.NAME} Achievements!</h2>`;
                     
                     if (recentCompletions.length >= 3) {
                         emailBody += `<p>🔥 <strong>Hot Streak!</strong> Your family completed ${recentCompletions.length} chores in the last 24 hours!</p>`;
@@ -145,9 +140,9 @@ Deno.serve(async (req) => {
                     
                     await base44.asServiceRole.integrations.Core.SendEmail({
                         to: user.email,
-                        subject: "🎉 ChoreBuddy: Family achievements unlocked!",
+                        subject: `🎉 ${APP.NAME}: Family achievements unlocked!`,
                         body: emailBody,
-                        from_name: "ChoreBuddy"
+                        from_name: APP.NAME
                     });
                     
                     totalNotificationsSent++;
@@ -162,7 +157,7 @@ Deno.serve(async (req) => {
                     .filter(r => r.week_start === currentWeekStart && r.points > 0)
                     .reduce((sum, r) => sum + r.points, 0);
                 
-                let emailBody = `<h2>📊 Weekly ChoreBuddy Report</h2>`;
+                let emailBody = `<h2>📊 Weekly ${APP.NAME} Report</h2>`;
                 emailBody += `<h3>Week of ${format(startOfWeek(currentDate), "MMMM d, yyyy")}</h3>`;
                 emailBody += `<p><strong>Family Stats:</strong></p>`;
                 emailBody += `<ul>`;
@@ -186,35 +181,29 @@ Deno.serve(async (req) => {
                     }
                 }
                 
-                emailBody += `<p><a href="https://chorebuddyapp.com/Analytics">View Full Analytics</a></p>`;
+                emailBody += `<p><a href="${APP.URL}/Analytics">View Full Analytics</a></p>`;
                 
                 await base44.asServiceRole.integrations.Core.SendEmail({
                     to: user.email,
-                    subject: `📊 Your ChoreBuddy Weekly Report - ${format(currentDate, "MMM d, yyyy")}`,
+                    subject: `📊 Your ${APP.NAME} Weekly Report - ${format(currentDate, "MMM d, yyyy")}`,
                     body: emailBody,
-                    from_name: "ChoreBuddy"
+                    from_name: APP.NAME
                 });
                 
                 totalNotificationsSent++;
             }
         }
         
-        return new Response(JSON.stringify({ 
+        return Response.json({ 
             success: true, 
             message: `Notifications processed successfully. ${totalNotificationsSent} notifications sent.`
-        }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-        });
+        }, { status: 200 });
         
     } catch (error) {
         console.error('Error sending notifications:', error);
-        return new Response(JSON.stringify({ 
+        return Response.json({ 
             success: false, 
             error: error.message 
-        }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' },
-        });
+        }, { status: 500 });
     }
 });

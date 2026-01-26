@@ -9,17 +9,11 @@ Deno.serve(async (req) => {
         const user = await base44.auth.me();
 
         if (!user || !user.family_id) {
-            return new Response(JSON.stringify({ error: 'Unauthorized' }), { 
-                status: 401,
-                headers: { 'Content-Type': 'application/json' }
-            });
+            return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
         if (user.subscription_tier === 'free') {
-            return new Response(JSON.stringify({ error: 'Report generation is a premium feature.' }), { 
-                status: 403,
-                headers: { 'Content-Type': 'application/json' }
-            });
+            return Response.json({ error: 'Report generation is a premium feature.' }, { status: 403 });
         }
 
         const { payload } = await req.json();
@@ -146,9 +140,6 @@ Deno.serve(async (req) => {
 
     } catch (error) {
         console.error('Report generation error:', error);
-        return new Response(JSON.stringify({ error: error.message }), { 
-            status: 500,
-            headers: { 'Content-Type': 'application/json' }
-        });
+        return Response.json({ error: error.message }, { status: 500 });
     }
 });
