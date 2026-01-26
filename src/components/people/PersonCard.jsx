@@ -58,4 +58,9 @@ function PersonCard({ person, completedChores, currentChores, onEdit, onDelete, 
   );
 }
 
-export default React.memo(PersonCard);
+export default React.memo(PersonCard, (prev, next) => {
+  return prev.person.id === next.person.id && 
+         prev.completedChores === next.completedChores &&
+         prev.currentChores === next.currentChores &&
+         prev.person.linked_user_id === next.person.linked_user_id;
+});

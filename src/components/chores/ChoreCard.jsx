@@ -56,4 +56,9 @@ function ChoreCard({ assignment, chore, person, onComplete }) {
   );
 }
 
-export default React.memo(ChoreCard);
+export default React.memo(ChoreCard, (prev, next) => {
+  return prev.assignment.id === next.assignment.id && 
+         prev.assignment.completed === next.assignment.completed &&
+         prev.chore.id === next.chore.id &&
+         prev.person.id === next.person.id;
+});

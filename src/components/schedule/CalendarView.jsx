@@ -37,31 +37,34 @@ export default function CalendarView({
   const isChildMemo = useMemo(() => user?.family_role === 'child' || user?.family_role === 'teen', [user?.family_role]);
   const linkedPersonId = useMemo(() => user?.linked_person_id, [user?.linked_person_id]);
 
-  const getAssignmentsForDate = (date) => {
-    const dateStr = format(date, 'yyyy-MM-dd');
-    let filtered = assignments.filter(a => {
-      // Check if assignment's week includes this date
-      const weekStart = new Date(a.week_start);
-      const weekEnd = addDays(weekStart, 6);
-      return date >= weekStart && date <= weekEnd;
-    });
+  const assignmentsByDate = useMemo(() => {
+    const map = new Map();
+    
+    calendarDays.forEach(day => {
+      let filtered = assignments.filter(a => {
+        const weekStart = new Date(a.week_start);
+        const weekEnd = addDays(weekStart, 6);
+        return day >= weekStart && day <= weekEnd;
+      });
 
-    // For children, only show their own
-    if (isChildMemo && linkedPersonId) {
-      filtered = filtered.filter(a => a.person_id === linkedPersonId);
-    }
-
-    // Check due date match
-    return filtered.filter(a => {
-      if (a.due_date) {
-        return isSameDay(new Date(a.due_date), date);
+      if (isChildMemo && linkedPersonId) {
+        filtered = filtered.filter(a => a.person_id === linkedPersonId);
       }
-      // Default to showing on the last day of the week
-      const weekStart = new Date(a.week_start);
-      const defaultDue = addDays(weekStart, 6);
-      return isSameDay(defaultDue, date);
+
+      const dayAssignments = filtered.filter(a => {
+        if (a.due_date) {
+          return isSameDay(new Date(a.due_date), day);
+        }
+        const weekStart = new Date(a.week_start);
+        const defaultDue = addDays(weekStart, 6);
+        return isSameDay(defaultDue, day);
+      });
+
+      map.set(format(day, 'yyyy-MM-dd'), dayAssignments);
     });
-  };
+    
+    return map;
+  }, [calendarDays, assignments, isChildMemo, linkedPersonId]);
 
   const navigateMonth = (direction) => {
     setCurrentMonth(prev => direction === 'prev' ? subMonths(prev, 1) : addMonths(prev, 1));
@@ -114,7 +117,7 @@ export default function CalendarView({
       {/* Calendar Grid */}
       <div className="grid grid-cols-7 gap-1">
         {calendarDays.map((day, index) => {
-          const dayAssignments = getAssignmentsForDate(day);
+          const dayAssignments = assignmentsByDate.get(format(day, 'yyyy-MM-dd')) || [];
           const isCurrentMonth = isSameMonth(day, currentMonth);
           const isSelected = selectedDate && isSameDay(day, selectedDate);
           const isTodayDate = isToday(day);
