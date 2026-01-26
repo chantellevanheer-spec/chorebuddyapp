@@ -148,8 +148,8 @@ export const DataProvider = ({ children }) => {
   // Enable real-time sync for family data
       useRealTimeSync(user?.family_id, !!user?.family_id, fetchData);
 
-      // Enable real-time assignment notifications
-      useAssignmentNotifications(user?.family_id, !!user?.family_id);
+      // Real-time notifications temporarily disabled
+      // useAssignmentNotifications(user?.family_id, !!user?.family_id);
 
   const wrapProcessing = async (asyncFunction) => {
     setIsProcessing(true);
