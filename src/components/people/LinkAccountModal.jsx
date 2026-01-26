@@ -1,19 +1,70 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { X, Link as LinkIcon, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { linkUserWithCode } from "@/functions/linkUserWithCode";
+import { toast } from "sonner";
 
-export default function LinkAccountModal({ isOpen, onClose, people, onLink, isProcessing }) {
+export default function LinkAccountModal({ isOpen, onClose, onLink, isProcessing: externalIsProcessing }) {
+  const [linkingCode, setLinkingCode] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
   const [selectedPersonId, setSelectedPersonId] = useState("");
+  const [unlinkedPeople, setUnlinkedPeople] = useState([]);
+  const [needsSelection, setNeedsSelection] = useState(false);
 
-  // Filter to only show people without linked accounts
-  const unlinkedPeople = people.filter(p => !p.linked_user_id);
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (selectedPersonId) {
-      onLink(selectedPersonId);
+    if (!linkingCode.trim()) {
+      toast.error("Please enter a linking code");
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const result = await linkUserWithCode({ linkingCode: linkingCode.trim() });
+      
+      if (result.data.needsSelection) {
+        // Multiple unlinked people - let child choose
+        setUnlinkedPeople(result.data.unlinkedPeople);
+        setNeedsSelection(true);
+      } else if (result.data.success) {
+        // Already linked
+        toast.success(result.data.message);
+        if (onLink) onLink(result.data.personId);
+        onClose();
+      }
+    } catch (error) {
+      toast.error(error.message || "Failed to link account");
+      console.error("Error linking account:", error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleSelectPerson = async () => {
+    if (!selectedPersonId) {
+      toast.error("Please select your name");
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      // Confirm the selection by calling the link function again with personId
+      const result = await linkUserWithCode({ 
+        linkingCode: linkingCode.trim(),
+        personId: selectedPersonId 
+      });
+      
+      if (result.data.success) {
+        toast.success("Account linked successfully!");
+        if (onLink) onLink(selectedPersonId);
+        onClose();
+      }
+    } catch (error) {
+      toast.error(error.message || "Failed to link account");
+      console.error("Error linking account:", error);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -33,55 +84,104 @@ export default function LinkAccountModal({ isOpen, onClose, people, onLink, isPr
               <div className="funky-button w-12 h-12 bg-[#2B59C3] flex items-center justify-center">
                 <LinkIcon className="w-6 h-6 text-white" />
               </div>
-              <h2 className="header-font text-2xl text-[#2B59C3]">Link Your Account</h2>
+              <h2 className="header-font text-2xl text-[#2B59C3]">
+                {needsSelection ? "Who Are You?" : "Link Your Account"}
+              </h2>
             </div>
             <Button
               variant="ghost"
               size="icon"
-              onClick={onClose}
+              onClick={() => {
+                if (needsSelection) {
+                  setNeedsSelection(false);
+                  setSelectedPersonId("");
+                } else {
+                  onClose();
+                }
+              }}
               className="h-8 w-8"
             >
               <X className="w-5 h-5" />
             </Button>
           </div>
 
-          {unlinkedPeople.length === 0 ? (
-            <div className="text-center py-6">
-              <AlertCircle className="w-12 h-12 mx-auto mb-4 text-orange-500" />
-              <p className="body-font text-gray-600 mb-4">
-                All family members are already linked to accounts.
-              </p>
-              <Button
-                onClick={onClose}
-                className="funky-button bg-gray-200 text-[#5E3B85] border-2 border-[#5E3B85]"
-              >
-                Close
-              </Button>
-            </div>
+          {needsSelection ? (
+            // Selection screen when multiple unlinked people exist
+            <form onSubmit={(e) => { e.preventDefault(); handleSelectPerson(); }} className="space-y-6">
+              <div className="bg-purple-50 border-2 border-purple-300 rounded-lg p-4">
+                <p className="body-font-light text-sm text-purple-800">
+                  👋 Select your name to complete the linking process.
+                </p>
+              </div>
+
+              <div>
+                <label className="body-font text-lg text-[#5E3B85] mb-4 block">
+                  Which person are you?
+                </label>
+                <div className="space-y-3">
+                  {unlinkedPeople.map(person => (
+                    <button
+                      key={person.id}
+                      type="button"
+                      onClick={() => setSelectedPersonId(person.id)}
+                      className={`funky-button w-full p-4 text-left border-3 transition-all ${
+                        selectedPersonId === person.id
+                          ? 'bg-[#2B59C3] text-white border-[#2B59C3]'
+                          : 'bg-white text-[#5E3B85] border-[#5E3B85]'
+                      }`}
+                    >
+                      <p className="header-font text-lg">{person.name}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setNeedsSelection(false);
+                    setSelectedPersonId("");
+                  }}
+                  disabled={isProcessing}
+                  className="funky-button flex-1 bg-gray-200 text-[#5E3B85] border-3 border-[#5E3B85]"
+                >
+                  Back
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={!selectedPersonId || isProcessing}
+                  className="funky-button flex-1 bg-[#2B59C3] text-white border-3 border-[#5E3B85]"
+                >
+                  {isProcessing ? "Linking..." : "Confirm"}
+                </Button>
+              </div>
+            </form>
           ) : (
+            // Code entry screen
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4">
                 <p className="body-font-light text-sm text-blue-800">
-                  💡 Link your account to a family member profile to see your chores and track your progress.
+                  🔐 Ask your parent for a linking code to connect your account.
                 </p>
               </div>
 
               <div>
                 <label className="body-font text-lg text-[#5E3B85] mb-2 block">
-                  Select Your Family Member Profile
+                  Enter Linking Code
                 </label>
-                <Select value={selectedPersonId} onValueChange={setSelectedPersonId}>
-                  <SelectTrigger className="funky-button border-3 border-[#2B59C3] body-font bg-white">
-                    <SelectValue placeholder="Choose who you are..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {unlinkedPeople.map(person => (
-                      <SelectItem key={person.id} value={person.id}>
-                        {person.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <input
+                  type="text"
+                  value={linkingCode}
+                  onChange={(e) => setLinkingCode(e.target.value.toUpperCase())}
+                  placeholder="E.g. ABC123"
+                  maxLength="6"
+                  className="funky-button w-full px-4 py-3 border-3 border-[#2B59C3] body-font text-center text-lg tracking-widest bg-white focus:outline-none focus:ring-2 focus:ring-[#2B59C3]"
+                  disabled={isProcessing}
+                />
+                <p className="body-font-light text-xs text-gray-500 mt-2">
+                  6 characters, ask your parent for the code
+                </p>
               </div>
 
               <div className="flex gap-3">
@@ -95,7 +195,7 @@ export default function LinkAccountModal({ isOpen, onClose, people, onLink, isPr
                 </Button>
                 <Button
                   type="submit"
-                  disabled={!selectedPersonId || isProcessing}
+                  disabled={!linkingCode.trim() || isProcessing}
                   className="funky-button flex-1 bg-[#2B59C3] text-white border-3 border-[#5E3B85]"
                 >
                   {isProcessing ? (
