@@ -129,12 +129,22 @@ export default function CalendarView({
               key={index}
               whileHover={{ scale: 1.02 }}
               onClick={() => onDayClick && onDayClick(day)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onDayClick && onDayClick(day);
+                }
+              }}
+              tabIndex={0}
+              role="button"
+              aria-label={`${format(day, 'MMMM d, yyyy')}${isTodayDate ? ' (Today)' : ''}. ${dayAssignments.length} ${dayAssignments.length === 1 ? 'chore' : 'chores'}. ${completedCount} completed, ${pendingCount} pending.`}
               className={`
                 min-h-[80px] md:min-h-[100px] p-1 md:p-2 rounded-lg border-2 cursor-pointer transition-all
                 ${isCurrentMonth ? 'bg-white' : 'bg-gray-50 opacity-50'}
                 ${isSelected ? 'border-[#FF6B35] ring-2 ring-[#FF6B35]' : 'border-gray-200'}
                 ${isTodayDate ? 'bg-yellow-50 border-yellow-400' : ''}
                 hover:border-[#C3B1E1]
+                focus:outline-none focus:ring-2 focus:ring-[#2B59C3] focus:ring-offset-2
               `}
             >
               {/* Date Number */}

@@ -16,6 +16,7 @@ function ChoreCard({ assignment, chore, person, onComplete }) {
             checked={assignment.completed}
             onCheckedChange={() => !assignment.completed && onComplete(assignment.id, chore.id)}
             disabled={assignment.completed}
+            aria-label={`Mark "${chore.title}" for ${person.name} as ${assignment.completed ? 'incomplete' : 'complete'}`}
           />
         </div>
 
