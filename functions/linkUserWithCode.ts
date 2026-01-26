@@ -50,10 +50,7 @@ Deno.serve(async (req) => {
 
         // Get all unlinked people in the family
         const allPeople = await base44.asServiceRole.entities.Person.filter(
-            { family_id: user.family_id },
-            '',
-            50,
-            { data_env: "dev" }
+            { family_id: user.family_id }
         );
 
         const unlinkedPeople = allPeople.filter(p => !p.linked_user_id);
@@ -80,10 +77,7 @@ Deno.serve(async (req) => {
 
         // Check if user is already linked to another person
         const existingLink = await base44.asServiceRole.entities.Person.filter(
-            { linked_user_id: user.id },
-            '',
-            1,
-            { data_env: "dev" }
+            { linked_user_id: user.id }
         );
 
         if (existingLink.length > 0 && existingLink[0].id !== personToLink.id) {
