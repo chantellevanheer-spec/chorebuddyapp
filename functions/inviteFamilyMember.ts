@@ -14,9 +14,9 @@ Deno.serve(async (req) => {
             });
         }
 
-        // Verify family exists
+        // Verify family exists using service role to bypass RLS
         try {
-            await base44.entities.Family.get(familyId);
+            await base44.asServiceRole.entities.Family.get(familyId);
         } catch (error) {
             return new Response(JSON.stringify({ error: 'Family not found. Please set up your family first.' }), { 
                 status: 404, 
