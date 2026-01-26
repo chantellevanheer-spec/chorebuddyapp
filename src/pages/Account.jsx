@@ -99,6 +99,16 @@ export default function Account() {
         chore_preferences: chorePreferences,
         notification_preferences: notificationPreferences
       });
+      
+      // Refresh user data to reflect updated family_role in RLS checks
+      const updatedUser = await User.me();
+      setUser({
+        ...updatedUser,
+        receives_chore_reminders: updatedUser.receives_chore_reminders ?? true,
+        receives_achievement_alerts: updatedUser.receives_achievement_alerts ?? true,
+        receives_weekly_reports: updatedUser.receives_weekly_reports ?? false
+      });
+      
       toast.success("Preferences saved!");
     } catch (error) {
       toast.error("Failed to save preferences.");
