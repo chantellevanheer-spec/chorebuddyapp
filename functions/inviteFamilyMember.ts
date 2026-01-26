@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
 
         // Verify family exists using service role to bypass RLS
         try {
-            await base44.asServiceRole.entities.Family.get(familyId);
+            await base44.asServiceRole.entities.Family.get(familyId, { data_env: "dev" });
         } catch (error) {
             return new Response(JSON.stringify({ error: 'Family not found. Please set up your family first.' }), { 
                 status: 404, 
@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
             await base44.asServiceRole.entities.Family.update(familyId, {
                 linking_code: linkingCode,
                 linking_code_expires: linkingCodeExpires
-            });
+            }, { data_env: "dev" });
 
             return new Response(JSON.stringify({ success: true, linkingCode, linkingCodeExpires }), {
                 status: 200,
@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
         // Update family with invite code
         await base44.asServiceRole.entities.Family.update(familyId, { 
             invite_code: inviteCode 
-        });
+        }, { data_env: "dev" });
 
         const appUrl = 'https://chorebuddyapp.com';
         const joinUrl = `${appUrl}/JoinFamily?code=${inviteCode}`;
