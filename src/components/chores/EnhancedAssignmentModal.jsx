@@ -6,7 +6,7 @@ import { X, UserPlus, Users, RefreshCw, Repeat, Calendar } from 'lucide-react';
 import { format, startOfWeek, addDays, addWeeks, addMonths } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
+import InteractiveCheckbox from '@/components/ui/InteractiveCheckbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { DISPLAY_LIMITS } from '@/components/lib/appConstants';
@@ -295,10 +295,10 @@ export default function EnhancedAssignmentModal({
                     <div className="space-y-2 max-h-40 overflow-y-auto">
                       {people.map((person) => (
                         <div key={person.id} className="flex items-center space-x-2">
-                          <Checkbox
+                          <InteractiveCheckbox
                             id={`shared-${person.id}`}
                             checked={selectedPersonIds.includes(person.id)}
-                            onCheckedChange={() => handlePersonToggle(person.id)}
+                            onChange={() => handlePersonToggle(person.id)}
                             className="border-2 border-[#5E3B85]"
                           />
                           <Label htmlFor={`shared-${person.id}`} className="body-font text-sm cursor-pointer">
@@ -319,10 +319,10 @@ export default function EnhancedAssignmentModal({
                     <div className="space-y-2 mb-4">
                       {people.map((person) => (
                         <div key={person.id} className="flex items-center space-x-2">
-                          <Checkbox
+                          <InteractiveCheckbox
                             id={`rotation-${person.id}`}
                             checked={rotationPersonOrder.includes(person.id)}
-                            onCheckedChange={() => handleRotationOrderToggle(person.id)}
+                            onChange={() => handleRotationOrderToggle(person.id)}
                             className="border-2 border-[#5E3B85]"
                           />
                           <Label htmlFor={`rotation-${person.id}`} className="body-font text-sm cursor-pointer flex-1">
@@ -408,10 +408,10 @@ export default function EnhancedAssignmentModal({
               {/* Recurring Settings */}
               <div className="p-4 funky-card border-2 border-[#C3B1E1] bg-purple-50">
                 <div className="flex items-center space-x-2 mb-3">
-                  <Checkbox
+                  <InteractiveCheckbox
                     id="is_recurring"
                     checked={isRecurring}
-                    onCheckedChange={setIsRecurring}
+                    onChange={setIsRecurring}
                     className="border-2 border-[#5E3B85]"
                   />
                   <Label htmlFor="is_recurring" className="body-font text-base text-[#5E3B85] cursor-pointer">
