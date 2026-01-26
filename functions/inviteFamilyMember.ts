@@ -24,7 +24,28 @@ Deno.serve(async (req) => {
             });
         }
 
-        const subscriptionTier = user?.data?.subscription_tier || user?.subscription_tier || 'free';
+        let subscriptionTier = user?.data?.subscription_tier || user?.subscription_tier || 'free';
+        
+        // If user is a child, get parent's subscription
+        if (user.family_role === 'child') {
+            const linkedPerson = await base44.asServiceRole.entities.Person.filter({
+                linked_user_id: user.id,
+                family_id: familyId
+            });
+            
+            if (linkedPerson.length > 0) {
+                // Find the parent user who owns this family or is an admin in the family
+                const familyMembers = await base44.asServiceRole.entities.User.filter({
+                    family_id: familyId,
+                    family_role: 'parent'
+                });
+                
+                if (familyMembers.length > 0) {
+                    subscriptionTier = familyMembers[0]?.data?.subscription_tier || familyMembers[0]?.subscription_tier || 'free';
+                }
+            }
+        }
+        
         const { email, name, role, generateLinkingCode } = await req.json();
 
         // Handle linking code generation (allowed on all tiers)
