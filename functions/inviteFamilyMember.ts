@@ -25,16 +25,9 @@ Deno.serve(async (req) => {
         }
 
         const subscriptionTier = user?.data?.subscription_tier || user?.subscription_tier || 'free';
-        if (subscriptionTier !== 'premium') {
-            return new Response(JSON.stringify({ error: 'Family invitations are a Premium feature.' }), { 
-                status: 403, 
-                headers: { 'Content-Type': 'application/json' } 
-            });
-        }
-
         const { email, name, role, generateLinkingCode } = await req.json();
 
-        // Handle linking code generation
+        // Handle linking code generation (allowed on all tiers)
         if (generateLinkingCode) {
             const linkingCode = Math.random().toString(36).substring(2, 8).toUpperCase();
             const linkingCodeExpires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
@@ -57,6 +50,14 @@ Deno.serve(async (req) => {
             return new Response(JSON.stringify({ success: true, linkingCode, linkingCodeExpires }), {
                 status: 200,
                 headers: { 'Content-Type': 'application/json' }
+            });
+        }
+        
+        // Email invitations require premium
+        if (subscriptionTier !== 'premium') {
+            return new Response(JSON.stringify({ error: 'Email invitations are a Premium feature.' }), { 
+                status: 403, 
+                headers: { 'Content-Type': 'application/json' } 
             });
         }
         
