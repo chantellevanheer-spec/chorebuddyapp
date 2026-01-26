@@ -1,17 +1,33 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-export default function InteractiveCheckbox({ isCompleted, onToggle, color = 'bg-[#C3B1E1]' }) {
+export default function InteractiveCheckbox({ isCompleted, onToggle, color = 'bg-[#C3B1E1]', 'aria-label': ariaLabel, id, checked, onCheckedChange, disabled }) {
+  // Support both old and new prop formats
+  const handleClick = onToggle || (() => !disabled && onCheckedChange?.(!checked));
+  const isChecked = isCompleted ?? checked;
+  
   return (
     <div
-      onClick={onToggle}
-      className={`funky-button relative w-16 h-16 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 ${
-        isCompleted
+      onClick={handleClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick();
+        }
+      }}
+      role="checkbox"
+      aria-checked={isChecked}
+      aria-label={ariaLabel}
+      aria-disabled={disabled}
+      tabIndex={disabled ? -1 : 0}
+      id={id}
+      className={`funky-button relative w-16 h-16 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#2B59C3] focus:ring-offset-2 ${
+        isChecked
           ? `${color.replace('border-', 'bg-')} text-white`
           : 'bg-white border-3 border-[#5E3B85]'
-      }`}
+      } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
     >
-      {isCompleted && (
+      {isChecked && (
         <motion.svg
           xmlns="http://www.w3.org/2000/svg"
           width="40"
