@@ -16,9 +16,6 @@ export default function CalendarView({
 }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  const isParent = user?.family_role === 'parent';
-  const isChild = user?.family_role === 'child' || user?.family_role === 'teen';
-
   const calendarDays = useMemo(() => {
     const monthStart = startOfMonth(currentMonth);
     const monthEnd = endOfMonth(monthStart);
@@ -36,6 +33,10 @@ export default function CalendarView({
     return days;
   }, [currentMonth]);
 
+  const isParentMemo = useMemo(() => user?.family_role === 'parent', [user?.family_role]);
+  const isChildMemo = useMemo(() => user?.family_role === 'child' || user?.family_role === 'teen', [user?.family_role]);
+  const linkedPersonId = useMemo(() => user?.linked_person_id, [user?.linked_person_id]);
+
   const getAssignmentsForDate = (date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
     let filtered = assignments.filter(a => {
@@ -46,8 +47,8 @@ export default function CalendarView({
     });
 
     // For children, only show their own
-    if (isChild && user?.linked_person_id) {
-      filtered = filtered.filter(a => a.person_id === user.linked_person_id);
+    if (isChildMemo && linkedPersonId) {
+      filtered = filtered.filter(a => a.person_id === linkedPersonId);
     }
 
     // Check due date match

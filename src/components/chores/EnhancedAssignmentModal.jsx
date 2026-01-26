@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
 
 export default function EnhancedAssignmentModal({ 
   isOpen, 
@@ -138,6 +139,22 @@ export default function EnhancedAssignmentModal({
   const handleSubmit = (e) => {
     e.preventDefault();
     
+    // Validate required data
+    if (!familyId) {
+      toast.error("Family ID is missing. Please refresh the page.");
+      return;
+    }
+    
+    if (!chore?.id) {
+      toast.error("Chore information is missing. Please try again.");
+      return;
+    }
+    
+    if (assignmentsPreview.length === 0) {
+      toast.error("No assignments to create. Please select at least one person.");
+      return;
+    }
+    
     console.log("[EnhancedAssignmentModal] handleSubmit called");
     console.log("[EnhancedAssignmentModal] chore:", chore);
     console.log("[EnhancedAssignmentModal] familyId prop:", familyId);
@@ -150,6 +167,7 @@ export default function EnhancedAssignmentModal({
         week_start: preview.week_start,
         due_date: dueDate,
         completed: false,
+        family_id: familyId,
         is_shared: preview.is_shared || false,
         shared_with: preview.shared_with || null,
         is_rotation: preview.is_rotation || false
@@ -177,6 +195,13 @@ export default function EnhancedAssignmentModal({
     setRecurrencePattern('weekly');
     setRecurrenceCount(4);
   };
+
+  // Cleanup form state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      resetForm();
+    }
+  }, [isOpen]);
 
   const canSubmit = () => {
     if (assignmentType === 'individual') return !!selectedPersonId;

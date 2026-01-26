@@ -76,7 +76,14 @@ export function useRealTimeSync(familyId, enabled = true, onUpdate = null) {
 
   // Start polling interval
   useEffect(() => {
-    if (!familyId || !enabled) return;
+    if (!familyId || !enabled) {
+      // Cleanup on disable
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      return;
+    }
 
     // Initial check
     checkForUpdates();
@@ -89,7 +96,11 @@ export function useRealTimeSync(familyId, enabled = true, onUpdate = null) {
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
+      // Reset refs on cleanup
+      lastCheckRef.current = {};
+      backoffRef.current = 1;
     };
   }, [familyId, enabled, checkForUpdates]);
 

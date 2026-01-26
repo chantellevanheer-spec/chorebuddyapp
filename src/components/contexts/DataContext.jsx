@@ -33,52 +33,51 @@ export const DataProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [familyInitialized, setFamilyInitialized] = useState(false);
+
+  const initializeFamily = useCallback(async (userData) => {
+    if (familyInitialized || userData.family_id) return userData;
+    
+    console.log("[DataContext] Creating family for user...");
+    try {
+      const family = await Family.create({
+        name: `${userData.full_name}'s Family`,
+        owner_user_id: userData.id,
+        members: [userData.id],
+        subscription_tier: userData.subscription_tier || 'free'
+      });
+      console.log("[DataContext] Family created:", family);
+
+      await User.updateMyUserData({ 
+        family_id: family.id,
+        family_role: userData.family_role || 'parent'
+      });
+      
+      const updatedUserData = await User.me();
+      console.log("[DataContext] User updated with family_id:", updatedUserData.family_id);
+      setFamilyInitialized(true);
+      return updatedUserData;
+    } catch (error) {
+      console.error("[DataContext] Error creating family:", error);
+      toast.error("Failed to create family. Please refresh and try again.");
+      throw error;
+    }
+  }, [familyInitialized]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      // Fetch user data first
       const userData = await User.me().catch(() => null);
       console.log("[DataContext] User data:", userData);
-      setUser(userData);
 
       if (!userData) {
+        setUser(null);
         setLoading(false);
         return;
       }
 
-      // Initialize family if user doesn't have one
-      if (!userData.family_id) {
-        console.log("[DataContext] Creating family for user...");
-        try {
-          const family = await Family.create({
-            name: `${userData.full_name}'s Family`,
-            owner_user_id: userData.id,
-            members: [userData.id],
-            subscription_tier: userData.subscription_tier || 'free'
-          });
-          console.log("[DataContext] Family created:", family);
-
-          // Update the user's family_id in the backend
-          await User.updateMyUserData({ 
-            family_id: family.id,
-            family_role: userData.family_role || 'parent' // Set as parent when creating new family
-          });
-          
-          // Re-fetch user to get updated family_id
-          const updatedUserData = await User.me();
-          setUser(updatedUserData);
-          console.log("[DataContext] User updated with family_id:", updatedUserData.family_id);
-        } catch (error) {
-          console.error("[DataContext] Error creating family:", error);
-          toast.error("Failed to create family. Please refresh and try again.");
-          setLoading(false);
-          return;
-        }
-      }
-
-      // Re-fetch user one more time to ensure we have the latest family_id
-      const currentUserData = await User.me();
+      // Initialize family once if needed
+      const currentUserData = await initializeFamily(userData);
       setUser(currentUserData);
 
       if (!currentUserData.family_id) {
@@ -96,7 +95,6 @@ export const DataProvider = ({ children }) => {
 
       console.log("[DataContext] Fetching data for family_id:", currentUserData.family_id);
       
-      // Fetch other data
       const [peopleData, choresData, assignmentsData, rewardsData, itemsData, goalsData, completionsData] = await Promise.all([
         Person.list("name"),
         Chore.list("title"),
@@ -122,11 +120,11 @@ export const DataProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [initializeFamily]);
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+  }, []);
 
   // Enable real-time sync for family data
       useRealTimeSync(user?.family_id, !!user?.family_id, fetchData);
