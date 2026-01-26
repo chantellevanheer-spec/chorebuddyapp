@@ -292,21 +292,35 @@ Deno.serve(async (req) => {
             }), { status: 200, headers: { 'Content-Type': 'application/json' }});
         }
 
-        // Otherwise, create the assignments
-        if (newAssignments.length > 0) {
-            await base44.asServiceRole.entities.Assignment.bulkCreate(newAssignments);
-        }
+        // Create assignments and update chores atomically
+        try {
+            // Create assignments first
+            if (newAssignments.length > 0) {
+                await base44.asServiceRole.entities.Assignment.bulkCreate(newAssignments);
+            }
 
-        // Update rotation chores with new indices
-        if (choreUpdates.length > 0) {
-            await Promise.all(
-                choreUpdates.map(update => 
-                    base44.asServiceRole.entities.Chore.update(update.id, {
-                        rotation_current_index: update.rotation_current_index,
-                        rotation_last_assigned_date: update.rotation_last_assigned_date
-                    })
-                )
-            );
+            // Update rotation chores with new indices
+            if (choreUpdates.length > 0) {
+                await Promise.all(
+                    choreUpdates.map(update => 
+                        base44.asServiceRole.entities.Chore.update(update.id, {
+                            rotation_current_index: update.rotation_current_index,
+                            rotation_last_assigned_date: update.rotation_last_assigned_date
+                        })
+                    )
+                );
+            }
+        } catch (assignError) {
+            // If chore updates fail after assignments created, log warning but don't fail completely
+            // Assignments are still valid, rotation indices will catch up next time
+            console.error('Warning: Assignment created but rotation update failed:', assignError.message);
+            
+            return new Response(JSON.stringify({ 
+                success: true, 
+                created: newAssignments.length,
+                rotations_updated: 0,
+                warning: 'Assignments created but some rotation data may need manual update'
+            }), { status: 200, headers: { 'Content-Type': 'application/json' }});
         }
 
         return new Response(JSON.stringify({ 

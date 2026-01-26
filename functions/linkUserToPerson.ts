@@ -39,7 +39,14 @@ Deno.serve(async (req) => {
             });
         }
 
-        // Verify user is in the same family
+        // Verify user is in the same family - both must have family_id
+        if (!person.family_id || !user.family_id) {
+            return new Response(JSON.stringify({ error: 'Family membership required for both user and person' }), { 
+                status: 400, 
+                headers: { 'Content-Type': 'application/json' } 
+            });
+        }
+        
         if (person.family_id !== user.family_id) {
             return new Response(JSON.stringify({ error: 'Person is not in your family' }), { 
                 status: 403, 

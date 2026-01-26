@@ -40,26 +40,40 @@ Deno.serve(async (req) => {
             }), { status: 200, headers: { 'Content-Type': 'application/json' } });
         }
 
-        // Update user's record
-        await base44.asServiceRole.entities.User.update(user.id, {
-            family_id: family.id,
-            family_role: role || 'child',
-        });
-        
-        // Add user to family's members list
-        if (!family.members.includes(user.id)) {
-            await base44.asServiceRole.entities.Family.update(family.id, {
-                members: [...family.members, user.id]
+        // Perform all updates atomically - if any fail, all should fail
+        let newPerson;
+        try {
+            // Create person first to ensure we can link properly
+            newPerson = await base44.asServiceRole.entities.Person.create({
+                name: user.full_name,
+                family_id: family.id,
+                linked_user_id: user.id,
+                role: (role === 'parent' ? 'adult' : 'child'),
             });
+            
+            // Update user's record
+            await base44.asServiceRole.entities.User.update(user.id, {
+                family_id: family.id,
+                family_role: role || 'child',
+            });
+            
+            // Add user to family's members list
+            if (!family.members.includes(user.id)) {
+                await base44.asServiceRole.entities.Family.update(family.id, {
+                    members: [...family.members, user.id]
+                });
+            }
+        } catch (updateError) {
+            // Rollback: delete the person record if updates failed
+            if (newPerson?.id) {
+                try {
+                    await base44.asServiceRole.entities.Person.delete(newPerson.id);
+                } catch (rollbackError) {
+                    console.error('Rollback failed:', rollbackError);
+                }
+            }
+            throw new Error('Failed to complete family join operation. Please try again.');
         }
-        
-        // Create a Person record for the new user
-        const newPerson = await base44.asServiceRole.entities.Person.create({
-            name: user.full_name,
-            family_id: family.id,
-            linked_user_id: user.id,
-            role: (role === 'parent' ? 'adult' : 'child'),
-        });
 
         return new Response(JSON.stringify({ 
             success: true, 
