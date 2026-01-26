@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { X, Link as LinkIcon, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { linkUserWithCode } from "@/functions/linkUserWithCode";
+import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 
 export default function LinkAccountModal({ isOpen, onClose, onLink, isProcessing: externalIsProcessing }) {
@@ -21,7 +21,7 @@ export default function LinkAccountModal({ isOpen, onClose, onLink, isProcessing
 
     setIsProcessing(true);
     try {
-      const result = await linkUserWithCode({ linkingCode: linkingCode.trim() });
+      const result = await base44.functions.invoke('linkUserWithCode', { linkingCode: linkingCode.trim() });
       
       if (result.data.needsSelection) {
         // Multiple unlinked people - let child choose
@@ -50,7 +50,7 @@ export default function LinkAccountModal({ isOpen, onClose, onLink, isProcessing
     setIsProcessing(true);
     try {
       // Confirm the selection by calling the link function again with personId
-      const result = await linkUserWithCode({ 
+      const result = await base44.functions.invoke('linkUserWithCode', { 
         linkingCode: linkingCode.trim(),
         personId: selectedPersonId 
       });
