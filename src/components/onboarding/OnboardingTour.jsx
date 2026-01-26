@@ -44,10 +44,20 @@ const tourSteps = [
 export default function OnboardingTour({ isOpen, onClose, startAtStep = 0 }) {
   const [currentStep, setCurrentStep] = useState(startAtStep);
   const navigate = useNavigate();
+  const abortControllerRef = React.useRef(null);
 
   const step = tourSteps[currentStep];
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === tourSteps.length - 1;
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   const handleNext = () => {
     if (isLastStep) {
@@ -65,9 +75,12 @@ export default function OnboardingTour({ isOpen, onClose, startAtStep = 0 }) {
 
   const handleComplete = async () => {
     try {
+      abortControllerRef.current = new AbortController();
       await base44.auth.updateMe({ onboarding_completed: true });
     } catch (error) {
-      console.error('Error completing onboarding:', error);
+      if (error.name !== 'AbortError') {
+        console.error('Error completing onboarding:', error);
+      }
     } finally {
       onClose();
     }
@@ -75,9 +88,12 @@ export default function OnboardingTour({ isOpen, onClose, startAtStep = 0 }) {
 
   const handleSkip = async () => {
     try {
+      abortControllerRef.current = new AbortController();
       await base44.auth.updateMe({ onboarding_completed: true });
     } catch (error) {
-      console.error('Error skipping onboarding:', error);
+      if (error.name !== 'AbortError') {
+        console.error('Error skipping onboarding:', error);
+      }
     } finally {
       onClose();
     }
