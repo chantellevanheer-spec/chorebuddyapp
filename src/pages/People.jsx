@@ -75,6 +75,10 @@ export default function People() {
   };
 
   const handleShowInviteModal = () => {
+    if (user?.family_role !== 'parent') {
+      toast.error('Only parents/guardians can invite family members');
+      return;
+    }
     if (canAccess('family_invitations')) {
       setInviteModalOpen(true);
     }
@@ -88,6 +92,10 @@ export default function People() {
   };
 
   const handleShowLinkModal = (person) => {
+    if (user?.family_role !== 'parent') {
+      toast.error('Only parents/guardians can link accounts');
+      return;
+    }
     setPersonToLink(person);
     setLinkModalOpen(true);
   };
@@ -175,7 +183,7 @@ export default function People() {
             </div>
           </div>
           <div className="flex flex-col gap-3 w-full">
-            {canAccess('family_invitations') &&
+            {user?.family_role === 'parent' && canAccess('family_invitations') &&
             <Button
               onClick={handleShowInviteModal}
               className="funky-button bg-[#C3B1E1] text-white px-4 md:px-6 py-3 md:py-4 text-base md:text-lg lg:text-xl header-font w-full">
