@@ -4,8 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from "sonner";
 import PersonPreferencesForm from "./PersonPreferencesForm";
 import { useSubscriptionAccess } from '../hooks/useSubscriptionAccess';
+import { validateName } from '../utils/validation';
+import { sanitizeHTML } from '../lib/sanitization';
 
 const FREE_PLAN_LIMIT = 2;
 
@@ -56,10 +59,21 @@ export default function PersonFormModal({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!person.name.trim()) return;
+    
+    // Validate name
+    const nameValidation = validateName(person.name);
+    if (!nameValidation.valid) {
+      toast.error(nameValidation.error);
+      return;
+    }
     
     try {
-      await onSubmit(person);
+      // Sanitize before submitting
+      const sanitizedPerson = {
+        ...person,
+        name: sanitizeHTML(person.name)
+      };
+      await onSubmit(sanitizedPerson);
     } catch (error) {
       console.error('Error submitting person form:', error);
       // Error message shown by parent component via DataContext
