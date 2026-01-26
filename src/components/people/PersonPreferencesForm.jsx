@@ -1,5 +1,5 @@
 import React from 'react';
-import { Checkbox } from "@/components/ui/checkbox";
+import InteractiveCheckbox from "@/components/ui/InteractiveCheckbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -71,10 +71,10 @@ export default function PersonPreferencesForm({ formData, setFormData }) {
         <div className="grid grid-cols-2 gap-2">
           {CATEGORIES.map(category => (
             <div key={category.value} className="flex items-center space-x-2">
-              <Checkbox
+              <InteractiveCheckbox
                 id={`prefer-${category.value}`}
                 checked={(formData.preferred_categories || []).includes(category.value)}
-                onCheckedChange={() => togglePreference(category.value, 'preferred_categories')}
+                onChange={() => togglePreference(category.value, 'preferred_categories')}
                 className="border-2 border-green-500"
               />
               <Label 
@@ -94,10 +94,10 @@ export default function PersonPreferencesForm({ formData, setFormData }) {
         <div className="grid grid-cols-2 gap-2">
           {CATEGORIES.map(category => (
             <div key={category.value} className="flex items-center space-x-2">
-              <Checkbox
+              <InteractiveCheckbox
                 id={`avoid-${category.value}`}
                 checked={(formData.avoided_categories || []).includes(category.value)}
-                onCheckedChange={() => togglePreference(category.value, 'avoided_categories')}
+                onChange={() => togglePreference(category.value, 'avoided_categories')}
                 className="border-2 border-red-500"
               />
               <Label 
