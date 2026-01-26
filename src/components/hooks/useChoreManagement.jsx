@@ -7,7 +7,8 @@ export const useChoreManagement = () => {
   const [completedChoreId, setCompletedChoreId] = useState(null);
   const [pointsEarned, setPointsEarned] = useState({ visible: false, amount: 0, reason: '' });
 
-  const completeChore = async (assignmentId, choreId) => {
+  const completeChore = useCallback(async (assignmentId, choreId) => {
+    // Get fresh data at the time of execution
     const assignment = assignments.find((a) => a.id === assignmentId);
     const chore = chores.find((c) => c.id === choreId);
 
@@ -46,7 +47,7 @@ export const useChoreManagement = () => {
       setCompletedChoreId(null);
       setPointsEarned({ visible: false, amount: 0, reason: '' });
     }, 4000);
-  };
+  }, [assignments, chores, updateAssignment, addReward]);
   
   return { completeChore, completedChoreIdWithConfetti: completedChoreId, pointsEarned };
 };

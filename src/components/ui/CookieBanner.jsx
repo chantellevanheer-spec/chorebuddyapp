@@ -4,25 +4,26 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { X, Cookie } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { setCookie, getCookie } from '../utils/cookies';
 
 export default function CookieBanner() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     // Check if user has already acknowledged the cookie banner
-    const hasAcknowledged = localStorage.getItem('cookieAcknowledged');
+    const hasAcknowledged = getCookie('cookieAcknowledged');
     if (!hasAcknowledged) {
       setIsVisible(true);
     }
   }, []);
 
   const handleAccept = () => {
-    localStorage.setItem('cookieAcknowledged', 'true');
+    setCookie('cookieAcknowledged', 'true', 365);
     setIsVisible(false);
   };
 
   const handleDismiss = () => {
-    localStorage.setItem('cookieAcknowledged', 'true');
+    setCookie('cookieAcknowledged', 'true', 365);
     setIsVisible(false);
   };
 

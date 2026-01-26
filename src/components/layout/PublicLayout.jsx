@@ -1,25 +1,25 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sparkles } from 'lucide-react';
 import { createPageUrl } from '@/utils';
 import { User } from '@/entities/User';
+import { setCookie, getCookie } from '../utils/cookies';
 
 export default function PublicLayout({ children }) {
   const [showCookieBanner, setShowCookieBanner] = useState(false);
 
   useEffect(() => {
     // Check if user has already accepted cookies
-    const consent = localStorage.getItem('cookieConsent');
-    if (consent !== 'true') {
-      setShowCookieBanner(true); // Show banner if consent not given
+    const consent = getCookie('cookieConsent');
+    if (!consent) {
+      setShowCookieBanner(true);
     }
-  }, []); // Run once on component mount
+  }, []);
 
   const handleAcceptCookies = () => {
-    localStorage.setItem('cookieConsent', 'true'); // Set consent in local storage
-    setShowCookieBanner(false); // Hide the banner
+    setCookie('cookieConsent', 'true', 365);
+    setShowCookieBanner(false);
   };
 
   return (
