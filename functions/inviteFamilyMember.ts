@@ -14,24 +14,21 @@ Deno.serve(async (req) => {
             });
         }
 
-        // Verify family exists using service role to bypass RLS
+        // Detect which database has the family
+        let familyDb = 'prod';
+        let family = null;
         try {
-            // Check which database the family is in (prod or dev/test)
-            let family = null;
-            try {
-                family = await base44.asServiceRole.entities.Family.get(familyId);
-            } catch (error) {
-                // If not found in production, try test database
-                family = await base44.asServiceRole.entities.Family.get(familyId, { data_env: 'dev' });
-            }
-            if (!family) {
-                throw new Error('Family not found');
-            }
+            family = await base44.asServiceRole.entities.Family.get(familyId);
         } catch (error) {
-            return new Response(JSON.stringify({ error: 'Family not found. Please set up your family first.' }), { 
-                status: 404, 
-                headers: { 'Content-Type': 'application/json' } 
-            });
+            try {
+                family = await base44.asServiceRole.entities.Family.get(familyId, { data_env: 'dev' });
+                familyDb = 'dev';
+            } catch (innerError) {
+                return new Response(JSON.stringify({ error: 'Family not found. Please set up your family first.' }), { 
+                    status: 404, 
+                    headers: { 'Content-Type': 'application/json' } 
+                });
+            }
         }
 
         let subscriptionTier = user?.data?.subscription_tier || user?.subscription_tier || 'free';
@@ -67,14 +64,6 @@ Deno.serve(async (req) => {
             const linkingCode = Math.random().toString(36).substring(2, 8).toUpperCase();
             const linkingCodeExpires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
-            // Get current family data to preserve existing codes (try both databases)
-            let family = null;
-            try {
-                family = await base44.asServiceRole.entities.Family.get(familyId);
-            } catch (error) {
-                family = await base44.asServiceRole.entities.Family.get(familyId, { data_env: 'dev' });
-            }
-            
             const userLinkingCodes = family.user_linking_codes || {};
 
             // Add/update this user's linking code
@@ -83,16 +72,11 @@ Deno.serve(async (req) => {
                 expires: linkingCodeExpires
             };
 
-            // Update family with user-specific linking code (use same database as read)
-            try {
-                await base44.asServiceRole.entities.Family.update(familyId, {
-                    user_linking_codes: userLinkingCodes
-                });
-            } catch (error) {
-                await base44.asServiceRole.entities.Family.update(familyId, {
-                    user_linking_codes: userLinkingCodes
-                }, { data_env: 'dev' });
-            }
+            // Update family with user-specific linking code
+            const updateOpts = familyDb === 'dev' ? { data_env: 'dev' } : {};
+            await base44.asServiceRole.entities.Family.update(familyId, {
+                user_linking_codes: userLinkingCodes
+            }, updateOpts);
 
             return new Response(JSON.stringify({ success: true, linkingCode, linkingCodeExpires }), {
                 status: 200,
@@ -118,16 +102,11 @@ Deno.serve(async (req) => {
         // Generate a unique invite code
         const inviteCode = `${familyId}-${Date.now()}-${Math.random().toString(36).substring(7)}`;
 
-        // Update family with invite code (try both databases)
-        try {
-            await base44.asServiceRole.entities.Family.update(familyId, { 
-                invite_code: inviteCode 
-            });
-        } catch (error) {
-            await base44.asServiceRole.entities.Family.update(familyId, { 
-                invite_code: inviteCode 
-            }, { data_env: 'dev' });
-        }
+        // Update family with invite code
+        const updateOpts = familyDb === 'dev' ? { data_env: 'dev' } : {};
+        await base44.asServiceRole.entities.Family.update(familyId, { 
+            invite_code: inviteCode 
+        }, updateOpts);
 
         const appUrl = 'https://chorebuddyapp.com';
         const joinUrl = `${appUrl}/JoinFamily?code=${inviteCode}`;
