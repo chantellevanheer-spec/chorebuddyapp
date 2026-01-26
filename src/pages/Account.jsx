@@ -85,14 +85,19 @@ export default function Account() {
     if (!user) return;
     setIsSaving(true);
     try {
-      await User.updateMyUserData({
+      // Update built-in attributes separately
+      await base44.auth.updateMe({
+        family_role: user.family_role,
         receives_chore_reminders: user.receives_chore_reminders,
         receives_achievement_alerts: user.receives_achievement_alerts,
-        receives_weekly_reports: user.receives_weekly_reports,
+        receives_weekly_reports: user.receives_weekly_reports
+      });
+      
+      // Update custom data fields
+      await User.updateMyUserData({
         avatar: avatarIcon,
         chore_preferences: chorePreferences,
-        notification_preferences: notificationPreferences,
-        family_role: user.family_role
+        notification_preferences: notificationPreferences
       });
       toast.success("Preferences saved!");
     } catch (error) {
