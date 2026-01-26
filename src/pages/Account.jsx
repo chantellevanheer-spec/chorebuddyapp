@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User } from '@/entities/User';
 import { Person } from '@/entities/Person';
+import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { createPageUrl } from '@/utils';
@@ -249,7 +250,7 @@ export default function Account() {
             </div>
             <div className="flex items-center justify-between mt-8 pt-4 border-t border-gray-200">
                 <label className="body-font text-lg text-[#5E3B85]">Logout</label>
-                <Button variant="destructive" onClick={() => User.logout()} className="funky-button bg-red-500 text-white">
+                <Button variant="destructive" onClick={() => base44.auth.logout()} className="funky-button bg-red-500 text-white">
                   Log Out
                 </Button>
               </div>
