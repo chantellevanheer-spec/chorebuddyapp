@@ -25,11 +25,12 @@ Deno.serve(async (req) => {
         const { payload } = await req.json();
         const { timeRange = '4weeks' } = payload;
 
+        // Use service role for better performance
         const [assignments, chores, people, rewards] = await Promise.all([
-            base44.entities.Assignment.filter({ family_id: user.family_id }),
-            base44.entities.Chore.filter({ family_id: user.family_id }),
-            base44.entities.Person.filter({ family_id: user.family_id }),
-            base44.entities.Reward.filter({ family_id: user.family_id })
+            base44.asServiceRole.entities.Assignment.filter({ family_id: user.family_id }),
+            base44.asServiceRole.entities.Chore.filter({ family_id: user.family_id }),
+            base44.asServiceRole.entities.Person.filter({ family_id: user.family_id }),
+            base44.asServiceRole.entities.Reward.filter({ family_id: user.family_id })
         ]);
 
         const now = new Date();

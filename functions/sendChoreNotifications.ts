@@ -12,12 +12,11 @@ Deno.serve(async (req) => {
 
     const { notificationType = 'daily_reminders' } = await req.json();
 
-    // Get all family users
-    const allUsers = await base44.asServiceRole.entities.User.list();
-    const familyUsers = allUsers.filter(u => 
-      u.family_id === user.family_id && 
-      u.receives_chore_reminders
-    );
+    // Get family users with reminders enabled - filter at database level
+    const familyUsers = await base44.asServiceRole.entities.User.filter({
+      family_id: user.family_id,
+      receives_chore_reminders: true
+    });
 
     if (familyUsers.length === 0) {
       return Response.json({ 
@@ -37,22 +36,22 @@ Deno.serve(async (req) => {
       family_id: user.family_id
     });
 
-    const people = await base44.asServiceRole.entities.Person.list();
-    const chores = await base44.asServiceRole.entities.Chore.list();
+    const [people, chores] = await Promise.all([
+      base44.asServiceRole.entities.Person.filter({ family_id: user.family_id }),
+      base44.asServiceRole.entities.Chore.filter({ family_id: user.family_id })
+    ]);
 
-    let emailsSent = 0;
-
-    // Send notifications to each user
-    for (const recipient of familyUsers) {
+    // Build email promises for parallel sending
+    const emailPromises = familyUsers.map(async (recipient) => {
       // Find their linked person
       const linkedPerson = people.find(p => p.linked_user_id === recipient.id);
       
-      if (!linkedPerson) continue;
+      if (!linkedPerson) return null;
 
       // Get their pending assignments
       const userAssignments = assignments.filter(a => a.person_id === linkedPerson.id);
       
-      if (userAssignments.length === 0) continue;
+      if (userAssignments.length === 0) return null;
 
       // Build email content
       const assignmentsList = userAssignments.map(assignment => {
@@ -102,11 +101,16 @@ Deno.serve(async (req) => {
           body: emailBody,
           notificationType: 'chore_reminder'
         });
-        emailsSent++;
+        return recipient.email;
       } catch (error) {
         console.error(`Failed to send email to ${recipient.email}:`, error);
+        return null;
       }
-    }
+    });
+
+    // Send all emails in parallel
+    const results = await Promise.all(emailPromises);
+    const emailsSent = results.filter(r => r !== null).length;
 
     return Response.json({
       success: true,
