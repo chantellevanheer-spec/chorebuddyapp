@@ -16,7 +16,17 @@ Deno.serve(async (req) => {
 
         // Verify family exists using service role to bypass RLS
         try {
-            await base44.asServiceRole.entities.Family.get(familyId);
+            // Check which database the family is in (prod or dev/test)
+            let family = null;
+            try {
+                family = await base44.asServiceRole.entities.Family.get(familyId);
+            } catch (error) {
+                // If not found in production, try test database
+                family = await base44.asServiceRole.entities.Family.get(familyId, { data_env: 'dev' });
+            }
+            if (!family) {
+                throw new Error('Family not found');
+            }
         } catch (error) {
             return new Response(JSON.stringify({ error: 'Family not found. Please set up your family first.' }), { 
                 status: 404, 
@@ -28,21 +38,25 @@ Deno.serve(async (req) => {
         
         // If user is a child, get parent's subscription
         if (user.family_role === 'child') {
-            const linkedPerson = await base44.asServiceRole.entities.Person.filter({
-                linked_user_id: user.id,
-                family_id: familyId
-            });
-            
-            if (linkedPerson.length > 0) {
-                // Find the parent user who owns this family or is an admin in the family
-                const familyMembers = await base44.asServiceRole.entities.User.filter({
-                    family_id: familyId,
-                    family_role: 'parent'
+            try {
+                const linkedPerson = await base44.asServiceRole.entities.Person.filter({
+                    linked_user_id: user.id,
+                    family_id: familyId
                 });
                 
-                if (familyMembers.length > 0) {
-                    subscriptionTier = familyMembers[0]?.data?.subscription_tier || familyMembers[0]?.subscription_tier || 'free';
+                if (linkedPerson.length > 0) {
+                    // Find the parent user who owns this family or is an admin in the family
+                    const familyMembers = await base44.asServiceRole.entities.User.filter({
+                        family_id: familyId,
+                        family_role: 'parent'
+                    });
+                    
+                    if (familyMembers.length > 0) {
+                        subscriptionTier = familyMembers[0]?.data?.subscription_tier || familyMembers[0]?.subscription_tier || 'free';
+                    }
                 }
+            } catch (error) {
+                console.error('Error checking parent subscription:', error);
             }
         }
         
@@ -53,8 +67,14 @@ Deno.serve(async (req) => {
             const linkingCode = Math.random().toString(36).substring(2, 8).toUpperCase();
             const linkingCodeExpires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
-            // Get current family data to preserve existing codes
-            const family = await base44.asServiceRole.entities.Family.get(familyId);
+            // Get current family data to preserve existing codes (try both databases)
+            let family = null;
+            try {
+                family = await base44.asServiceRole.entities.Family.get(familyId);
+            } catch (error) {
+                family = await base44.asServiceRole.entities.Family.get(familyId, { data_env: 'dev' });
+            }
+            
             const userLinkingCodes = family.user_linking_codes || {};
 
             // Add/update this user's linking code
@@ -63,10 +83,16 @@ Deno.serve(async (req) => {
                 expires: linkingCodeExpires
             };
 
-            // Update family with user-specific linking code
-            await base44.asServiceRole.entities.Family.update(familyId, {
-                user_linking_codes: userLinkingCodes
-            });
+            // Update family with user-specific linking code (use same database as read)
+            try {
+                await base44.asServiceRole.entities.Family.update(familyId, {
+                    user_linking_codes: userLinkingCodes
+                });
+            } catch (error) {
+                await base44.asServiceRole.entities.Family.update(familyId, {
+                    user_linking_codes: userLinkingCodes
+                }, { data_env: 'dev' });
+            }
 
             return new Response(JSON.stringify({ success: true, linkingCode, linkingCodeExpires }), {
                 status: 200,
@@ -92,10 +118,16 @@ Deno.serve(async (req) => {
         // Generate a unique invite code
         const inviteCode = `${familyId}-${Date.now()}-${Math.random().toString(36).substring(7)}`;
 
-        // Update family with invite code
-        await base44.asServiceRole.entities.Family.update(familyId, { 
-            invite_code: inviteCode 
-        });
+        // Update family with invite code (try both databases)
+        try {
+            await base44.asServiceRole.entities.Family.update(familyId, { 
+                invite_code: inviteCode 
+            });
+        } catch (error) {
+            await base44.asServiceRole.entities.Family.update(familyId, { 
+                invite_code: inviteCode 
+            }, { data_env: 'dev' });
+        }
 
         const appUrl = 'https://chorebuddyapp.com';
         const joinUrl = `${appUrl}/JoinFamily?code=${inviteCode}`;
