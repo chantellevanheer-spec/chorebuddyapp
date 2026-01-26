@@ -213,7 +213,8 @@ export default function People() {
           currentChores={personStats[person.id]?.current || 0}
           onEdit={handleShowEditForm}
           onDelete={() => setPersonToDelete(person)}
-          onLinkAccount={handleShowLinkModal} />
+          onLinkAccount={handleShowLinkModal}
+          canManageLinks={user?.family_role === 'parent'} />
 
         )}
         </div> :
