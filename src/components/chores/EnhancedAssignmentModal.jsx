@@ -165,10 +165,10 @@ export default function EnhancedAssignmentModal({
       const assignment = {
         person_id: preview.person_id,
         chore_id: chore.id,
+        family_id: chore.family_id || familyId,
         week_start: preview.week_start,
         due_date: dueDate,
         completed: false,
-        family_id: familyId,
         is_shared: preview.is_shared || false,
         shared_with: preview.shared_with || null,
         is_rotation: preview.is_rotation || false

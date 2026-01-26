@@ -36,7 +36,7 @@ export const DataProvider = ({ children }) => {
   const [familyInitialized, setFamilyInitialized] = useState(false);
 
   const initializeFamily = useCallback(async (userData) => {
-    if (familyInitialized || userData.family_id) return userData;
+    if (familyInitialized || userData.family_id) return userData.family_id;
     
     console.log("[DataContext] Creating family for user...");
     try {
@@ -50,13 +50,12 @@ export const DataProvider = ({ children }) => {
 
       await User.updateMyUserData({ 
         family_id: family.id,
-        family_role: userData.family_role || 'parent'
+        family_role: 'parent'
       });
       
-      const updatedUserData = await User.me();
-      console.log("[DataContext] User updated with family_id:", updatedUserData.family_id);
+      console.log("[DataContext] User updated with family_id:", family.id);
       setFamilyInitialized(true);
-      return updatedUserData;
+      return family.id;
     } catch (error) {
       console.error("[DataContext] Error creating family:", error);
       toast.error("Failed to create family. Please refresh and try again.");
@@ -77,10 +76,14 @@ export const DataProvider = ({ children }) => {
       }
 
       // Initialize family once if needed
-      const currentUserData = await initializeFamily(userData);
-      setUser(currentUserData);
+      if (!userData.family_id) {
+        const familyId = await initializeFamily(userData);
+        userData.family_id = familyId;
+      }
+      
+      setUser(userData);
 
-      if (!currentUserData.family_id) {
+      if (!userData.family_id) {
         console.warn("[DataContext] User has no family_id after initialization");
         setPeople([]);
         setChores([]);
@@ -93,13 +96,13 @@ export const DataProvider = ({ children }) => {
         return;
       }
 
-      console.log("[DataContext] Fetching data for family_id:", currentUserData.family_id);
+      console.log("[DataContext] Fetching data for family_id:", userData.family_id);
       
       const [peopleData, choresData, assignmentsData, rewardsData, itemsData, goalsData, completionsData] = await Promise.all([
         Person.list("name"),
         Chore.list("title"),
         Assignment.list("-created_date"),
-        Reward.list(),
+        Reward.list("-created_date"),
         RedeemableItem.list("cost"),
         FamilyGoal.list("-created_date"),
         ChoreCompletion.list("-created_date")
