@@ -23,6 +23,8 @@ export default function Account() {
   const [user, setUser] = useState(null);
   const [linkedPerson, setLinkedPerson] = useState(null);
   const [people, setPeople] = useState([]);
+  const [family, setFamily] = useState(null);
+  const [familyName, setFamilyName] = useState('');
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isPortalRedirecting, setIsPortalRedirecting] = useState(false);
@@ -70,6 +72,11 @@ export default function Account() {
         }
 
         if (userData.family_id) {
+          // Fetch family data
+          const familyData = await base44.asServiceRole.entities.Family.get(userData.family_id);
+          setFamily(familyData);
+          setFamilyName(familyData?.name || '');
+
           // Fetch family people
           const familyPeople = await Person.list();
           setPeople(familyPeople);
@@ -109,6 +116,13 @@ export default function Account() {
         chore_preferences: chorePreferences,
         notification_preferences: notificationPreferences
       });
+
+      // Update family name if it changed
+      if (family && familyName !== family.name) {
+        await base44.asServiceRole.entities.Family.update(user.family_id, {
+          name: familyName
+        });
+      }
       
       // Refresh user data to reflect updated family_role in RLS checks
       const updatedUser = await User.me();
@@ -430,8 +444,37 @@ export default function Account() {
         </TabsContent>
 
         <TabsContent value="family" className="mt-6">
-          {/* Account Linking */}
-          <div className="funky-card p-8 mb-6">
+           {/* Family Name (Premium Parents Only) */}
+           {user?.family_role === 'parent' && isPremium && (
+             <div className="funky-card p-8 mb-6">
+               <h2 className="header-font text-3xl text-[#2B59C3] mb-6 flex items-center gap-3">
+                 <Users className="w-8 h-8 text-[#F7A1C4]" />
+                 Family Name
+               </h2>
+               <div className="space-y-4">
+                 <div>
+                   <label htmlFor="family-name" className="body-font text-lg text-[#5E3B85] mb-2 block">
+                     Your Family Name
+                   </label>
+                   <input
+                     id="family-name"
+                     type="text"
+                     placeholder="e.g., The Smith Family"
+                     value={familyName}
+                     onChange={(e) => setFamilyName(e.target.value)}
+                     className="funky-button border-3 border-[#5E3B85] w-full px-4 py-3 body-font text-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#C3B1E1]"
+                     maxLength="50"
+                   />
+                   <p className="body-font-light text-sm text-gray-500 mt-2">
+                     This name will help family members identify your family when joining. Keep it memorable!
+                   </p>
+                 </div>
+               </div>
+             </div>
+           )}
+
+           {/* Account Linking */}
+           <div className="funky-card p-8 mb-6">
             <h2 className="header-font text-3xl text-[#2B59C3] mb-6 flex items-center gap-3">
               <Link2 className="w-8 h-8 text-[#FF6B35]" />
               Account Linking
@@ -478,6 +521,17 @@ export default function Account() {
               </div>
             )}
           </div>
+
+          {/* Save Changes Button (for Family Name) */}
+          {user?.family_role === 'parent' && isPremium && (
+            <Button
+              onClick={handleSaveChanges}
+              disabled={isSaving}
+              className="funky-button bg-[#5E3B85] text-white px-6 py-3 text-lg header-font mb-6"
+            >
+              {isSaving ? 'Saving...' : 'Save Family Name'}
+            </Button>
+          )}
 
           {/* Family Management */}
           <div className="funky-card p-8 text-center">
