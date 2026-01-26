@@ -5,9 +5,16 @@ Deno.serve(async (req) => {
     
     try {
         const user = await base44.auth.me();
-        const familyId = user?.data?.family_id || user?.family_id;
+        if (!user) {
+            return new Response(JSON.stringify({ error: 'User not authenticated.' }), { 
+                status: 401, 
+                headers: { 'Content-Type': 'application/json' } 
+            });
+        }
 
-        if (!user || !familyId) {
+        // Get family ID from user data
+        const familyId = user?.data?.family_id || user?.family_id;
+        if (!familyId) {
             return new Response(JSON.stringify({ error: 'No family found. Please set up your family first.' }), { 
                 status: 400, 
                 headers: { 'Content-Type': 'application/json' } 
@@ -24,11 +31,19 @@ Deno.serve(async (req) => {
                 family = await base44.asServiceRole.entities.Family.get(familyId, { data_env: 'dev' });
                 familyDb = 'dev';
             } catch (innerError) {
+                console.error('Family lookup failed for familyId:', familyId, 'User:', user.id);
                 return new Response(JSON.stringify({ error: 'Family not found. Please set up your family first.' }), { 
                     status: 404, 
                     headers: { 'Content-Type': 'application/json' } 
                 });
             }
+        }
+        
+        if (!family) {
+            return new Response(JSON.stringify({ error: 'Family not found. Please set up your family first.' }), { 
+                status: 404, 
+                headers: { 'Content-Type': 'application/json' } 
+            });
         }
 
         let subscriptionTier = user?.data?.subscription_tier || user?.subscription_tier || 'free';
