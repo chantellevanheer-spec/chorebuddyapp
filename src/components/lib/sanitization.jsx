@@ -4,16 +4,24 @@
  */
 
 /**
- * Escape HTML entities in user input
+ * Comprehensive HTML sanitization to prevent XSS attacks
+ * Escapes all potentially dangerous characters including quotes and slashes
  * @param {string} str - The string to sanitize
  * @returns {string} - Sanitized string safe for rendering
  */
 export function sanitizeHTML(str) {
   if (!str) return '';
   
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
+  const entityMap = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#x27;',
+    "/": '&#x2F;',
+  };
+  
+  return String(str).replace(/[&<>"'/]/g, (char) => entityMap[char]);
 }
 
 /**
