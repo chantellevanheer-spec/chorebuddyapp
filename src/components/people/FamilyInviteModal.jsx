@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, Mail, Link as LinkIcon, Copy } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from "sonner";
-import { inviteFamilyMember } from '@/functions/inviteFamilyMember';
+import { base44 } from '@/api/base44Client';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import moment from 'moment';
 
@@ -24,8 +24,7 @@ export default function FamilyInviteModal({ isOpen, onClose, onSuccess }) {
   const handleGenerateLinkingCode = async () => {
     setIsGeneratingCode(true);
     try {
-      const response = await inviteFamilyMember({ generateLinkingCode: true });
-      const result = response.data;
+      const result = await base44.functions.invoke('inviteFamilyMember', { generateLinkingCode: true });
 
       if (result.error) {
         toast.error(result.error || 'Failed to generate linking code');
@@ -56,8 +55,7 @@ export default function FamilyInviteModal({ isOpen, onClose, onSuccess }) {
 
     setIsInviting(true);
     try {
-      const response = await inviteFamilyMember(formData);
-      const result = response.data;
+      const result = await base44.functions.invoke('inviteFamilyMember', formData);
       
       if (result.error) {
         toast.error(result.error || 'Failed to send invitation');
