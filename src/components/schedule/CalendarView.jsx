@@ -139,7 +139,7 @@ export default function CalendarView({
               role="button"
               aria-label={`${format(day, 'MMMM d, yyyy')}${isTodayDate ? ' (Today)' : ''}. ${dayAssignments.length} ${dayAssignments.length === 1 ? 'chore' : 'chores'}. ${completedCount} completed, ${pendingCount} pending.`}
               className={`
-                min-h-[80px] md:min-h-[100px] p-1 md:p-2 rounded-lg border-2 cursor-pointer transition-all
+                min-h-[120px] sm:min-h-[100px] p-2 rounded-lg border-2 cursor-pointer transition-all
                 ${isCurrentMonth ? 'bg-white' : 'bg-gray-50 opacity-50'}
                 ${isSelected ? 'border-[#FF6B35] ring-2 ring-[#FF6B35]' : 'border-gray-200'}
                 ${isTodayDate ? 'bg-yellow-50 border-yellow-400' : ''}

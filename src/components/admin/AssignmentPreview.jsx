@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, X, RefreshCw, AlertTriangle, Clock, Star, Lightbulb } from "lucide-react";
 import { useData } from '../contexts/DataContext';
 import { AVATAR_COLORS, DIFFICULTY_STARS } from '../lib/constants';
+import { toast } from 'sonner';
 
 export default function AssignmentPreview({ proposedAssignments, onConfirm, onCancel, onReassign }) {
   const { people, chores } = useData();
@@ -66,8 +67,8 @@ export default function AssignmentPreview({ proposedAssignments, onConfirm, onCa
   }, [assignmentsByPerson]);
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="funky-card bg-white p-6 md:p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
+      <div className="funky-card bg-white p-6 md:p-8 w-full sm:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto sm:rounded-3xl rounded-t-3xl rounded-b-none">
         <div className="flex items-center gap-4 mb-6">
           <div className="funky-button w-16 h-16 bg-[#C3B1E1] flex items-center justify-center">
             <Lightbulb className="w-8 h-8 text-white" />
@@ -148,7 +149,14 @@ export default function AssignmentPreview({ proposedAssignments, onConfirm, onCa
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => onReassign && onReassign(assignment, person)}
+                        onClick={() => {
+                          try {
+                            onReassign && onReassign(assignment, person);
+                          } catch (error) {
+                            console.error('Reassignment failed:', error);
+                            toast.error('Failed to reassign chore. Please try again.');
+                          }
+                        }}
                         className="funky-button border-2 border-[#F7A1C4] text-pink-700 hover:bg-pink-50 text-xs"
                       >
                         <RefreshCw className="w-3 h-3 mr-1" />

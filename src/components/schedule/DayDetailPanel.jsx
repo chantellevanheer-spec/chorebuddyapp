@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { format, isSameDay, addDays } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, CheckCircle, Clock, Star, User } from 'lucide-react';
+import { X, CheckCircle, Clock, Star, User, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AVATAR_COLORS, DIFFICULTY_STARS } from '@/components/lib/constants';
 
@@ -14,6 +14,7 @@ export default function DayDetailPanel({
   onCompleteChore,
   user
 }) {
+  const [completingId, setCompletingId] = useState(null);
   const isParent = user?.family_role === 'parent';
   const isChild = user?.family_role === 'child' || user?.family_role === 'teen';
 
@@ -150,11 +151,28 @@ export default function DayDetailPanel({
                     {/* Complete Button */}
                     {!assignment.completed && (
                       <Button
-                        onClick={() => onCompleteChore(assignment)}
+                        onClick={async () => {
+                          setCompletingId(assignment.id);
+                          try {
+                            await onCompleteChore(assignment);
+                          } finally {
+                            setCompletingId(null);
+                          }
+                        }}
+                        disabled={completingId === assignment.id}
                         className="funky-button bg-[#C3B1E1] hover:bg-[#b19dcb] text-white px-4 py-2"
                       >
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        Done
+                        {completingId === assignment.id ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Done
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            Done
+                          </>
+                        )}
                       </Button>
                     )}
                   </div>

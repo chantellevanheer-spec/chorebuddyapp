@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Star, Gift, Edit, Trash2 } from 'lucide-react';
+import { Star, Gift, Edit, Trash2, Loader2 } from 'lucide-react';
 import { REWARD_ICONS } from '@/components/lib/constants';
 
 function RedeemableItemCard({ item, onRedeem, onEdit, onDelete, canAfford }) {
+  const [isRedeeming, setIsRedeeming] = useState(false);
   const isDisabled = !canAfford;
   
   const IconComponent = REWARD_ICONS[item.icon] || Gift;
@@ -41,11 +42,26 @@ function RedeemableItemCard({ item, onRedeem, onEdit, onDelete, canAfford }) {
             </div>
           )}
           <Button
-            onClick={() => onRedeem(item)}
-            disabled={isDisabled}
+            onClick={async () => {
+              setIsRedeeming(true);
+              try {
+                await onRedeem(item);
+              } finally {
+                setIsRedeeming(false);
+              }
+            }}
+            disabled={isDisabled || isRedeeming}
             className="funky-button w-full header-font text-lg py-3 bg-[#FF6B35] text-white"
           >
-            <Gift className="w-5 h-5 mr-2" /> Redeem
+            {isRedeeming ? (
+              <>
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" /> Redeeming...
+              </>
+            ) : (
+              <>
+                <Gift className="w-5 h-5 mr-2" /> Redeem
+              </>
+            )}
           </Button>
         </div>
       </div>
