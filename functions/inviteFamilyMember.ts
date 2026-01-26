@@ -8,8 +8,18 @@ Deno.serve(async (req) => {
         const familyId = user?.data?.family_id || user?.family_id;
 
         if (!user || !familyId) {
-            return new Response(JSON.stringify({ error: 'No family found. Please refresh the page.' }), { 
-                status: 401, 
+            return new Response(JSON.stringify({ error: 'No family found. Please set up your family first.' }), { 
+                status: 400, 
+                headers: { 'Content-Type': 'application/json' } 
+            });
+        }
+
+        // Verify family exists
+        try {
+            await base44.entities.Family.get(familyId);
+        } catch (error) {
+            return new Response(JSON.stringify({ error: 'Family not found. Please set up your family first.' }), { 
+                status: 404, 
                 headers: { 'Content-Type': 'application/json' } 
             });
         }
