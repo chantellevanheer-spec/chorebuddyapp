@@ -6,9 +6,25 @@ Deno.serve(async (req) => {
     const { inviteCode, role } = await req.json();
 
     try {
+        // ==========================================
+        // SECURITY CHECKS - DO NOT REMOVE
+        // ==========================================
+        
         const user = await base44.auth.me();
         if (!user) {
             return Response.json({ error: 'User not authenticated' }, { status: 401 });
+        }
+        
+        // ==========================================
+        // INPUT VALIDATION
+        // ==========================================
+        
+        if (!inviteCode) {
+            return Response.json({ error: 'Invite code is required' }, { status: 400 });
+        }
+        
+        if (role && !['parent', 'child'].includes(role)) {
+            return Response.json({ error: 'Invalid role. Must be "parent" or "child"' }, { status: 400 });
         }
 
         const families = await base44.asServiceRole.entities.Family.filter({ invite_code: inviteCode });

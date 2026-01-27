@@ -5,6 +5,10 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     
     try {
+        // ==========================================
+        // SECURITY CHECKS - DO NOT REMOVE
+        // ==========================================
+        
         const user = await base44.auth.me();
         if (!user) {
             return Response.json({ error: 'User not authenticated' }, { status: 401 });

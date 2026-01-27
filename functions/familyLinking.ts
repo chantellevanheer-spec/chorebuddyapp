@@ -14,6 +14,11 @@ function generateLinkingCode() {
 Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
+        
+        // ==========================================
+        // SECURITY CHECKS - DO NOT REMOVE
+        // ==========================================
+        
         const user = await base44.auth.me();
 
         if (!user) {
@@ -28,12 +33,21 @@ Deno.serve(async (req) => {
                 return Response.json({ error: 'Family ID required' }, { status: 400 });
             }
 
-            // Verify user owns this family
+            // Verify user is a parent
+            if (user.family_role !== 'parent') {
+                return Response.json({ error: 'Only parents can generate linking codes' }, { status: 403 });
+            }
+
+            // Verify user is in this family
+            if (user.family_id !== familyId) {
+                return Response.json({ error: 'You can only generate codes for your own family' }, { status: 403 });
+            }
+
             const families = await base44.entities.Family.filter({ id: familyId });
             const family = families[0];
 
-            if (!family || family.owner_user_id !== user.id) {
-                return Response.json({ error: 'You do not have permission to manage this family' }, { status: 403 });
+            if (!family) {
+                return Response.json({ error: 'Family not found' }, { status: 404 });
             }
 
             // Generate new code with 24-hour expiry
