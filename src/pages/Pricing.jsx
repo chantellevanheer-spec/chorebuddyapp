@@ -24,8 +24,8 @@ const plans = [
   {
     id: 'premium',
     name: 'Premium',
-    price: 12,
-    yearlyPrice: 115,
+    price: 15,
+    yearlyPrice: 120,
     features: [
       'Unlimited family members',
       'Invite family members to join',
