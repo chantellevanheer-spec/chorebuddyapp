@@ -105,6 +105,22 @@ const handleWebhook = async (req, base44) => {
                 }
                 break;
             }
+            case 'customer.subscription.created': {
+                const subscription = event.data.object;
+                const users = await adminBase44.entities.User.filter({ stripe_customer_id: subscription.customer });
+                
+                if (users && users.length > 0) {
+                    const user = users[0];
+                    const priceId = subscription.items.data[0].price.id;
+                    const planInfo = REVERSE_PRICE_MAP[priceId];
+                    
+                    await adminBase44.entities.User.update(user.id, {
+                        subscription_tier: planInfo?.tier || 'premium',
+                        subscription_status: subscription.status,
+                    });
+                }
+                break;
+            }
             case 'customer.subscription.updated': {
                 const subscription = event.data.object;
                 const users = await adminBase44.entities.User.filter({ stripe_customer_id: subscription.customer });
@@ -128,8 +144,36 @@ const handleWebhook = async (req, base44) => {
                 if (users && users.length > 0) {
                     const user = users[0];
                     await adminBase44.entities.User.update(user.id, {
+                        subscription_tier: 'free',
                         subscription_status: 'canceled',
                     });
+                }
+                break;
+            }
+            case 'invoice.payment_failed': {
+                const invoice = event.data.object;
+                const users = await adminBase44.entities.User.filter({ stripe_customer_id: invoice.customer });
+                
+                if (users && users.length > 0) {
+                    const user = users[0];
+                    await adminBase44.entities.User.update(user.id, {
+                        subscription_status: 'past_due',
+                    });
+                }
+                break;
+            }
+            case 'invoice.payment_succeeded': {
+                const invoice = event.data.object;
+                const users = await adminBase44.entities.User.filter({ stripe_customer_id: invoice.customer });
+                
+                if (users && users.length > 0) {
+                    const user = users[0];
+                    if (invoice.subscription) {
+                        const subscription = await stripe.subscriptions.retrieve(invoice.subscription);
+                        await adminBase44.entities.User.update(user.id, {
+                            subscription_status: subscription.status,
+                        });
+                    }
                 }
                 break;
             }
