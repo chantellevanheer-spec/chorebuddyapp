@@ -72,8 +72,8 @@ export default function Account() {
         }
 
         if (userData.family_id) {
-          // Fetch family data
-          const familyData = await base44.asServiceRole.entities.Family.get(userData.family_id);
+          // Fetch family data using user's authentication
+          const familyData = await base44.entities.Family.get(userData.family_id);
           setFamily(familyData);
           setFamilyName(familyData?.name || '');
 
@@ -117,11 +117,22 @@ export default function Account() {
         notification_preferences: notificationPreferences
       });
 
-      // Update family name if it changed
+      // Update family name if it changed (parents only)
       if (family && familyName !== family.name) {
-        await base44.asServiceRole.entities.Family.update(user.family_id, {
-          name: familyName
-        });
+        if (user.family_role !== 'parent') {
+          toast.error('Only parents can update the family name');
+          return;
+        }
+        
+        try {
+          await base44.entities.Family.update(user.family_id, {
+            name: familyName
+          });
+        } catch (error) {
+          toast.error('Failed to update family name');
+          console.error('Error updating family:', error);
+          throw error;
+        }
       }
       
       // Refresh user data to reflect updated family_role in RLS checks
