@@ -4,6 +4,10 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     
     try {
+        // ==========================================
+        // SECURITY CHECKS - DO NOT REMOVE
+        // ==========================================
+        
         // 1. Check if user is authenticated
         const user = await base44.auth.me();
         if (!user) {
@@ -84,6 +88,29 @@ Deno.serve(async (req) => {
         
         const { email, name, role, generateLinkingCode } = await req.json();
 
+        // ==========================================
+        // INPUT VALIDATION
+        // ==========================================
+        
+        // Validate email format if provided
+        if (email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                return new Response(JSON.stringify({ error: 'Bad Request: Invalid email format.' }), { 
+                    status: 400, 
+                    headers: { 'Content-Type': 'application/json' } 
+                });
+            }
+        }
+
+        // Validate role if provided
+        if (role && !['parent', 'teen', 'child'].includes(role)) {
+            return new Response(JSON.stringify({ error: 'Bad Request: Invalid role. Must be "parent", "teen", or "child".' }), { 
+                status: 400, 
+                headers: { 'Content-Type': 'application/json' } 
+            });
+        }
+
         // Handle linking code generation (allowed on all tiers for parents)
         if (generateLinkingCode) {
             const linkingCode = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -116,28 +143,10 @@ Deno.serve(async (req) => {
                 headers: { 'Content-Type': 'application/json' } 
             });
         }
-        
-        // 4. Validate required fields
+
+        // Validate required fields for email invitations
         if (!email || !name || !role) {
             return new Response(JSON.stringify({ error: 'Bad Request: Email, name, and role are required.' }), { 
-                status: 400, 
-                headers: { 'Content-Type': 'application/json' } 
-            });
-        }
-
-        // 5. Validate email format
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            return new Response(JSON.stringify({ error: 'Bad Request: Invalid email format.' }), { 
-                status: 400, 
-                headers: { 'Content-Type': 'application/json' } 
-            });
-        }
-
-        // 6. Validate role
-        const validRoles = ['parent', 'child'];
-        if (!validRoles.includes(role)) {
-            return new Response(JSON.stringify({ error: 'Bad Request: Invalid role. Must be "parent" or "child".' }), { 
                 status: 400, 
                 headers: { 'Content-Type': 'application/json' } 
             });
