@@ -4,15 +4,25 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     
     try {
+        // 1. Check if user is authenticated
         const user = await base44.auth.me();
         if (!user) {
-            return new Response(JSON.stringify({ error: 'User not authenticated.' }), { 
+            return new Response(JSON.stringify({ error: 'Unauthorized: User not authenticated.' }), { 
                 status: 401, 
                 headers: { 'Content-Type': 'application/json' } 
             });
         }
 
-        // Get family ID from user data
+        // 2. Check if user is a parent
+        const userFamilyRole = user?.data?.family_role || user?.family_role;
+        if (userFamilyRole !== 'parent') {
+            return new Response(JSON.stringify({ error: 'Unauthorized: Only parents can invite family members.' }), { 
+                status: 403, 
+                headers: { 'Content-Type': 'application/json' } 
+            });
+        }
+
+        // 3. Get family ID from user data
         const familyId = user?.data?.family_id || user?.family_id;
         if (!familyId) {
             return new Response(JSON.stringify({ error: 'No family found. Please set up your family first.' }), { 
@@ -74,7 +84,7 @@ Deno.serve(async (req) => {
         
         const { email, name, role, generateLinkingCode } = await req.json();
 
-        // Handle linking code generation (allowed on all tiers)
+        // Handle linking code generation (allowed on all tiers for parents)
         if (generateLinkingCode) {
             const linkingCode = Math.random().toString(36).substring(2, 8).toUpperCase();
             const linkingCodeExpires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
@@ -107,8 +117,27 @@ Deno.serve(async (req) => {
             });
         }
         
+        // 4. Validate required fields
         if (!email || !name || !role) {
-            return new Response(JSON.stringify({ error: 'Missing required fields for email invitation' }), { 
+            return new Response(JSON.stringify({ error: 'Bad Request: Email, name, and role are required.' }), { 
+                status: 400, 
+                headers: { 'Content-Type': 'application/json' } 
+            });
+        }
+
+        // 5. Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return new Response(JSON.stringify({ error: 'Bad Request: Invalid email format.' }), { 
+                status: 400, 
+                headers: { 'Content-Type': 'application/json' } 
+            });
+        }
+
+        // 6. Validate role
+        const validRoles = ['parent', 'child'];
+        if (!validRoles.includes(role)) {
+            return new Response(JSON.stringify({ error: 'Bad Request: Invalid role. Must be "parent" or "child".' }), { 
                 status: 400, 
                 headers: { 'Content-Type': 'application/json' } 
             });
