@@ -1,14 +1,10 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.5.0';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import Stripe from 'npm:stripe';
 
 const PLAN_PRICE_IDS = {
-  basic: {
-    monthly: Deno.env.get("STRIPE_BASIC_MONTHLY_PRICE_ID"),
-    yearly: Deno.env.get("STRIPE_BASIC_YEARLY_PRICE_ID")
-  },
   premium: {
-    monthly: Deno.env.get("STRIPE_PREMIUM_MONTHLY_PRICE_ID"),
-    yearly: Deno.env.get("STRIPE_PREMIUM_YEARLY_PRICE_ID")
+    monthly: Deno.env.get("STRIPE_PRICE_ID_MONTHLY"),
+    yearly: Deno.env.get("STRIPE_PRICE_ID_YEARLY")
   }
 };
 
@@ -29,7 +25,7 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"), {
 
 const handleCreateCheckoutSession = async (payload, user, base44, origin) => {
     const { planId, isYearly } = payload;
-    if (!['basic', 'premium'].includes(planId)) {
+    if (planId !== 'premium') {
         return new Response(JSON.stringify({ error: "Invalid plan ID" }), { status: 400 });
     }
 
