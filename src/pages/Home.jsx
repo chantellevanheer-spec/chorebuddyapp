@@ -8,14 +8,18 @@ import FeatureCard from '../components/landing/FeatureCard';
 import StepCard from '../components/landing/StepCard';
 
 export default function Home() {
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+
   useEffect(() => {
-    // Redirect logged-in users to the dashboard
+    // Check if user is logged in and redirect to dashboard
     const checkUserStatus = async () => {
       try {
         await User.me();
+        setIsAuthenticated(true);
         window.location.href = createPageUrl("Dashboard");
       } catch (error) {
         // User is not logged in, stay on the home page
+        setIsAuthenticated(false);
       }
     };
     checkUserStatus();
