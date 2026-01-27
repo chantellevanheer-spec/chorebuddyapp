@@ -126,7 +126,7 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
         const userData = await User.me();
         setIsAuthenticated(true);
         setCurrentUser(userData);
-        
+
         // Check if user needs to complete role selection
         if (!userData.family_role && currentPageName !== 'RoleSelection') {
           navigate(createPageUrl('RoleSelection'));
@@ -145,8 +145,8 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
         }
       } catch (error) {
         setIsAuthenticated(false);
-        // If on a private page and not authenticated, redirect to Home
-        navigate(createPageUrl('Home'));
+        // If on a private page and not authenticated, redirect to login
+        User.redirectToLogin(window.location.pathname);
       } finally {
         setAuthChecked(true);
       }
