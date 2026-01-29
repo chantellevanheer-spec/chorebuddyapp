@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, ClipboardList, Clock, Star, Edit, Trash2, UserPlus, CheckSquare } from "lucide-react";
+import { Plus, ClipboardList, Clock, Star, Edit, Trash2, UserPlus, CheckSquare, Sparkles } from "lucide-react";
 import { Assignment } from "@/entities/Assignment";
 import { CHORE_CATEGORY_COLORS, DIFFICULTY_STARS } from '@/components/lib/constants';
 import { toast } from "sonner";
@@ -22,6 +22,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import EnhancedAssignmentModal from "../components/chores/EnhancedAssignmentModal";
 import BulkAssignmentModal from "../components/chores/BulkAssignmentModal";
+import AISuggestionsModal from "../components/ai/AISuggestionsModal";
 
 export default function Chores() {
   const { chores, people, user, loading, isProcessing, addChore, updateChore, deleteChore, fetchData } = useData();
@@ -34,6 +35,7 @@ export default function Chores() {
   const [isBulkAssignModalOpen, setBulkAssignModalOpen] = useState(false);
   const [choreToAssign, setChoreToAssign] = useState(null);
   const [isAssigning, setIsAssigning] = useState(false);
+  const [isAISuggestionsOpen, setAISuggestionsOpen] = useState(false);
   const getDefaultFormData = () => ({
     title: "",
     description: "",
@@ -214,6 +216,19 @@ export default function Chores() {
     setBulkAssignModalOpen(true);
   };
 
+  const handleApplyAISuggestion = async (suggestion) => {
+    const choreData = {
+      title: suggestion.title,
+      description: suggestion.description,
+      difficulty: suggestion.difficulty,
+      category: suggestion.category,
+      estimated_time: suggestion.estimated_time,
+      priority: 'medium',
+      auto_assign: true
+    };
+    await addChore(choreData);
+  };
+
   if (loading) {
     return <LoadingSpinner size="large" message="Loading chores..." />;
   }
@@ -261,6 +276,13 @@ export default function Chores() {
         isProcessing={isAssigning}
       />
 
+      <AISuggestionsModal
+        isOpen={isAISuggestionsOpen}
+        onClose={() => setAISuggestionsOpen(false)}
+        suggestionType="chores"
+        onApplySuggestion={handleApplyAISuggestion}
+      />
+
       {/* Header */}
       <div className="funky-card p-4 md:p-6 lg:p-8">
         <div className="flex flex-col gap-4 md:gap-6">
@@ -274,7 +296,7 @@ export default function Chores() {
               <p className="body-font-light text-sm md:text-base text-gray-600 mt-1 md:mt-2">{chores.length} {chores.length === 1 ? 'chore' : 'chores'} in your library</p>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <Button
               onClick={handleShowAddForm}
               className="funky-button bg-[#C3B1E1] text-white px-4 md:px-6 py-3 md:py-4 text-base md:text-lg lg:text-xl header-font"
@@ -288,6 +310,13 @@ export default function Chores() {
             >
               <CheckSquare className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
               Bulk Assign
+            </Button>
+            <Button
+              onClick={() => setAISuggestionsOpen(true)}
+              className="funky-button bg-[#C3B1E1] text-white px-4 md:px-6 py-3 md:py-4 text-base md:text-lg lg:text-xl header-font"
+            >
+              <Sparkles className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
+              AI Suggestions
             </Button>
           </div>
         </div>

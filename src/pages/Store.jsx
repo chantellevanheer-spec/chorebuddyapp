@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useData } from '../components/contexts/DataContext';
 import { Button } from "@/components/ui/button";
-import { Plus, Sparkles, Loader2 } from "lucide-react";
+import { Plus, Sparkles, Loader2, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { useSubscriptionAccess } from '../components/hooks/useSubscriptionAccess';
 import LimitReachedModal from "../components/ui/LimitReachedModal";
@@ -10,6 +10,7 @@ import RedeemableItemCard from "../components/store/RedeemableItemCard";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import RedeemConfirmationModal from "../components/store/RedeemConfirmationModal"; // Import new modal
 import { format, startOfWeek } from "date-fns";
+import AISuggestionsModal from "../components/ai/AISuggestionsModal";
 
 export default function Store() {
   const { items, rewards, people, user, loading, isProcessing, addItem, updateItem, deleteItem, addReward } = useData();
@@ -24,6 +25,7 @@ export default function Store() {
   const [itemToEdit, setItemToEdit] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [itemToRedeem, setItemToRedeem] = useState(null); // New state for item to redeem
+  const [isAISuggestionsOpen, setAISuggestionsOpen] = useState(false);
 
   // Calculate points for each person
   const personPoints = useMemo(() => {
@@ -105,6 +107,17 @@ export default function Store() {
     setIsRedeemModalOpen(false);
     setItemToRedeem(null);
   };
+
+  const handleApplyAISuggestion = async (suggestion) => {
+    const itemData = {
+      name: suggestion.name,
+      description: suggestion.description,
+      cost: suggestion.cost,
+      category: suggestion.category,
+      icon: suggestion.icon
+    };
+    await addItem(itemData);
+  };
   
   if (loading) {
     return (
@@ -155,6 +168,13 @@ export default function Store() {
         isProcessing={isProcessing}
       />
 
+      <AISuggestionsModal
+        isOpen={isAISuggestionsOpen}
+        onClose={() => setAISuggestionsOpen(false)}
+        suggestionType="rewards"
+        onApplySuggestion={handleApplyAISuggestion}
+      />
+
       {/* Header */}
       <div className="funky-card p-4 md:p-6 lg:p-8">
         <div className="flex flex-col gap-4 md:gap-6">
@@ -168,13 +188,22 @@ export default function Store() {
               <p className="body-font-light text-sm md:text-base text-gray-600 mt-1 md:mt-2">Redeem points for awesome rewards!</p>
             </div>
           </div>
-          <Button
-            onClick={handleShowAddForm}
-            className="funky-button bg-[#C3B1E1] text-white px-4 md:px-6 py-3 md:py-4 text-base md:text-lg lg:text-xl header-font w-full"
-          >
-            <Plus className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
-            Add Item
-          </Button>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <Button
+              onClick={handleShowAddForm}
+              className="funky-button bg-[#C3B1E1] text-white px-4 md:px-6 py-3 md:py-4 text-base md:text-lg lg:text-xl header-font"
+            >
+              <Plus className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
+              Add Item
+            </Button>
+            <Button
+              onClick={() => setAISuggestionsOpen(true)}
+              className="funky-button bg-[#C3B1E1] text-white px-4 md:px-6 py-3 md:py-4 text-base md:text-lg lg:text-xl header-font"
+            >
+              <TrendingUp className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
+              AI Suggestions
+            </Button>
+          </div>
         </div>
       </div>
 
