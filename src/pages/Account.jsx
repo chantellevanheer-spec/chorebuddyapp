@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { User } from '@/entities/User';
 import { Person } from '@/entities/Person';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -54,7 +53,7 @@ export default function Account() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userData = await User.me();
+        const userData = await base44.auth.me();
         setUser({
           ...userData,
           receives_chore_reminders: userData.receives_chore_reminders ?? true,
@@ -111,10 +110,12 @@ export default function Account() {
       });
       
       // Update custom data fields
-      await User.updateMyUserData({
-        avatar: avatarIcon,
-        chore_preferences: chorePreferences,
-        notification_preferences: notificationPreferences
+      await base44.auth.updateMe({
+        data: {
+          avatar: avatarIcon,
+          chore_preferences: chorePreferences,
+          notification_preferences: notificationPreferences
+        }
       });
 
       // Update family name if it changed (parents only)
@@ -136,7 +137,7 @@ export default function Account() {
       }
       
       // Refresh user data to reflect updated family_role in RLS checks
-      const updatedUser = await User.me();
+      const updatedUser = await base44.auth.me();
       setUser({
         ...updatedUser,
         receives_chore_reminders: updatedUser.receives_chore_reminders ?? true,
