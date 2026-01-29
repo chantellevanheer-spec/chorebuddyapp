@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User } from '@/entities/User';
+import { base44 } from '@/api/base44Client';
 import { Family } from '@/entities/Family';
 import { createPageUrl } from '@/utils';
 import { useNavigate } from 'react-router-dom';
@@ -40,7 +40,7 @@ export default function FamilyLinking() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const userData = await User.me();
+                const userData = await base44.auth.me();
                 setUser(userData);
 
                 // If no family role, redirect to role selection

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User } from '@/entities/all';
+import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Loader2, Users, CheckCircle, AlertCircle } from 'lucide-react';
 import { joinFamily } from '@/functions/joinFamily';
@@ -24,7 +24,7 @@ export default function JoinFamily() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const userData = await User.me();
+        const userData = await base44.auth.me();
         setUser(userData);
         
         // Check if email matches
@@ -33,8 +33,7 @@ export default function JoinFamily() {
         }
       } catch (error) {
         // User not logged in, redirect to login
-        const loginUrl = `${createPageUrl('Home')}?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
-        window.location.href = loginUrl;
+        base44.auth.redirectToLogin(window.location.pathname + window.location.search);
         return;
       } finally {
         setLoading(false);
