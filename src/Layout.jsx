@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { User } from '@/entities/User';
+import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import { Home, Users, ClipboardList, Calendar, Sparkles, Zap, Settings, Loader2, Target, CheckCircle, MessageCircle, Megaphone } from "lucide-react";
 import PublicLayout from "./components/layout/PublicLayout";
@@ -123,7 +123,7 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
 
     const checkAuth = async () => {
       try {
-        const userData = await User.me();
+        const userData = await base44.auth.me();
         setIsAuthenticated(true);
         setCurrentUser(userData);
 
@@ -146,11 +146,11 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
       } catch (error) {
         setIsAuthenticated(false);
         // If on a private page and not authenticated, redirect to login
-        User.redirectToLogin(window.location.pathname);
+        base44.auth.redirectToLogin(window.location.pathname);
       } finally {
         setAuthChecked(true);
       }
-    };
+      };
 
     checkAuth();
   }, [currentPageName, isPublicPage, navigate]);
