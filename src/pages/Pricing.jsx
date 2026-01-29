@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { User } from '@/entities/User';
+import { base44 } from '@/api/base44Client';
 import { Loader2, Zap, Star, ShieldCheck, AlertCircle } from 'lucide-react';
 import PlanCard from '../components/pricing/PlanCard';
 import { stripeCheckout } from '@/functions/stripeCheckout';
@@ -59,7 +59,7 @@ export default function Pricing() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const user = await User.me();
+        const user = await base44.auth.me();
         setCurrentUser(user);
       } catch (error) {
         console.error("No authenticated user found", error);
@@ -73,7 +73,7 @@ export default function Pricing() {
   const handleSelectPlan = async (planId) => {
     if (!currentUser) {
       toast.info("Please sign up or log in to choose a plan.");
-      User.loginWithRedirect('https://chorebuddyapp.com/pricing');
+      base44.auth.redirectToLogin('https://chorebuddyapp.com/pricing');
       return;
     }
 
@@ -81,8 +81,8 @@ export default function Pricing() {
       // Handle downgrade logic or free plan selection directly
       setLoading(true);
       try {
-        await User.updateMyUserData({ subscription_tier: 'free' });
-        const user = await User.me();
+        await base44.auth.updateMe({ subscription_tier: 'free' });
+        const user = await base44.auth.me();
         setCurrentUser(user);
         toast.success("You are now on the Free plan.");
       } catch (error) {
