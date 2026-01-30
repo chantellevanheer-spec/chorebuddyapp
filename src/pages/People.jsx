@@ -14,7 +14,7 @@ import { linkUserToPerson } from '@/functions/linkUserToPerson';
 
 export default function People() {
   const { people, assignments, user, loading, isProcessing, addPerson, updatePerson, deletePerson } = useData();
-  const { hasReachedLimit, getTierDisplayName, getRequiredTier, canAccess } = useSubscriptionAccess();
+  const { hasReachedLimit, getTierDisplayName, getRequiredTier, canAccess, features } = useSubscriptionAccess();
   const [isFormModalOpen, setFormModalOpen] = useState(false);
   const [isInviteModalOpen, setInviteModalOpen] = useState(false);
   const [personToEdit, setPersonToEdit] = useState(null);
@@ -135,7 +135,7 @@ export default function People() {
         onClose={() => setLimitModalOpen(false)}
         limitType="max_family_members"
         currentCount={people.length}
-        maxCount={user?.subscription_tier === 'free' ? 2 : 6}
+        maxCount={features.max_family_members}
         requiredTier={getTierDisplayName(getRequiredTier('max_family_members'))} />
 
       <PersonFormModal

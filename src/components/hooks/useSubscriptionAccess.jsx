@@ -5,7 +5,7 @@ import { useData } from '../contexts/DataContext';
 const SUBSCRIPTION_FEATURES = {
   free: {
     // Core limits
-    max_family_members: 2,
+    max_family_members: 3,
     max_redeemable_items: 3,
     max_chores: 10,
     
