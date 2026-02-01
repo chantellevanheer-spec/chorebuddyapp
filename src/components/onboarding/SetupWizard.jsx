@@ -19,7 +19,7 @@ export default function SetupWizard({ isOpen, onComplete }) {
 
   // Step 1: Family Members
   const [members, setMembers] = useState([
-    { name: '', role: 'adult', avatar_color: AVATAR_COLORS[0] }
+    { name: '', role: 'parent', avatar_color: AVATAR_COLORS[0] }
   ]);
 
   // Step 2: Chores
@@ -238,7 +238,7 @@ export default function SetupWizard({ isOpen, onComplete }) {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="adult">Adult</SelectItem>
+                          <SelectItem value="parent">parent</SelectItem>
                           <SelectItem value="teen">Teen</SelectItem>
                           <SelectItem value="child">Child</SelectItem>
                         </SelectContent>
