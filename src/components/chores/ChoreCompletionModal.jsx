@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 import { sanitizeHTML } from '@/components/lib/sanitization';
 import { VALIDATION } from '@/components/lib/appConstants';
+import DifficultyRating from './DifficultyRating';
 
 export default function ChoreCompletionModal({ 
   isOpen, 
@@ -21,6 +22,7 @@ export default function ChoreCompletionModal({
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [difficultyRating, setDifficultyRating] = useState(null);
 
   const handlePhotoChange = (e) => {
     const file = e.target.files?.[0];
@@ -65,7 +67,7 @@ export default function ChoreCompletionModal({
 
       // Sanitize notes before submission
       const sanitizedNotes = sanitizeHTML(notes);
-      await onComplete(assignment.id, sanitizedNotes, photoUrl);
+      await onComplete(assignment.id, sanitizedNotes, photoUrl, difficultyRating);
       onClose();
     } catch (error) {
       console.error('Error completing chore:', error);
@@ -100,6 +102,15 @@ export default function ChoreCompletionModal({
             >
               <X className="w-5 h-5" />
             </button>
+          </div>
+
+          {/* Difficulty Rating */}
+          <div className="mb-6">
+            <DifficultyRating 
+              value={difficultyRating}
+              onChange={setDifficultyRating}
+              currentDifficulty={chore.difficulty}
+            />
           </div>
 
           {/* Notes */}
