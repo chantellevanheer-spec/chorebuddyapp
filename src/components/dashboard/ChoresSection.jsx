@@ -46,6 +46,7 @@ export default function ChoresSection({ pendingAssignments = [], completedAssign
                     chore={chore}
                     person={person}
                     onComplete={completeChore}
+                    user={user}
                   />
                 );
               })}
@@ -80,6 +81,7 @@ export default function ChoresSection({ pendingAssignments = [], completedAssign
                   chore={chore}
                   person={person}
                   onComplete={() => {}}
+                  user={user}
                 />
               );
             })}

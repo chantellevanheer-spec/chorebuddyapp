@@ -1,24 +1,39 @@
-import React from "react";
+import React, { useState } from "react";
 import { Star, Clock } from "lucide-react";
 import InteractiveCheckbox from "../ui/InteractiveCheckbox";
+import ChoreCompletionModal from "./ChoreCompletionModal";
 import { CHORE_CATEGORY_COLORS, DIFFICULTY_STARS, AVATAR_COLORS } from '../lib/constants';
 
-function ChoreCard({ assignment, chore, person, onComplete }) {
+function ChoreCard({ assignment, chore, person, onComplete, user }) {
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  
   if (!chore || !person) return null;
 
+  const handleCheckboxClick = () => {
+    if (!assignment.completed) {
+      setShowCompletionModal(true);
+    }
+  };
+
+  const handleCompleteWithDetails = async (assignmentId, notes, photoUrl, difficultyRating) => {
+    await onComplete(assignmentId, chore.id, notes, photoUrl, difficultyRating);
+    setShowCompletionModal(false);
+  };
+
   return (
-    <div className={`funky-card-hover funky-card p-5 border-4 transition-all duration-200 ${chore.completed ? 'opacity-60 bg-gray-50' : 'bg-white'} ${CHORE_CATEGORY_COLORS[chore.category] || CHORE_CATEGORY_COLORS.other}`}>
-      <div className="flex items-start gap-4">
-        {/* Checkbox */}
-        <div className="flex-shrink-0 mt-1">
-          <InteractiveCheckbox
-            id={`chore-${assignment.id}`}
-            checked={assignment.completed}
-            onCheckedChange={() => !assignment.completed && onComplete(assignment.id, chore.id)}
-            disabled={assignment.completed}
-            aria-label={`Mark "${chore.title}" for ${person.name} as ${assignment.completed ? 'incomplete' : 'complete'}`}
-          />
-        </div>
+    <>
+      <div className={`funky-card-hover funky-card p-5 border-4 transition-all duration-200 ${chore.completed ? 'opacity-60 bg-gray-50' : 'bg-white'} ${CHORE_CATEGORY_COLORS[chore.category] || CHORE_CATEGORY_COLORS.other}`}>
+        <div className="flex items-start gap-4">
+          {/* Checkbox */}
+          <div className="flex-shrink-0 mt-1">
+            <InteractiveCheckbox
+              id={`chore-${assignment.id}`}
+              checked={assignment.completed}
+              onCheckedChange={handleCheckboxClick}
+              disabled={assignment.completed}
+              aria-label={`Mark "${chore.title}" for ${person.name} as ${assignment.completed ? 'incomplete' : 'complete'}`}
+            />
+          </div>
 
         {/* Chore Details */}
         <div className="flex-1">
@@ -54,6 +69,19 @@ function ChoreCard({ assignment, chore, person, onComplete }) {
         </div>
       </div>
     </div>
+
+    {showCompletionModal && (
+      <ChoreCompletionModal
+        isOpen={showCompletionModal}
+        onClose={() => setShowCompletionModal(false)}
+        onComplete={handleCompleteWithDetails}
+        assignment={assignment}
+        chore={chore}
+        isPremium={user?.subscription_tier === 'premium'}
+        requiresPhoto={chore?.photo_required}
+      />
+    )}
+    </>
   );
 }
 
