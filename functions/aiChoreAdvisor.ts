@@ -110,11 +110,22 @@ Deno.serve(async (req) => {
             : 0;
 
         // Analyze family composition by Person role
-        // Map adult -> parent, teen+child -> teen/child
+        // Map adult -> parent for better AI understanding
+        const parents = people.filter(p => p.role === 'adult');
+        const kids = people.filter(p => p.role === 'teen' || p.role === 'child');
+        const teens = people.filter(p => p.role === 'teen');
+        const children = people.filter(p => p.role === 'child');
+        
         const composition = {
-            parent: people.filter(p => p.role === 'adult').length,
-            teenChild: people.filter(p => p.role === 'teen' || p.role === 'child').length,
-            totalMembers: people.length
+            parents: parents.length,
+            kids: kids.length,
+            breakdown: {
+                teens: teens.length,
+                children: children.length
+            },
+            totalMembers: people.length,
+            hasTeens: teens.length > 0,
+            hasYoungChildren: children.length > 0
         };
 
         // Get chore categories
@@ -127,9 +138,13 @@ Deno.serve(async (req) => {
             const personRate = personAssignments.length > 0 
                 ? Math.round((personCompleted / personAssignments.length) * 100) 
                 : 0;
+            
+            // Map role to display format for AI
+            const displayRole = person.role === 'adult' ? 'parent' : person.role;
+            
             return {
                 name: person.name,
-                role: person.role,
+                role: displayRole,
                 completionRate: personRate,
                 totalAssignments: personAssignments.length
             };
@@ -139,11 +154,33 @@ Deno.serve(async (req) => {
         let responseSchema = {};
 
         if (suggestionType === 'chores') {
+            // Build family description
+            const familyDesc = [];
+            if (composition.parents > 0) {
+                familyDesc.push(`${composition.parents} parent${composition.parents > 1 ? 's' : ''}`);
+            }
+            if (composition.breakdown.teens > 0) {
+                familyDesc.push(`${composition.breakdown.teens} teen${composition.breakdown.teens > 1 ? 's' : ''}`);
+            }
+            if (composition.breakdown.children > 0) {
+                familyDesc.push(`${composition.breakdown.children} child${composition.breakdown.children > 1 ? 'ren' : ''}`);
+            }
+            const familyComposition = familyDesc.join(', ');
+            
+            // Age-appropriate guidance
+            let ageGuidance = '';
+            if (composition.hasYoungChildren && composition.hasTeens) {
+                ageGuidance = 'Include a mix of simple chores for younger children and more responsible tasks for teens.';
+            } else if (composition.hasYoungChildren) {
+                ageGuidance = 'Focus on age-appropriate, simple chores suitable for younger children.';
+            } else if (composition.hasTeens) {
+                ageGuidance = 'Include more independent, responsible tasks appropriate for teenagers.';
+            }
+            
             prompt = `You are a household management expert. Analyze this family's data and suggest ${SUGGESTION_COUNT} new chore ideas that would be beneficial.
 
 Family Composition:
-- Parents: ${composition.parent}
-- Teen/Child: ${composition.teenChild}
+- ${familyComposition}
 - Total members: ${composition.totalMembers}
 
 Current chores: ${chores.length} chores across categories: ${choreCategories.length > 0 ? choreCategories.join(', ') : 'none yet'}
@@ -152,10 +189,12 @@ Overall completion rate: ${completionRate}%
 Member performance:
 ${personStats.map(p => `- ${p.name} (${p.role}): ${p.completionRate}% completion rate (${p.totalAssignments} assignments)`).join('\n')}
 
+${ageGuidance}
+
 Based on this data, suggest ${SUGGESTION_COUNT} chores that:
 1. Fill gaps in their current chore coverage
-2. Are age-appropriate for their family composition
-3. Are achievable given their current completion rates (avoid overly complex tasks if completion is low)
+2. Are age-appropriate for the family composition (suitable for ${composition.kids} kid${composition.kids !== 1 ? 's' : ''})
+3. Are achievable given their current ${completionRate}% completion rate (avoid overly complex tasks if completion is low)
 4. Will help maintain a well-functioning household
 5. Vary in difficulty to suit different family members
 
@@ -188,24 +227,57 @@ For each chore, provide: title, description, difficulty (easy/medium/hard), cate
             // Rewards
             const totalPoints = rewards.reduce((sum, r) => sum + (r.points || 0), 0);
             const avgPointsPerPerson = people.length > 0 ? Math.round(totalPoints / people.length) : 0;
+            
+            // Build age-specific guidance
+            let rewardGuidance = '';
+            if (composition.hasYoungChildren && composition.hasTeens) {
+                rewardGuidance = 'Include rewards appealing to both younger children (simple treats, activities) and teenagers (privileges, social activities).';
+            } else if (composition.hasYoungChildren) {
+                rewardGuidance = 'Focus on rewards that appeal to younger children: fun activities, small treats, and family time.';
+            } else if (composition.hasTeens) {
+                rewardGuidance = 'Focus on rewards that appeal to teenagers: independence, privileges, and social opportunities.';
+            }
+            
+            const familyDesc = [];
+            if (composition.parents > 0) {
+                familyDesc.push(`${composition.parents} parent${composition.parents > 1 ? 's' : ''}`);
+            }
+            if (composition.breakdown.teens > 0) {
+                familyDesc.push(`${composition.breakdown.teens} teen${composition.breakdown.teens > 1 ? 's' : ''}`);
+            }
+            if (composition.breakdown.children > 0) {
+                familyDesc.push(`${composition.breakdown.children} child${composition.breakdown.children > 1 ? 'ren' : ''}`);
+            }
 
             prompt = `You are a family motivation expert. Suggest ${SUGGESTION_COUNT} creative reward ideas for this household's points-based chore system.
 
 Family Composition:
-- Parents: ${composition.parent}
-- Teen/Child: ${composition.teenChild}
+- ${familyDesc.join(', ')}
+- Total: ${composition.totalMembers} member${composition.totalMembers !== 1 ? 's' : ''}
+- Kids in household: ${composition.kids}
+
+Current System:
 - Average points per person: ${avgPointsPerPerson}
 - Overall chore completion rate: ${completionRate}%
-- Current rewards: ${rewards.length}
+- Existing rewards: ${rewards.length}
 
-Suggest rewards that:
-1. Are motivating for the family members present
-2. Have varied point costs (include both affordable daily rewards and premium goal rewards)
+${rewardGuidance}
+
+Suggest ${SUGGESTION_COUNT} rewards that:
+1. Are motivating for the ${composition.kids} kid${composition.kids !== 1 ? 's' : ''} in the household
+2. Have varied point costs (range from 20-150 points):
+   - Low cost (20-40): Daily/weekly achievable rewards
+   - Medium cost (50-80): Weekly goals
+   - High cost (100-150): Special milestone rewards
 3. Are practical and achievable for a typical family
-4. Encourage continued participation in the chore system
+4. Encourage continued participation (completion rate: ${completionRate}%)
 5. Are family-friendly and positive
 
-Categories: privileges (screen time, staying up late), treats (snacks, desserts), activities (outings, events), or other creative ideas.
+Categories to consider:
+- Privileges (screen time, bedtime, choices)
+- Treats (snacks, desserts, special meals)
+- Activities (outings, games, family events)
+- Other creative ideas
 
 For each reward, provide: name, description, cost (10-500 points), category, and reasoning.`;
 
@@ -270,8 +342,9 @@ For each reward, provide: name, description, cost (10-500 points), category, and
             familyContext: {
                 totalMembers: composition.totalMembers,
                 composition: {
-                    parent: composition.parent,
-                    teenChild: composition.teenChild
+                    adults: composition.parents,
+                    teens: composition.breakdown.teens,
+                    children: composition.breakdown.children
                 },
                 completionRate,
                 existingChores: chores.length,
