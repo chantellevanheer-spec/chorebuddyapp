@@ -10,6 +10,7 @@ import { DataProvider } from './components/contexts/DataContext';
 import { ThemeProvider } from './components/contexts/ThemeContext';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import OnboardingTour from './components/onboarding/OnboardingTour';
+import SetupWizard from './components/onboarding/SetupWizard';
 import UserAvatar from './components/profile/UserAvatar';
 
 const navigationItems = [
@@ -110,7 +111,9 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [showSetupWizard, setShowSetupWizard] = useState(false);
   const onboardingShownRef = React.useRef(false);
+  const setupWizardShownRef = React.useRef(false);
 
   const isPublicPage = publicPages.includes(currentPageName);
 
@@ -133,9 +136,19 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
           return;
         }
 
-        // Show onboarding ONCE per session for new users (after role selection)
+        // Show setup wizard ONCE per session for new parents (after role selection)
         if (
-          userData.family_role && 
+          userData.family_role === 'parent' && 
+          !userData.data?.onboarding_completed && 
+          currentPageName !== 'RoleSelection' &&
+          !setupWizardShownRef.current
+        ) {
+          setShowSetupWizard(true);
+          setupWizardShownRef.current = true;
+        } 
+        // Show quick tour for children/teens
+        else if (
+          (userData.family_role === 'child' || userData.family_role === 'teen') &&
           !userData.data?.onboarding_completed && 
           currentPageName !== 'RoleSelection' &&
           !onboardingShownRef.current
@@ -432,14 +445,22 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
 
 export default function LayoutWrapper(props) {
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showSetupWizard, setShowSetupWizard] = useState(false);
 
   return (
     <ErrorBoundary>
       <ThemeProvider>
         <DataProvider>
-          <AppLayout {...props} showOnboarding={showOnboarding} setShowOnboarding={setShowOnboarding} />
+          <AppLayout {...props} showOnboarding={showOnboarding} setShowOnboarding={setShowOnboarding} showSetupWizard={showSetupWizard} setShowSetupWizard={setShowSetupWizard} />
           <RealTimeBadge />
           <CookieBanner />
+          <SetupWizard 
+            isOpen={props.showSetupWizard} 
+            onComplete={() => {
+              props.setShowSetupWizard(false);
+              window.location.reload();
+            }} 
+          />
           <OnboardingTour 
             isOpen={showOnboarding} 
             onClose={() => setShowOnboarding(false)} 
