@@ -109,11 +109,13 @@ Deno.serve(async (req) => {
             ? Math.round((completedAssignments.length / assignments.length) * 100) 
             : 0;
 
-        // Analyze family composition
-        const adults = people.filter(p => p.role === 'adult').length;
-        const teens = people.filter(p => p.role === 'teen').length;
-        const children = people.filter(p => p.role === 'child').length;
-        const totalMembers = people.length;
+        // Analyze family composition by Person role
+        const composition = {
+            adults: people.filter(p => p.role === 'adult').length,
+            teens: people.filter(p => p.role === 'teen').length,
+            children: people.filter(p => p.role === 'child').length,
+            totalMembers: people.length
+        };
 
         // Get chore categories
         const choreCategories = [...new Set(chores.map(c => c.category).filter(Boolean))];
@@ -140,10 +142,10 @@ Deno.serve(async (req) => {
             prompt = `You are a household management expert. Analyze this family's data and suggest ${SUGGESTION_COUNT} new chore ideas that would be beneficial.
 
 Family Composition:
-- Adults: ${adults}
-- Teens: ${teens}
-- Children: ${children}
-- Total members: ${totalMembers}
+- Adults: ${composition.adults}
+- Teens: ${composition.teens}
+- Children: ${composition.children}
+- Total members: ${composition.totalMembers}
 
 Current chores: ${chores.length} chores across categories: ${choreCategories.length > 0 ? choreCategories.join(', ') : 'none yet'}
 Overall completion rate: ${completionRate}%
@@ -189,17 +191,17 @@ For each chore, provide: title, description, difficulty (easy/medium/hard), cate
             const avgPointsPerPerson = people.length > 0 ? Math.round(totalPoints / people.length) : 0;
             
             const ageGroups = [
-                adults > 0 ? 'adults' : null,
-                teens > 0 ? 'teens' : null,
-                children > 0 ? 'children' : null
+                composition.adults > 0 ? 'adults' : null,
+                composition.teens > 0 ? 'teens' : null,
+                composition.children > 0 ? 'children' : null
             ].filter(Boolean).join(', ');
 
             prompt = `You are a family motivation expert. Suggest ${SUGGESTION_COUNT} creative reward ideas for this household's points-based chore system.
 
 Family Composition:
-- Adults: ${adults}
-- Teens: ${teens}
-- Children: ${children}
+- Adults: ${composition.adults}
+- Teens: ${composition.teens}
+- Children: ${composition.children}
 - Average points per person: ${avgPointsPerPerson}
 - Overall chore completion rate: ${completionRate}%
 - Current rewards: ${rewards.length}
@@ -274,8 +276,12 @@ For each reward, provide: name, description, cost (10-500 points), category, and
                 generatedAt: new Date().toISOString()
             },
             familyContext: {
-                totalMembers,
-                composition: { adults, teens, children },
+                totalMembers: composition.totalMembers,
+                composition: {
+                    adults: composition.adults,
+                    teens: composition.teens,
+                    children: composition.children
+                },
                 completionRate,
                 existingChores: chores.length,
                 existingRewards: rewards.length
