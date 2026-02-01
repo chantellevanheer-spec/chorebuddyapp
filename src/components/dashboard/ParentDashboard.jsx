@@ -31,7 +31,7 @@ export default function ParentDashboard({ assignChoresForWeek, isAssigning }) {
 
   if (!hasData) {
     return (
-      <div className="mx-24 pb-32 lg:pb-8">
+      <div className="mx-5 pb-40 lg:pb-8">
         <DashboardHeader
           assignChoresForWeek={assignChoresForWeek}
           isAssigning={isAssigning} />
