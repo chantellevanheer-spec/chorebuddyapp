@@ -6,7 +6,8 @@ import { Home, Users, ClipboardList, Calendar, Sparkles, Zap, Settings, Loader2,
 import PublicLayout from "./components/layout/PublicLayout";
 import CookieBanner from './components/ui/CookieBanner';
 import RealTimeBadge from './components/ui/RealTimeBadge';
-import { DataProvider } from './components/contexts/DataContext';
+import OfflineIndicator from './components/ui/OfflineIndicator';
+import { DataProvider, useData } from './components/contexts/DataContext';
 import { ThemeProvider } from './components/contexts/ThemeContext';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import OnboardingTour from './components/onboarding/OnboardingTour';
@@ -443,6 +444,35 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
   );
 }
 
+function LayoutContent(props) {
+  const { isOnline, isSyncing, pendingOperations, syncNow } = useData();
+
+  return (
+    <>
+      <AppLayout {...props} />
+      <RealTimeBadge />
+      <OfflineIndicator 
+        isOnline={isOnline}
+        isSyncing={isSyncing}
+        pendingOperations={pendingOperations}
+        onSync={syncNow}
+      />
+      <CookieBanner />
+      <SetupWizard 
+        isOpen={props.showSetupWizard} 
+        onComplete={() => {
+          props.setShowSetupWizard(false);
+          window.location.reload();
+        }} 
+      />
+      <OnboardingTour 
+        isOpen={props.showOnboarding} 
+        onClose={() => props.setShowOnboarding(false)} 
+      />
+    </>
+  );
+}
+
 export default function LayoutWrapper(props) {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showSetupWizard, setShowSetupWizard] = useState(false);
@@ -451,19 +481,12 @@ export default function LayoutWrapper(props) {
     <ErrorBoundary>
       <ThemeProvider>
         <DataProvider>
-          <AppLayout {...props} showOnboarding={showOnboarding} setShowOnboarding={setShowOnboarding} showSetupWizard={showSetupWizard} setShowSetupWizard={setShowSetupWizard} />
-          <RealTimeBadge />
-          <CookieBanner />
-          <SetupWizard 
-            isOpen={props.showSetupWizard} 
-            onComplete={() => {
-              props.setShowSetupWizard(false);
-              window.location.reload();
-            }} 
-          />
-          <OnboardingTour 
-            isOpen={showOnboarding} 
-            onClose={() => setShowOnboarding(false)} 
+          <LayoutContent 
+            {...props} 
+            showOnboarding={showOnboarding} 
+            setShowOnboarding={setShowOnboarding}
+            showSetupWizard={showSetupWizard} 
+            setShowSetupWizard={setShowSetupWizard}
           />
         </DataProvider>
       </ThemeProvider>

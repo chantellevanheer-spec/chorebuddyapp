@@ -10,6 +10,8 @@ import { ChoreCompletion } from "@/entities/ChoreCompletion";
 import { Family } from "@/entities/Family";
 import { useRealTimeSync } from '../hooks/useRealTimeSync';
 import { useAssignmentNotifications } from '../hooks/useAssignmentNotifications';
+import { useOfflineSync } from '../hooks/useOfflineSync';
+import { offlineStorage, STORES } from '../utils/offlineStorage';
 import { toast } from "sonner";
 
 const DataContext = createContext();
@@ -37,6 +39,9 @@ export const DataProvider = ({ children }) => {
   // Use refs to prevent race conditions during family initialization
   const initializeFamilyRef = React.useRef(null);
   const familyInitializedRef = React.useRef(false);
+
+  // Offline sync hook
+  const { isOnline, isSyncing, pendingOperations, syncNow, loadPendingCount } = useOfflineSync(user, () => fetchData());
 
   const initializeFamily = useCallback(async (userData) => {
     if (familyInitializedRef.current || userData.family_id) {
@@ -79,7 +84,7 @@ export const DataProvider = ({ children }) => {
     return initializeFamilyRef.current;
   }, []);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (forceOnline = false) => {
     setLoading(true);
     try {
       const userData = await User.me().catch(() => null);
@@ -89,6 +94,30 @@ export const DataProvider = ({ children }) => {
         setUser(null);
         setLoading(false);
         return;
+      }
+
+      // If offline and not forcing online fetch, load from cache
+      if (!isOnline && !forceOnline) {
+        console.log("[DataContext] Loading from offline cache");
+        try {
+          const [cachedPeople, cachedChores, cachedAssignments] = await Promise.all([
+            offlineStorage.getData(STORES.PEOPLE),
+            offlineStorage.getData(STORES.CHORES),
+            offlineStorage.getData(STORES.ASSIGNMENTS)
+          ]);
+
+          if (cachedPeople.length > 0 || cachedChores.length > 0 || cachedAssignments.length > 0) {
+            setPeople(cachedPeople);
+            setChores(cachedChores);
+            setAssignments(cachedAssignments);
+            setUser(userData);
+            setLoading(false);
+            toast.info('Using offline data');
+            return;
+          }
+        } catch (error) {
+          console.error("[DataContext] Failed to load offline cache:", error);
+        }
       }
 
       // Initialize family once if needed
@@ -133,13 +162,27 @@ export const DataProvider = ({ children }) => {
       setItems(itemsData);
       setGoals(goalsData);
       setCompletions(completionsData);
+
+      // Cache data for offline use
+      if (isOnline) {
+        try {
+          await Promise.all([
+            offlineStorage.saveData(STORES.PEOPLE, peopleData),
+            offlineStorage.saveData(STORES.CHORES, choresData),
+            offlineStorage.saveData(STORES.ASSIGNMENTS, assignmentsData)
+          ]);
+          console.log("[DataContext] Data cached for offline use");
+        } catch (error) {
+          console.error("[DataContext] Failed to cache data:", error);
+        }
+      }
     } catch (error) {
       console.error("[DataContext] Error loading data:", error);
       toast.error("Failed to load data. Please refresh the page.");
     } finally {
       setLoading(false);
     }
-  }, [initializeFamily]);
+  }, [initializeFamily, isOnline]);
 
   useEffect(() => {
     fetchData();
@@ -194,8 +237,31 @@ export const DataProvider = ({ children }) => {
   const updateChore = (id, data) => wrapProcessing(() => Chore.update(id, data));
   const deleteChore = (id) => wrapProcessing(() => Chore.delete(id));
 
-  // Assignment Actions
-  const updateAssignment = (id, data) => wrapProcessing(() => Assignment.update(id, data));
+  // Assignment Actions (with offline support)
+  const updateAssignment = async (id, data) => {
+    if (!isOnline) {
+      // Update locally
+      const updatedAssignments = assignments.map(a => 
+        a.id === id ? { ...a, ...data } : a
+      );
+      setAssignments(updatedAssignments);
+      
+      // Save to offline storage
+      await offlineStorage.updateItem(STORES.ASSIGNMENTS, id, data);
+      
+      // Queue for sync
+      await offlineStorage.addToSyncQueue({
+        type: 'update_assignment',
+        data: { id, updates: data }
+      });
+      
+      await loadPendingCount();
+      toast.success('Saved offline (will sync when online)');
+      return;
+    }
+    
+    return wrapProcessing(() => Assignment.update(id, data));
+  };
 
   // Reward Item Actions
   const addItem = (data) => wrapProcessing(async () => {
@@ -251,6 +317,11 @@ export const DataProvider = ({ children }) => {
     loading,
     isProcessing,
     fetchData,
+    // Offline support
+    isOnline,
+    isSyncing,
+    pendingOperations,
+    syncNow,
     // Actions
     addPerson,
     updatePerson,
