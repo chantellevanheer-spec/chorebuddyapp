@@ -110,10 +110,10 @@ Deno.serve(async (req) => {
             : 0;
 
         // Analyze family composition by Person role
+        // Map adult -> parent, teen+child -> teen/child
         const composition = {
-            adults: people.filter(p => p.role === 'adult').length,
-            teens: people.filter(p => p.role === 'teen').length,
-            children: people.filter(p => p.role === 'child').length,
+            parent: people.filter(p => p.role === 'adult').length,
+            teenChild: people.filter(p => p.role === 'teen' || p.role === 'child').length,
             totalMembers: people.length
         };
 
@@ -142,9 +142,8 @@ Deno.serve(async (req) => {
             prompt = `You are a household management expert. Analyze this family's data and suggest ${SUGGESTION_COUNT} new chore ideas that would be beneficial.
 
 Family Composition:
-- Adults: ${composition.adults}
-- Teens: ${composition.teens}
-- Children: ${composition.children}
+- Parents: ${composition.parent}
+- Teen/Child: ${composition.teenChild}
 - Total members: ${composition.totalMembers}
 
 Current chores: ${chores.length} chores across categories: ${choreCategories.length > 0 ? choreCategories.join(', ') : 'none yet'}
@@ -189,25 +188,18 @@ For each chore, provide: title, description, difficulty (easy/medium/hard), cate
             // Rewards
             const totalPoints = rewards.reduce((sum, r) => sum + (r.points || 0), 0);
             const avgPointsPerPerson = people.length > 0 ? Math.round(totalPoints / people.length) : 0;
-            
-            const ageGroups = [
-                composition.adults > 0 ? 'adults' : null,
-                composition.teens > 0 ? 'teens' : null,
-                composition.children > 0 ? 'children' : null
-            ].filter(Boolean).join(', ');
 
             prompt = `You are a family motivation expert. Suggest ${SUGGESTION_COUNT} creative reward ideas for this household's points-based chore system.
 
 Family Composition:
-- Adults: ${composition.adults}
-- Teens: ${composition.teens}
-- Children: ${composition.children}
+- Parents: ${composition.parent}
+- Teen/Child: ${composition.teenChild}
 - Average points per person: ${avgPointsPerPerson}
 - Overall chore completion rate: ${completionRate}%
 - Current rewards: ${rewards.length}
 
 Suggest rewards that:
-1. Are motivating for the age groups present: ${ageGroups}
+1. Are motivating for the family members present
 2. Have varied point costs (include both affordable daily rewards and premium goal rewards)
 3. Are practical and achievable for a typical family
 4. Encourage continued participation in the chore system
@@ -278,9 +270,8 @@ For each reward, provide: name, description, cost (10-500 points), category, and
             familyContext: {
                 totalMembers: composition.totalMembers,
                 composition: {
-                    adults: composition.adults,
-                    teens: composition.teens,
-                    children: composition.children
+                    parent: composition.parent,
+                    teenChild: composition.teenChild
                 },
                 completionRate,
                 existingChores: chores.length,
