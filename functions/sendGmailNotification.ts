@@ -9,12 +9,30 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { to, subject, body, notificationType } = await req.json();
+    // Only parents can send notifications
+    if (user.data?.family_role !== 'parent') {
+      return Response.json({ 
+        error: 'Forbidden: Only parents can send notifications' 
+      }, { status: 403 });
+    }
+
+    const { to, subject, body, notificationType, recipientUserId } = await req.json();
 
     if (!to || !subject || !body) {
       return Response.json({ 
         error: 'Missing required fields: to, subject, body' 
       }, { status: 400 });
+    }
+
+    // Validate recipient belongs to the same family
+    if (recipientUserId) {
+      const recipientUser = await base44.asServiceRole.entities.User.get(recipientUserId);
+      
+      if (!recipientUser || recipientUser.data?.family_id !== user.data?.family_id) {
+        return Response.json({ 
+          error: 'Forbidden: Recipient must be in the same family' 
+        }, { status: 403 });
+      }
     }
 
     // Get Gmail access token
