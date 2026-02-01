@@ -73,7 +73,7 @@ export default function Home() {
             <FeatureCard
               icon={Users}
               title="Family-Focused"
-              description="Designed for households of any size. Add adults, teens, and kids, and manage everyone's tasks from one place."
+              description="Designed for households of any size. Add parent, teens, and kids, and manage everyone's tasks from one place."
               color="bg-[#F7A1C4]"
             />
           </div>
@@ -88,7 +88,7 @@ export default function Home() {
             <StepCard
               number="1"
               title="Set Up Your Family"
-              description="Quickly add your family members. Assign roles like adult, teen, or child to tailor the experience."
+              description="Quickly add your family members. Assign roles like parent, teen, or child to tailor the experience."
               color="#F7A1C4"
             />
             <StepCard
