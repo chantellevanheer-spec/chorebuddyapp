@@ -64,7 +64,7 @@ export default function AISuggestionsModal({
           <div className="funky-card bg-blue-50 p-4 mb-4">
             <p className="body-font text-sm text-gray-700">
               Based on your family of {familyContext.totalMembers} members 
-              ({familyContext.composition.adults} adults, {familyContext.composition.teens} teens, {familyContext.composition.children} children) 
+              ({familyContext.composition.parent} parent, {familyContext.composition.teens} teens, {familyContext.composition.children} children) 
               with a {familyContext.completionRate}% completion rate
             </p>
           </div>
