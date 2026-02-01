@@ -87,11 +87,12 @@ Deno.serve(async (req) => {
         }
 
         // Fetch family data in parallel
-        const [people, chores, assignments, rewards] = await Promise.all([
+        const [people, chores, assignments, rewards, completions] = await Promise.all([
             base44.entities.Person.list(),
             base44.entities.Chore.list(),
             base44.entities.Assignment.list(),
-            base44.entities.Reward.list()
+            base44.entities.Reward.list(),
+            base44.entities.ChoreCompletion.list()
         ]);
 
         // Validate minimum data requirements
@@ -130,6 +131,27 @@ Deno.serve(async (req) => {
 
         // Get chore categories
         const choreCategories = [...new Set(chores.map(c => c.category).filter(Boolean))];
+
+        // Analyze learned difficulty data
+        const choresWithLearning = chores.map(chore => {
+            const adjustedScore = chore.data?.adjusted_difficulty_score || null;
+            const adjustedLabel = chore.data?.adjusted_difficulty_label || null;
+            const feedbackCount = chore.data?.difficulty_feedback_count || 0;
+            const avgTime = chore.average_completion_time || chore.estimated_time || 0;
+
+            return {
+                title: chore.title,
+                difficulty: chore.difficulty,
+                adjustedScore,
+                adjustedLabel,
+                feedbackCount,
+                avgTime,
+                category: chore.category
+            };
+        });
+
+        const learnedChores = choresWithLearning.filter(c => c.adjustedScore !== null);
+        const hasLearningData = learnedChores.length > 0;
         
         // Analyze person-specific completion rates
         const personStats = people.map(person => {
@@ -156,7 +178,7 @@ Deno.serve(async (req) => {
         if (suggestionType === 'chores') {
             // Build family description
             const familyComposition = `Parents: ${composition.parents}, Kids (teen/child): ${composition.kids}`;
-            
+
             // Age-appropriate guidance
             let ageGuidance = '';
             if (composition.hasYoungChildren && composition.hasTeens) {
@@ -166,30 +188,59 @@ Deno.serve(async (req) => {
             } else if (composition.hasTeens) {
                 ageGuidance = 'Include more independent, responsible tasks appropriate for teenagers.';
             }
-            
+
+            // Build learning insights
+            let learningInsights = '';
+            if (hasLearningData) {
+                const easierThanLabeled = learnedChores.filter(c => c.adjustedLabel === 'easier_than_labeled');
+                const harderThanLabeled = learnedChores.filter(c => c.adjustedLabel === 'harder_than_labeled');
+
+                learningInsights = `\n\nLearned Difficulty Insights (based on family feedback):`;
+                if (easierThanLabeled.length > 0) {
+                    learningInsights += `\n- Chores found EASIER than expected: ${easierThanLabeled.map(c => c.title).join(', ')}`;
+                }
+                if (harderThanLabeled.length > 0) {
+                    learningInsights += `\n- Chores found HARDER than expected: ${harderThanLabeled.map(c => c.title).join(', ')}`;
+                }
+
+                const avgAdjustedScore = learnedChores.reduce((sum, c) => sum + c.adjustedScore, 0) / learnedChores.length;
+                const avgBaseScore = learnedChores.reduce((sum, c) => {
+                    const scores = { easy: 1, medium: 2, hard: 3 };
+                    return sum + scores[c.difficulty];
+                }, 0) / learnedChores.length;
+
+                if (avgAdjustedScore < avgBaseScore - 0.3) {
+                    learningInsights += `\n- This family tends to find chores easier than labeled. Consider suggesting slightly more challenging tasks.`;
+                } else if (avgAdjustedScore > avgBaseScore + 0.3) {
+                    learningInsights += `\n- This family tends to find chores harder than labeled. Consider suggesting easier or better-explained tasks.`;
+                }
+            }
+
             prompt = `You are a household management expert. Analyze this family's data and suggest ${SUGGESTION_COUNT} new chore ideas that would be beneficial.
 
-Family Composition:
-- Parents: ${composition.parents}
-- Kids (teen/child): ${composition.kids}
-- Total members: ${composition.totalMembers}
+        Family Composition:
+        - Parents: ${composition.parents}
+        - Kids (teen/child): ${composition.kids}
+        - Total members: ${composition.totalMembers}
 
-Current chores: ${chores.length} chores across categories: ${choreCategories.length > 0 ? choreCategories.join(', ') : 'none yet'}
-Overall completion rate: ${completionRate}%
+        Current chores: ${chores.length} chores across categories: ${choreCategories.length > 0 ? choreCategories.join(', ') : 'none yet'}
+        Overall completion rate: ${completionRate}%
 
-Member performance:
-${personStats.map(p => `- ${p.name} (${p.role}): ${p.completionRate}% completion rate (${p.totalAssignments} assignments)`).join('\n')}
+        Member performance:
+        ${personStats.map(p => `- ${p.name} (${p.role}): ${p.completionRate}% completion rate (${p.totalAssignments} assignments)`).join('\n')}
+        ${learningInsights}
 
-${ageGuidance}
+        ${ageGuidance}
 
-Based on this data, suggest ${SUGGESTION_COUNT} chores that:
-1. Fill gaps in their current chore coverage
-2. Are age-appropriate for the family composition (suitable for ${composition.kids} kid${composition.kids !== 1 ? 's' : ''})
-3. Are achievable given their current ${completionRate}% completion rate (avoid overly complex tasks if completion is low)
-4. Will help maintain a well-functioning household
-5. Vary in difficulty to suit different family members
+        Based on this data, suggest ${SUGGESTION_COUNT} chores that:
+        1. Fill gaps in their current chore coverage
+        2. Are age-appropriate for the family composition (suitable for ${composition.kids} kid${composition.kids !== 1 ? 's' : ''})
+        3. Are achievable given their current ${completionRate}% completion rate and learned difficulty patterns
+        4. Account for the family's actual capacity based on historical feedback
+        5. Will help maintain a well-functioning household
+        6. Vary in difficulty to suit different family members
 
-For each chore, provide: title, description, difficulty (easy/medium/hard), category, estimated_time (5-180 minutes), and reasoning.`;
+        For each chore, provide: title, description, difficulty (easy/medium/hard), category, estimated_time (5-180 minutes), and reasoning.`;
 
             responseSchema = {
                 type: "object",
