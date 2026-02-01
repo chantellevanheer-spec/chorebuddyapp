@@ -1,8 +1,11 @@
 import React from "react";
 import ChoreCard from "../chores/ChoreCard";
+import SimpleChoreCard from "../chores/SimpleChoreCard";
 import { AlertCircle } from "lucide-react";
 
 export default function ChoresSection({ pendingAssignments = [], completedAssignments = [], chores = [], people = [], completeChore, user, isParent = true }) {
+  const useSimplified = user?.simplified_view || (user?.family_role === 'child' && user?.simplified_view !== false);
+  const CardComponent = useSimplified ? SimpleChoreCard : ChoreCard;
   // Always show the section - even if empty, so users can see the "To Do" area
   const showEmptyState = pendingAssignments.length === 0 && completedAssignments.length === 0;
 
@@ -40,7 +43,7 @@ export default function ChoresSection({ pendingAssignments = [], completedAssign
                 if (!chore || !person) return null;
 
                 return (
-                  <ChoreCard
+                  <CardComponent
                     key={assignment.id}
                     assignment={assignment}
                     chore={chore}
@@ -75,7 +78,7 @@ export default function ChoresSection({ pendingAssignments = [], completedAssign
               if (!chore || !person) return null;
 
               return (
-                <ChoreCard
+                <CardComponent
                   key={assignment.id}
                   assignment={assignment}
                   chore={chore}
