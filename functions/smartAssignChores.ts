@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { format, startOfWeek, addDays, addWeeks, parseISO, differenceInWeeks } from 'npm:date-fns@3.6.0';
+import { isParent, getUserFamilyId } from './lib/security.js';
 
 // Handle manual rotation for a chore
 const getNextRotationPerson = (chore, currentWeekStart) => {
@@ -232,19 +233,16 @@ Deno.serve(async (req) => {
         }
 
         // Only parents can use smart assignment
-        if (user.data?.family_role !== 'parent' && user.family_role !== 'parent') {
+        if (!isParent(user)) {
             return new Response(JSON.stringify({ error: 'Forbidden: Only parents can use ChoreAI' }), { 
                 status: 403, headers: { 'Content-Type': 'application/json' }
             });
         }
 
-        if (!user.family_id) {
-            user = await base44.asServiceRole.entities.User.get(user.id);
-        }
-        
-        if (!user || !user.family_id) {
+        const familyId = getUserFamilyId(user);
+        if (!familyId) {
             return new Response(JSON.stringify({ error: 'You must be part of a family to use ChoreAI.' }), { 
-                status: 401, headers: { 'Content-Type': 'application/json' }
+                status: 400, headers: { 'Content-Type': 'application/json' }
             });
         }
 
@@ -255,10 +253,10 @@ Deno.serve(async (req) => {
         }
 
         const [people, chores, existingAssignments, recentRewards] = await Promise.all([
-            base44.asServiceRole.entities.Person.filter({ family_id: user.family_id }),
-            base44.asServiceRole.entities.Chore.filter({ family_id: user.family_id }),
-            base44.asServiceRole.entities.Assignment.filter({ family_id: user.family_id }),
-            base44.asServiceRole.entities.Reward.filter({ family_id: user.family_id })
+            base44.asServiceRole.entities.Person.filter({ family_id: familyId }),
+            base44.asServiceRole.entities.Chore.filter({ family_id: familyId }),
+            base44.asServiceRole.entities.Assignment.filter({ family_id: familyId }),
+            base44.asServiceRole.entities.Reward.filter({ family_id: familyId })
         ]);
 
         if (people.length === 0) {

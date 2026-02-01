@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { checkRateLimit, isValidEmail, isParent, getUserFamilyId, validateFamilyAccess } from './lib/security.js';
 
 Deno.serve(async (req) => {
   try {
@@ -10,10 +11,19 @@ Deno.serve(async (req) => {
     }
 
     // Only parents can send notifications
-    if (user.data?.family_role !== 'parent') {
+    if (!isParent(user)) {
       return Response.json({ 
         error: 'Forbidden: Only parents can send notifications' 
       }, { status: 403 });
+    }
+
+    // Rate limiting - max 10 emails per 10 minutes
+    const rateLimit = checkRateLimit(user.id, 'gmail_notification', 10, 10 * 60 * 1000);
+    if (!rateLimit.allowed) {
+      return Response.json({ 
+        error: 'Too many email requests. Please try again later.',
+        resetTime: rateLimit.resetTime 
+      }, { status: 429 });
     }
 
     const { to, subject, body, notificationType, recipientUserId } = await req.json();
@@ -27,12 +37,21 @@ Deno.serve(async (req) => {
     // Validate recipient belongs to the same family
     if (recipientUserId) {
       const recipientUser = await base44.asServiceRole.entities.User.get(recipientUserId);
+      const userFamilyId = getUserFamilyId(user);
+      const recipientFamilyId = getUserFamilyId(recipientUser);
       
-      if (!recipientUser || recipientUser.data?.family_id !== user.data?.family_id) {
+      if (!recipientUser || recipientFamilyId !== userFamilyId) {
         return Response.json({ 
           error: 'Forbidden: Recipient must be in the same family' 
         }, { status: 403 });
       }
+    }
+
+    // Validate email format
+    if (!isValidEmail(to)) {
+      return Response.json({ 
+        error: 'Invalid email address' 
+      }, { status: 400 });
     }
 
     // Get Gmail access token

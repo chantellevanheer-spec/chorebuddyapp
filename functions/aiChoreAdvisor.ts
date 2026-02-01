@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { checkRateLimit, isParent, getUserFamilyId } from './lib/security.js';
 
 Deno.serve(async (req) => {
     try {
@@ -10,12 +11,22 @@ Deno.serve(async (req) => {
         }
 
         // Only parents can use AI advisor
-        if (user.data?.family_role !== 'parent' && user.family_role !== 'parent') {
+        if (!isParent(user)) {
             return Response.json({ error: 'Forbidden: Only parents can use AI suggestions' }, { status: 403 });
         }
 
-        if (!user.family_id) {
+        const familyId = getUserFamilyId(user);
+        if (!familyId) {
             return Response.json({ error: 'No family found' }, { status: 400 });
+        }
+
+        // Rate limiting - max 10 AI requests per 10 minutes
+        const rateLimit = checkRateLimit(user.id, 'ai_suggestions', 10, 10 * 60 * 1000);
+        if (!rateLimit.allowed) {
+            return Response.json({ 
+                error: 'Too many AI requests. Please try again later.',
+                resetTime: rateLimit.resetTime 
+            }, { status: 429 });
         }
 
         const { suggestionType } = await req.json();

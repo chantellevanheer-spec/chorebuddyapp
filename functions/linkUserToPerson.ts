@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { HEADERS } from './lib/constants.js';
+import { validateFamilyAccess, isParent, getUserFamilyId } from './lib/security.js';
 
 Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
@@ -15,7 +16,7 @@ Deno.serve(async (req) => {
         }
 
         // Only parents can link accounts
-        if (user.data?.family_role !== 'parent' && user.family_role !== 'parent') {
+        if (!isParent(user)) {
             return Response.json({ error: 'Forbidden: Only parents can link accounts' }, { status: 403 });
         }
 
@@ -37,13 +38,10 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Person not found' }, { status: 404 });
         }
 
-        // Verify user is in the same family - both must have family_id
-        if (!person.family_id || !user.family_id) {
-            return Response.json({ error: 'Family membership required for both user and person' }, { status: 400 });
-        }
-        
-        if (person.family_id !== user.family_id) {
-            return Response.json({ error: 'Person is not in your family' }, { status: 403 });
+        // Verify user is in the same family
+        const familyCheck = validateFamilyAccess(user, person.family_id);
+        if (!familyCheck.valid) {
+            return Response.json({ error: familyCheck.error }, { status: 403 });
         }
 
         // Check if person is already linked to another user

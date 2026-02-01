@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { checkRateLimit, isValidEmail, isParent, getUserFamilyId } from './lib/security.js';
 
 Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
@@ -18,16 +19,27 @@ Deno.serve(async (req) => {
         }
 
         // 2. Check if user is a parent
-        const userFamilyRole = user?.data?.family_role || user?.family_role;
-        if (userFamilyRole !== 'parent') {
+        if (!isParent(user)) {
             return new Response(JSON.stringify({ error: 'Unauthorized: Only parents can invite family members.' }), { 
                 status: 403, 
                 headers: { 'Content-Type': 'application/json' } 
             });
         }
 
-        // 3. Get family ID from user data
-        const familyId = user?.data?.family_id || user?.family_id;
+        // 3. Rate limiting - max 5 invitations per 5 minutes
+        const rateLimit = checkRateLimit(user.id, 'family_invitation', 5, 5 * 60 * 1000);
+        if (!rateLimit.allowed) {
+            return new Response(JSON.stringify({ 
+                error: 'Too many invitation requests. Please try again later.',
+                resetTime: rateLimit.resetTime 
+            }), { 
+                status: 429, 
+                headers: { 'Content-Type': 'application/json' } 
+            });
+        }
+
+        // 4. Get family ID from user data
+        const familyId = getUserFamilyId(user);
         if (!familyId) {
             return new Response(JSON.stringify({ error: 'No family found. Please set up your family first.' }), { 
                 status: 400, 
@@ -93,14 +105,11 @@ Deno.serve(async (req) => {
         // ==========================================
         
         // Validate email format if provided
-        if (email) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                return new Response(JSON.stringify({ error: 'Bad Request: Invalid email format.' }), { 
-                    status: 400, 
-                    headers: { 'Content-Type': 'application/json' } 
-                });
-            }
+        if (email && !isValidEmail(email)) {
+            return new Response(JSON.stringify({ error: 'Bad Request: Invalid email format.' }), { 
+                status: 400, 
+                headers: { 'Content-Type': 'application/json' } 
+            });
         }
 
         // Validate role if provided
