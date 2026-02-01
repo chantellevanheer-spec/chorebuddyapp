@@ -258,7 +258,7 @@ export default function People() {
         </div> :
 
       <div className="funky-card p-8 md:p-12 text-center border-4 border-dashed border-[#F7A1C4] bg-pink-50">
-          <div className="mb-6 md:mb-8"><Users className="w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 md:mb-6 text-[#F7A1C4]" /><h3 className="header-font text-2xl md:text-3xl text-[#2B59C3] mb-3 md:mb-4">No family members yet</h3><p className="body-font-light text-base md:text-lg mb-2 max-w-md mx-auto">Add people to your household to get started with chore assignments</p><p className="body-font text-sm text-[#5E3B85] mb-6 md:mb-8">💡 Tip: Start with adults, then add teens and children</p></div>
+          <div className="mb-6 md:mb-8"><Users className="w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 md:mb-6 text-[#F7A1C4]" /><h3 className="header-font text-2xl md:text-3xl text-[#2B59C3] mb-3 md:mb-4">No family members yet</h3><p className="body-font-light text-base md:text-lg mb-2 max-w-md mx-auto">Add people to your household to get started with chore assignments</p><p className="body-font text-sm text-[#5E3B85] mb-6 md:mb-8">💡 Tip: Start with parent, then add teens and children</p></div>
           <Button onClick={handleShowAddForm} className="funky-button bg-[#F7A1C4] text-white px-6 md:px-8 py-3 md:py-4 header-font text-lg md:text-xl"><Plus className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />Add Your First Person</Button>
         </div>
       }
