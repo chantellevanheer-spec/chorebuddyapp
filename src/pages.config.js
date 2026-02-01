@@ -70,6 +70,9 @@ import RoleSelection from './pages/RoleSelection';
 import Schedule from './pages/Schedule';
 import Store from './pages/Store';
 import ApprovalQueue from './pages/ApprovalQueue';
+import Achievements from './pages/Achievements';
+import Challenges from './pages/Challenges';
+import LeaderboardHistory from './pages/LeaderboardHistory';
 import __Layout from './Layout.jsx';
 
 
@@ -97,6 +100,9 @@ export const PAGES = {
     "Schedule": Schedule,
     "Store": Store,
     "ApprovalQueue": ApprovalQueue,
+    "Achievements": Achievements,
+    "Challenges": Challenges,
+    "LeaderboardHistory": LeaderboardHistory,
 }
 
 export const pagesConfig = {

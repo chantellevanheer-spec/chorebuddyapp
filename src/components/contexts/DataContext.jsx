@@ -8,6 +8,7 @@ import { User } from "@/entities/User";
 import { FamilyGoal } from "@/entities/FamilyGoal";
 import { ChoreCompletion } from "@/entities/ChoreCompletion";
 import { Family } from "@/entities/Family";
+import { Achievement } from "@/entities/Achievement";
 import { useRealTimeSync } from '../hooks/useRealTimeSync';
 import { useAssignmentNotifications } from '../hooks/useAssignmentNotifications';
 import { useOfflineSync } from '../hooks/useOfflineSync';
