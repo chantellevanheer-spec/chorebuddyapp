@@ -3,6 +3,7 @@ import { Star, Clock } from "lucide-react";
 import InteractiveCheckbox from "../ui/InteractiveCheckbox";
 import ChoreCompletionModal from "./ChoreCompletionModal";
 import { CHORE_CATEGORY_COLORS, DIFFICULTY_STARS, AVATAR_COLORS } from '../lib/constants';
+import LearnedDifficultyBadge from './LearnedDifficultyBadge';
 
 function ChoreCard({ assignment, chore, person, onComplete, user }) {
   const [showCompletionModal, setShowCompletionModal] = useState(false);
@@ -55,6 +56,7 @@ function ChoreCard({ assignment, chore, person, onComplete, user }) {
                 <span className="body-font text-xs">{chore.estimated_time} min</span>
               </div>
             )}
+            <LearnedDifficultyBadge chore={chore} />
           </div>
         </div>
 

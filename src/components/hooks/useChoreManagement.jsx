@@ -3,7 +3,7 @@ import { useData } from '../contexts/DataContext';
 import { calculateChorePoints } from '../lib/pointsCalculator';
 
 export const useChoreManagement = () => {
-  const { chores, assignments, updateAssignment, addReward } = useData();
+  const { chores, assignments, updateAssignment, addReward, addCompletion } = useData();
   const [completedChoreId, setCompletedChoreId] = useState(null);
   const [pointsEarned, setPointsEarned] = useState({ visible: false, amount: 0, reason: '' });
 
@@ -17,17 +17,28 @@ export const useChoreManagement = () => {
     // Calculate points with bonuses
     const points = calculateChorePoints(chore, assignment);
 
-    // 1. Mark assignment as complete
+    // 1. Create ChoreCompletion record for difficulty learning
+    await addCompletion({
+      assignment_id: assignmentId,
+      person_id: assignment.person_id,
+      chore_id: choreId,
+      completion_status: 'submitted',
+      points_awarded: points,
+      notes: notes || '',
+      photo_url: photoUrl || '',
+      difficulty_rating: difficultyRating || undefined
+    });
+
+    // 2. Mark assignment as complete
     await updateAssignment(assignmentId, {
       completed: true,
       completed_date: new Date().toISOString(),
       points_awarded: points,
       notes: notes || undefined,
-      photo_url: photoUrl || undefined,
-      difficulty_rating: difficultyRating || undefined
+      photo_url: photoUrl || undefined
     });
 
-    // 2. Award points
+    // 3. Award points
     await addReward({
       person_id: assignment.person_id,
       chore_id: choreId,
@@ -37,20 +48,20 @@ export const useChoreManagement = () => {
       description: `Completed: ${chore.title}`
     });
 
-    // 3. Show point notification
+    // 4. Show point notification
     setPointsEarned({
       visible: true,
       amount: points,
       reason: `${chore.title} completed!`
     });
     
-    // 4. Trigger confetti
+    // 5. Trigger confetti
     setCompletedChoreId(choreId);
     setTimeout(() => {
       setCompletedChoreId(null);
       setPointsEarned({ visible: false, amount: 0, reason: '' });
     }, 4000);
-  }, [assignments, chores, updateAssignment, addReward]);
+  }, [assignments, chores, updateAssignment, addReward, addCompletion]);
   
   return { completeChore, completedChoreIdWithConfetti: completedChoreId, pointsEarned };
 };
