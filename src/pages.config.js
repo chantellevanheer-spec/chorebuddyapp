@@ -69,6 +69,7 @@ import Privacy from './pages/Privacy';
 import RoleSelection from './pages/RoleSelection';
 import Schedule from './pages/Schedule';
 import Store from './pages/Store';
+import ApprovalQueue from './pages/ApprovalQueue';
 import __Layout from './Layout.jsx';
 
 
@@ -95,6 +96,7 @@ export const PAGES = {
     "RoleSelection": RoleSelection,
     "Schedule": Schedule,
     "Store": Store,
+    "ApprovalQueue": ApprovalQueue,
 }
 
 export const pagesConfig = {
