@@ -10,7 +10,7 @@ const AGE_GROUP_LABELS = {
   preschool: '👶 Ages 3-5',
   elementary: '🎒 Ages 6-11', 
   teen: '🎓 Ages 12+',
-  adult: '👤 Adults',
+  parent: '👤 parent',
   all: '👨‍👩‍👧‍👦 All Ages'
 };
 
