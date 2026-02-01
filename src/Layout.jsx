@@ -189,10 +189,33 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
   }
 
   // Authenticated Layout
+  // Apply accessibility classes to root
+  const textSizeClass = currentUser?.text_size === 'large' ? 'text-lg' : 
+                        currentUser?.text_size === 'extra-large' ? 'text-xl' : '';
+  const highContrastClass = currentUser?.high_contrast ? 'high-contrast' : '';
+
   return (
-    <div className="min-h-screen bg-[#FDFBF5] text-[#5E3B85]">
+    <div className={`min-h-screen bg-[#FDFBF5] text-[#5E3B85] ${textSizeClass} ${highContrastClass}`}>
       <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;800&display=swap');
+
+          /* High Contrast Mode */
+          .high-contrast {
+            --color-bg: #FFFFFF;
+            --color-text: #000000;
+            --color-border: #000000;
+          }
+          .high-contrast .funky-card {
+            background-color: var(--color-bg);
+            border-color: var(--color-border);
+            box-shadow: 4px 4px 0px var(--color-border);
+          }
+          .high-contrast .text-gray-600 {
+            color: #333333;
+          }
+          .high-contrast .text-gray-500 {
+            color: #555555;
+          }
 
           /* Theme-based dynamic styling */
           [data-theme="ocean"] .theme-primary { color: var(--color-primary, #2B59C3); }

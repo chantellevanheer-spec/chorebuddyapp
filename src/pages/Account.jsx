@@ -17,6 +17,7 @@ import AvatarSelector from '@/components/profile/AvatarSelector';
 import ThemeSelector from '@/components/profile/ThemeSelector';
 import { useTheme } from '@/components/contexts/ThemeContext';
 import NotificationPreferences from '@/components/profile/NotificationPreferences';
+import AccessibilitySettings from '@/components/profile/AccessibilitySettings';
 
 export default function Account() {
   const [user, setUser] = useState(null);
@@ -58,7 +59,10 @@ export default function Account() {
           ...userData,
           receives_chore_reminders: userData.receives_chore_reminders ?? true,
           receives_achievement_alerts: userData.receives_achievement_alerts ?? true,
-          receives_weekly_reports: userData.receives_weekly_reports ?? false
+          receives_weekly_reports: userData.receives_weekly_reports ?? false,
+          simplified_view: userData.simplified_view ?? (userData.family_role === 'child'),
+          high_contrast: userData.high_contrast ?? false,
+          text_size: userData.text_size ?? 'normal'
         });
 
         // Load personalization settings
@@ -106,7 +110,10 @@ export default function Account() {
         family_role: user.family_role,
         receives_chore_reminders: user.receives_chore_reminders,
         receives_achievement_alerts: user.receives_achievement_alerts,
-        receives_weekly_reports: user.receives_weekly_reports
+        receives_weekly_reports: user.receives_weekly_reports,
+        simplified_view: user.simplified_view,
+        high_contrast: user.high_contrast,
+        text_size: user.text_size
       });
       
       // Update custom data fields
@@ -142,7 +149,10 @@ export default function Account() {
         ...updatedUser,
         receives_chore_reminders: updatedUser.receives_chore_reminders ?? true,
         receives_achievement_alerts: updatedUser.receives_achievement_alerts ?? true,
-        receives_weekly_reports: updatedUser.receives_weekly_reports ?? false
+        receives_weekly_reports: updatedUser.receives_weekly_reports ?? false,
+        simplified_view: updatedUser.simplified_view ?? (updatedUser.family_role === 'child'),
+        high_contrast: updatedUser.high_contrast ?? false,
+        text_size: updatedUser.text_size ?? 'normal'
       });
       
       toast.success("Preferences saved!");
@@ -401,6 +411,20 @@ export default function Account() {
         </TabsContent>
 
         <TabsContent value="preferences" className="mt-6">
+          {/* Accessibility Settings */}
+          <div className="funky-card p-8 mb-6">
+            <h2 className="header-font text-3xl text-[#2B59C3] mb-6">Accessibility</h2>
+            <AccessibilitySettings
+              simplifiedView={user.simplified_view}
+              onSimplifiedViewChange={(value) => handleToggleChange('simplified_view', value)}
+              highContrast={user.high_contrast}
+              onHighContrastChange={(value) => handleToggleChange('high_contrast', value)}
+              textSize={user.text_size}
+              onTextSizeChange={(value) => handleToggleChange('text_size', value)}
+            />
+          </div>
+
+          {/* Notification Preferences */}
           <div className="funky-card p-8">
             <h2 className="header-font text-3xl text-[#2B59C3] mb-6">Notification Preferences</h2>
             {isPremium ? (
