@@ -323,9 +323,8 @@ For each reward, provide: name, description, cost (10-500 points), category, and
             familyContext: {
                 totalMembers: composition.totalMembers,
                 composition: {
-                    adults: composition.parents,
-                    teens: composition.breakdown.teens,
-                    children: composition.breakdown.children
+                    parents: composition.parents,
+                    teenChild: composition.kids
                 },
                 completionRate,
                 existingChores: chores.length,
