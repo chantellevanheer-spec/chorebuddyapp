@@ -227,6 +227,7 @@ export default function People() {
           <Button onClick={handleShowAddForm} className="funky-button bg-[#F7A1C4] text-white px-6 md:px-8 py-3 md:py-4 header-font text-lg md:text-xl"><Plus className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />Add Your First Person</Button>
         </div>
       }
-    </div>);
-
+    </div>
+    </ErrorBoundaryWithRetry>
+  );
 }
