@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
-import { Home, Users, ClipboardList, Calendar, Sparkles, Zap, Settings, Loader2, Target, CheckCircle, MessageCircle, Megaphone, Trophy, Award, Camera, ArrowRightLeft } from "lucide-react";
+import { Home, Users, ClipboardList, Calendar, Sparkles, Zap, Settings, Loader2, Target, CheckCircle, MessageCircle, Megaphone, Trophy, Award, Camera, ArrowRightLeft, TrendingUp, BookOpen } from "lucide-react";
 import PublicLayout from "./components/layout/PublicLayout";
 import CookieBanner from './components/ui/CookieBanner';
 import RealTimeBadge from './components/ui/RealTimeBadge';
@@ -134,6 +134,24 @@ const navigationItems = [
   color: "bg-[#FF6B35] text-white",
   hover: "hover:bg-[#fa5a1f]",
   active: "bg-[#fa5a1f]",
+  parentOnly: true
+},
+{
+  title: "Analytics",
+  url: createPageUrl("Analytics"),
+  icon: TrendingUp,
+  color: "bg-green-500 text-white",
+  hover: "hover:bg-green-600",
+  active: "bg-green-600",
+  parentOnly: true
+},
+{
+  title: "Templates",
+  url: createPageUrl("Templates"),
+  icon: BookOpen,
+  color: "bg-[#C3B1E1] text-white",
+  hover: "hover:bg-[#b19dcb]",
+  active: "bg-[#b19dcb]",
   parentOnly: true
 },
 {

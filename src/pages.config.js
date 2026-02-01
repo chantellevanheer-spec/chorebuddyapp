@@ -75,6 +75,8 @@ import Challenges from './pages/Challenges';
 import LeaderboardHistory from './pages/LeaderboardHistory';
 import PhotoGallery from './pages/PhotoGallery';
 import ChoreTrades from './pages/ChoreTrades';
+import Templates from './pages/Templates';
+import Analytics from './pages/Analytics';
 import __Layout from './Layout.jsx';
 
 
@@ -107,6 +109,8 @@ export const PAGES = {
     "LeaderboardHistory": LeaderboardHistory,
     "PhotoGallery": PhotoGallery,
     "ChoreTrades": ChoreTrades,
+    "Templates": Templates,
+    "Analytics": Analytics,
 }
 
 export const pagesConfig = {
