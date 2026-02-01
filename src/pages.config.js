@@ -73,6 +73,7 @@ import ApprovalQueue from './pages/ApprovalQueue';
 import Achievements from './pages/Achievements';
 import Challenges from './pages/Challenges';
 import LeaderboardHistory from './pages/LeaderboardHistory';
+import PhotoGallery from './pages/PhotoGallery';
 import __Layout from './Layout.jsx';
 
 
@@ -103,6 +104,7 @@ export const PAGES = {
     "Achievements": Achievements,
     "Challenges": Challenges,
     "LeaderboardHistory": LeaderboardHistory,
+    "PhotoGallery": PhotoGallery,
 }
 
 export const pagesConfig = {
