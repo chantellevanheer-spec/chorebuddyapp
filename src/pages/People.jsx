@@ -3,6 +3,8 @@ import { useData } from '../components/contexts/DataContext';
 import { Button } from "@/components/ui/button";
 import { Plus, Users, Loader2, Mail } from "lucide-react";
 import { toast } from "sonner";
+import { ListSkeleton } from '../components/ui/SkeletonLoader';
+import ErrorBoundaryWithRetry from '../components/ui/ErrorBoundaryWithRetry';
 import PersonCard from "../components/people/PersonCard";
 import PersonFormModal from "../components/people/PersonFormModal";
 import FamilyInviteModal from "../components/people/FamilyInviteModal";
@@ -122,15 +124,16 @@ export default function People() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="funky-card p-6 md:p-8 text-center"><Loader2 className="w-8 h-8 md:w-12 md:h-12 animate-spin text-[#C3B1E1] mx-auto mb-4" /><p className="body-font text-base md:text-lg text-gray-600">Loading family members...</p></div>
-      </div>);
-
+      <div className="mx-1 my-1 pb-10 md:mx-8 lg:mx-20 space-y-6 lg:pb-8">
+        <ListSkeleton count={3} />
+      </div>
+    );
   }
 
   return (
-    <div className="mx-1 my-1 pb-10 md:mx-8 lg:mx-20 space-y-6 md:space-y-8 lg:pb-8">
-      <LimitReachedModal
+    <ErrorBoundaryWithRetry level="page">
+      <div className="mx-1 my-1 pb-10 md:mx-8 lg:mx-20 space-y-6 md:space-y-8 lg:pb-8">
+        <LimitReachedModal
         isOpen={isLimitModalOpen}
         onClose={() => setLimitModalOpen(false)}
         limitType="max_family_members"

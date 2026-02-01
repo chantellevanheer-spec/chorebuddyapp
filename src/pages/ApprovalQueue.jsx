@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { AVATAR_COLORS, DIFFICULTY_STARS } from '../components/lib/constants';
+import { showNotification } from '../components/notifications/NotificationManager';
 
 export default function ApprovalQueue() {
   const { assignments, chores, people, user, loading, updateAssignment, addReward } = useData();
@@ -44,6 +45,13 @@ export default function ApprovalQueue() {
       });
 
       toast.success('Chore approved! Points awarded.');
+      
+      // Notify the person
+      const person = people.find(p => p.id === assignment.person_id);
+      showNotification('Chore Approved! ✓', {
+        body: `${person?.name}'s chore was approved and earned ${points} points!`,
+        tag: 'chore-approved'
+      });
     } catch (error) {
       console.error('Error approving chore:', error);
       toast.error('Failed to approve chore. Please try again.');
