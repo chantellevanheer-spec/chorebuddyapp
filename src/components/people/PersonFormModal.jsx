@@ -25,7 +25,7 @@ export default function PersonFormModal({
   const [person, setPerson] = useState({
     name: "",
     avatar_color: "lavender",
-    role: "adult",
+    role: "parent",
     preferred_categories: [],
     avoided_categories: [],
     max_weekly_chores: 5,
@@ -48,7 +48,7 @@ export default function PersonFormModal({
       setPerson({
         name: "",
         avatar_color: "lavender",
-        role: "adult",
+        role: "parent",
         preferred_categories: [],
         avoided_categories: [],
         max_weekly_chores: 5,
@@ -130,7 +130,7 @@ export default function PersonFormModal({
                       <SelectValue/>
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="adult">👨‍👩‍ Adult</SelectItem>
+                      <SelectItem value="parent">👨‍👩‍ parent</SelectItem>
                       <SelectItem value="teen">🧑‍🎓 Teen</SelectItem>
                       <SelectItem value="child">🧒 Child</SelectItem>
                     </SelectContent>
