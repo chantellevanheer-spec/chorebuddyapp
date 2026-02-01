@@ -1,11 +1,13 @@
 import React, { useState, useMemo } from "react";
 import { useData } from '../components/contexts/DataContext';
 import { Button } from "@/components/ui/button";
-import { Plus, Users, Loader2, Mail } from "lucide-react";
+import { Plus, Users, Loader2, Mail, UserX } from "lucide-react";
 import { toast } from "sonner";
 import { ListSkeleton } from '../components/ui/SkeletonLoader';
 import ErrorBoundaryWithRetry from '../components/ui/ErrorBoundaryWithRetry';
 import PersonCard from "../components/people/PersonCard";
+import AbsenceModal from "../components/people/AbsenceModal";
+import { base44 } from '@/api/base44Client';
 import PersonFormModal from "../components/people/PersonFormModal";
 import FamilyInviteModal from "../components/people/FamilyInviteModal";
 import LinkAccountModal from "../components/people/LinkAccountModal";
@@ -25,6 +27,8 @@ export default function People() {
   const [isLinkModalOpen, setLinkModalOpen] = useState(false);
   const [personToLink, setPersonToLink] = useState(null);
   const [isLinking, setIsLinking] = useState(false);
+  const [isAbsenceModalOpen, setAbsenceModalOpen] = useState(false);
+  const [personForAbsence, setPersonForAbsence] = useState(null);
 
   const personStats = useMemo(() => {
     const stats = {};
@@ -112,13 +116,30 @@ export default function People() {
         toast.success('Account linked successfully!');
         setLinkModalOpen(false);
         setPersonToLink(null);
-        // Refresh page to update UI
         window.location.reload();
       }
     } catch (error) {
       toast.error('Failed to link account');
     } finally {
       setIsLinking(false);
+    }
+  };
+
+  const handleMarkAbsence = async (absenceData) => {
+    if (!personForAbsence || !user?.family_id) return;
+    
+    try {
+      await base44.entities.AbsenceRecord.create({
+        person_id: personForAbsence.id,
+        ...absenceData,
+        family_id: user.family_id
+      });
+      
+      toast.success(`${personForAbsence.name} marked as absent`);
+      setAbsenceModalOpen(false);
+      setPersonForAbsence(null);
+    } catch (error) {
+      toast.error('Failed to mark absence');
     }
   };
 
@@ -164,6 +185,16 @@ export default function People() {
         people={personToLink ? [personToLink] : people}
         onLink={handleLinkAccount}
         isProcessing={isLinking} />
+
+      <AbsenceModal
+        isOpen={isAbsenceModalOpen}
+        onClose={() => {
+          setAbsenceModalOpen(false);
+          setPersonForAbsence(null);
+        }}
+        person={personForAbsence}
+        onSubmit={handleMarkAbsence}
+      />
 
       <ConfirmDialog
         isOpen={!!personToDelete}
@@ -217,6 +248,10 @@ export default function People() {
           onEdit={handleShowEditForm}
           onDelete={() => setPersonToDelete(person)}
           onLinkAccount={handleShowLinkModal}
+          onMarkAbsence={() => {
+            setPersonForAbsence(person);
+            setAbsenceModalOpen(true);
+          }}
           canManageLinks={user?.family_role === 'parent'} />
 
         )}
