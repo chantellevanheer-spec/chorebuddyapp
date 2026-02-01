@@ -7,7 +7,7 @@ export const useChoreManagement = () => {
   const [completedChoreId, setCompletedChoreId] = useState(null);
   const [pointsEarned, setPointsEarned] = useState({ visible: false, amount: 0, reason: '' });
 
-  const completeChore = useCallback(async (assignmentId, choreId) => {
+  const completeChore = useCallback(async (assignmentId, choreId, notes = '', photoUrl = null, difficultyRating = null) => {
     // Get fresh data at the time of execution
     const assignment = assignments.find((a) => a.id === assignmentId);
     const chore = chores.find((c) => c.id === choreId);
@@ -21,7 +21,10 @@ export const useChoreManagement = () => {
     await updateAssignment(assignmentId, {
       completed: true,
       completed_date: new Date().toISOString(),
-      points_awarded: points
+      points_awarded: points,
+      notes: notes || undefined,
+      photo_url: photoUrl || undefined,
+      difficulty_rating: difficultyRating || undefined
     });
 
     // 2. Award points
