@@ -96,12 +96,22 @@ const navigationItems = [
   active: "bg-green-500"
 },
 {
+  title: "Approvals",
+  url: createPageUrl("ApprovalQueue"),
+  icon: CheckCircle,
+  color: "bg-[#FF6B35] text-white",
+  hover: "hover:bg-[#fa5a1f]",
+  active: "bg-[#fa5a1f]",
+  parentOnly: true
+},
+{
   title: "Admin",
   url: createPageUrl("Admin"),
   icon: CheckCircle,
   color: "bg-[#5E3B85] text-white",
   hover: "hover:bg-[#4a2d6b]",
-  active: "bg-[#4a2d6b]"
+  active: "bg-[#4a2d6b]",
+  parentOnly: true
 }];
 
 const publicPages = ['Home', 'Index', 'Pricing', 'Help', 'Privacy', 'PaymentSuccess', 'PaymentCancel', 'JoinFamily', 'RoleSelection'];
