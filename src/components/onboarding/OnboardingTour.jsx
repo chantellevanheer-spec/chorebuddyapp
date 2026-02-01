@@ -18,7 +18,7 @@ const tourSteps = [
   {
     id: 'add-family',
     title: 'Add Your Family Members',
-    description: 'Start by adding everyone in your household using the Family tab in the sidebar. You can add adults, teens, and children.',
+    description: 'Start by adding everyone in your household using the Family tab in the sidebar. You can parents, teens, and children.',
     targetPage: 'Dashboard',
     highlight: null,
     action: null
