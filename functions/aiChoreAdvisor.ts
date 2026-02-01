@@ -155,17 +155,7 @@ Deno.serve(async (req) => {
 
         if (suggestionType === 'chores') {
             // Build family description
-            const familyDesc = [];
-            if (composition.parents > 0) {
-                familyDesc.push(`${composition.parents} parent${composition.parents > 1 ? 's' : ''}`);
-            }
-            if (composition.breakdown.teens > 0) {
-                familyDesc.push(`${composition.breakdown.teens} teen${composition.breakdown.teens > 1 ? 's' : ''}`);
-            }
-            if (composition.breakdown.children > 0) {
-                familyDesc.push(`${composition.breakdown.children} child${composition.breakdown.children > 1 ? 'ren' : ''}`);
-            }
-            const familyComposition = familyDesc.join(', ');
+            const familyComposition = `Parents: ${composition.parents}, Kids (teen/child): ${composition.kids}`;
             
             // Age-appropriate guidance
             let ageGuidance = '';
@@ -180,7 +170,8 @@ Deno.serve(async (req) => {
             prompt = `You are a household management expert. Analyze this family's data and suggest ${SUGGESTION_COUNT} new chore ideas that would be beneficial.
 
 Family Composition:
-- ${familyComposition}
+- Parents: ${composition.parents}
+- Kids (teen/child): ${composition.kids}
 - Total members: ${composition.totalMembers}
 
 Current chores: ${chores.length} chores across categories: ${choreCategories.length > 0 ? choreCategories.join(', ') : 'none yet'}
@@ -237,22 +228,12 @@ For each chore, provide: title, description, difficulty (easy/medium/hard), cate
             } else if (composition.hasTeens) {
                 rewardGuidance = 'Focus on rewards that appeal to teenagers: independence, privileges, and social opportunities.';
             }
-            
-            const familyDesc = [];
-            if (composition.parents > 0) {
-                familyDesc.push(`${composition.parents} parent${composition.parents > 1 ? 's' : ''}`);
-            }
-            if (composition.breakdown.teens > 0) {
-                familyDesc.push(`${composition.breakdown.teens} teen${composition.breakdown.teens > 1 ? 's' : ''}`);
-            }
-            if (composition.breakdown.children > 0) {
-                familyDesc.push(`${composition.breakdown.children} child${composition.breakdown.children > 1 ? 'ren' : ''}`);
-            }
 
             prompt = `You are a family motivation expert. Suggest ${SUGGESTION_COUNT} creative reward ideas for this household's points-based chore system.
 
 Family Composition:
-- ${familyDesc.join(', ')}
+- Parents: ${composition.parents}
+- Kids (teen/child): ${composition.kids}
 - Total: ${composition.totalMembers} member${composition.totalMembers !== 1 ? 's' : ''}
 - Kids in household: ${composition.kids}
 
