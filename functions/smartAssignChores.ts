@@ -231,6 +231,13 @@ Deno.serve(async (req) => {
             });
         }
 
+        // Only parents can use smart assignment
+        if (user.data?.family_role !== 'parent' && user.family_role !== 'parent') {
+            return new Response(JSON.stringify({ error: 'Forbidden: Only parents can use ChoreAI' }), { 
+                status: 403, headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
         if (!user.family_id) {
             user = await base44.asServiceRole.entities.User.get(user.id);
         }

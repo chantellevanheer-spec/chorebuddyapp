@@ -14,6 +14,11 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'User not authenticated' }, { status: 401 });
         }
 
+        // Only parents can link accounts
+        if (user.data?.family_role !== 'parent' && user.family_role !== 'parent') {
+            return Response.json({ error: 'Forbidden: Only parents can link accounts' }, { status: 403 });
+        }
+
         const { personId } = await req.json();
         
         if (!personId) {

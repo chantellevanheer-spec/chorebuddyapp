@@ -6,15 +6,27 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    if (user?.role !== 'admin' && user?.family_role !== 'parent') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    // Only parents can send notifications
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (user?.role !== 'admin' && user?.data?.family_role !== 'parent' && user?.family_role !== 'parent') {
+      return Response.json({ error: 'Forbidden: Only parents can send notifications' }, { status: 403 });
+    }
+
+    // Validate family access
+    if (!user.family_id && !user.data?.family_id) {
+      return Response.json({ error: 'No family found' }, { status: 400 });
     }
 
     const { notificationType = 'daily_reminders' } = await req.json();
 
+    const familyId = user.family_id || user.data?.family_id;
+
     // Get family users with reminders enabled - filter at database level
     const familyUsers = await base44.asServiceRole.entities.User.filter({
-      family_id: user.family_id,
+      family_id: familyId,
       receives_chore_reminders: true
     });
 
@@ -33,12 +45,12 @@ Deno.serve(async (req) => {
     const assignments = await base44.asServiceRole.entities.Assignment.filter({
       week_start: weekStartStr,
       completed: false,
-      family_id: user.family_id
+      family_id: familyId
     });
 
     const [people, chores] = await Promise.all([
-      base44.asServiceRole.entities.Person.filter({ family_id: user.family_id }),
-      base44.asServiceRole.entities.Chore.filter({ family_id: user.family_id })
+      base44.asServiceRole.entities.Person.filter({ family_id: familyId }),
+      base44.asServiceRole.entities.Chore.filter({ family_id: familyId })
     ]);
 
     // Build email promises for parallel sending

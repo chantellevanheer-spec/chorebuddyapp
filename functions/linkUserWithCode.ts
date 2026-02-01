@@ -9,6 +9,11 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'User not authenticated' }, { status: 401 });
         }
 
+        // Validate user has a family
+        if (!user.family_id && !user.data?.family_id) {
+            return Response.json({ error: 'You must be part of a family to link accounts' }, { status: 400 });
+        }
+
         const { linkingCode } = await req.json();
         
         if (!linkingCode || typeof linkingCode !== 'string') {

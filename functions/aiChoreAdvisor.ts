@@ -9,6 +9,11 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        // Only parents can use AI advisor
+        if (user.data?.family_role !== 'parent' && user.family_role !== 'parent') {
+            return Response.json({ error: 'Forbidden: Only parents can use AI suggestions' }, { status: 403 });
+        }
+
         if (!user.family_id) {
             return Response.json({ error: 'No family found' }, { status: 400 });
         }

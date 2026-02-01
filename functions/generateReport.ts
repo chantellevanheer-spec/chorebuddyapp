@@ -12,6 +12,11 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        // Only parents can generate reports
+        if (user.data?.family_role !== 'parent' && user.family_role !== 'parent') {
+            return Response.json({ error: 'Forbidden: Only parents can generate reports' }, { status: 403 });
+        }
+
         if (user.subscription_tier === 'free') {
             return Response.json({ error: 'Report generation is a premium feature.' }, { status: 403 });
         }
