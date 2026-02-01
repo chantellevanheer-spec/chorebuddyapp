@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
-import { Home, Users, ClipboardList, Calendar, Sparkles, Zap, Settings, Loader2, Target, CheckCircle, MessageCircle, Megaphone, Trophy, Award, Camera } from "lucide-react";
+import { Home, Users, ClipboardList, Calendar, Sparkles, Zap, Settings, Loader2, Target, CheckCircle, MessageCircle, Megaphone, Trophy, Award, Camera, ArrowRightLeft } from "lucide-react";
 import PublicLayout from "./components/layout/PublicLayout";
 import CookieBanner from './components/ui/CookieBanner';
 import RealTimeBadge from './components/ui/RealTimeBadge';
@@ -118,6 +118,14 @@ const navigationItems = [
   color: "bg-pink-400 text-white",
   hover: "hover:bg-pink-500",
   active: "bg-pink-500"
+},
+{
+  title: "Trades",
+  url: createPageUrl("ChoreTrades"),
+  icon: ArrowRightLeft,
+  color: "bg-orange-400 text-white",
+  hover: "hover:bg-orange-500",
+  active: "bg-orange-500"
 },
 {
   title: "Approvals",

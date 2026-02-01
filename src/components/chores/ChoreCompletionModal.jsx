@@ -8,6 +8,7 @@ import { base44 } from '@/api/base44Client';
 import { sanitizeHTML } from '@/components/lib/sanitization';
 import { VALIDATION } from '@/components/lib/appConstants';
 import DifficultyRating from './DifficultyRating';
+import DifficultyFeedback from './DifficultyFeedback';
 
 export default function ChoreCompletionModal({ 
   isOpen, 
@@ -104,13 +105,9 @@ export default function ChoreCompletionModal({
             </button>
           </div>
 
-          {/* Difficulty Rating */}
+          {/* Difficulty Feedback */}
           <div className="mb-6">
-            <DifficultyRating 
-              value={difficultyRating}
-              onChange={setDifficultyRating}
-              currentDifficulty={chore.difficulty}
-            />
+            <DifficultyFeedback onSubmit={setDifficultyRating} />
           </div>
 
           {/* Notes */}

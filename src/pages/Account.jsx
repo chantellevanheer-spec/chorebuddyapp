@@ -427,48 +427,52 @@ export default function Account() {
           {/* Notification Preferences */}
           <div className="funky-card p-8">
             <h2 className="header-font text-3xl text-[#2B59C3] mb-6">Notification Preferences</h2>
-            {isPremium ? (
-              <NotificationPreferences
-                preferences={notificationPreferences}
-                onChange={setNotificationPreferences}
-              />
-            ) : (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between p-4 funky-card border-2 border-dashed bg-white/50">
-                  <label htmlFor="chore-reminders" className="flex-1 cursor-pointer">
-                    <h3 className="body-font text-lg text-[#5E3B85]">Chore Reminders</h3>
-                    <p className="body-font-light text-sm text-gray-600">Get notified about upcoming chores</p>
-                  </label>
-                  <Switch
-                    id="chore-reminders"
-                    checked={user.receives_chore_reminders}
-                    onCheckedChange={(value) => handleToggleChange('receives_chore_reminders', value)}
-                  />
-                </div>
-                <div className="flex items-center justify-between p-4 funky-card border-2 border-dashed bg-white/50">
-                  <label htmlFor="achievement-alerts" className="flex-1 cursor-pointer">
-                    <h3 className="body-font text-lg text-[#5E3B85]">Achievement Alerts</h3>
-                    <p className="body-font-light text-sm text-gray-600">Celebrate completed tasks</p>
-                  </label>
-                  <Switch
-                    id="achievement-alerts"
-                    checked={user.receives_achievement_alerts}
-                    onCheckedChange={(value) => handleToggleChange('receives_achievement_alerts', value)}
-                  />
-                </div>
-                <div className="flex items-center justify-between p-4 funky-card border-2 border-dashed bg-white/50">
-                  <label htmlFor="weekly-reports" className="flex-1 cursor-pointer">
-                    <h3 className="body-font text-lg text-[#5E3B85]">Weekly Reports</h3>
-                    <p className="body-font-light text-sm text-gray-600">Receive family progress summaries</p>
-                  </label>
-                  <Switch
-                    id="weekly-reports"
-                    checked={user.receives_weekly_reports}
-                    onCheckedChange={(value) => handleToggleChange('receives_weekly_reports', value)}
-                  />
-                </div>
-              </div>
-            )}
+            <div className="space-y-6">
+              <NotificationToggle />
+              
+              {isPremium ? (
+                <NotificationPreferences
+                  preferences={notificationPreferences}
+                  onChange={setNotificationPreferences}
+                />
+              ) : (
+                <>
+                  <div className="flex items-center justify-between p-4 funky-card border-2 border-dashed bg-white/50">
+                    <label htmlFor="chore-reminders" className="flex-1 cursor-pointer">
+                      <h3 className="body-font text-lg text-[#5E3B85]">Chore Reminders</h3>
+                      <p className="body-font-light text-sm text-gray-600">Get notified about upcoming chores</p>
+                    </label>
+                    <Switch
+                      id="chore-reminders"
+                      checked={user.receives_chore_reminders}
+                      onCheckedChange={(value) => handleToggleChange('receives_chore_reminders', value)}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between p-4 funky-card border-2 border-dashed bg-white/50">
+                    <label htmlFor="achievement-alerts" className="flex-1 cursor-pointer">
+                      <h3 className="body-font text-lg text-[#5E3B85]">Achievement Alerts</h3>
+                      <p className="body-font-light text-sm text-gray-600">Celebrate completed tasks</p>
+                    </label>
+                    <Switch
+                      id="achievement-alerts"
+                      checked={user.receives_achievement_alerts}
+                      onCheckedChange={(value) => handleToggleChange('receives_achievement_alerts', value)}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between p-4 funky-card border-2 border-dashed bg-white/50">
+                    <label htmlFor="weekly-reports" className="flex-1 cursor-pointer">
+                      <h3 className="body-font text-lg text-[#5E3B85]">Weekly Reports</h3>
+                      <p className="body-font-light text-sm text-gray-600">Receive family progress summaries via email</p>
+                    </label>
+                    <Switch
+                      id="weekly-reports"
+                      checked={user.receives_weekly_reports}
+                      onCheckedChange={(value) => handleToggleChange('receives_weekly_reports', value)}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
             <Button
               onClick={handleSaveChanges}
               disabled={isSaving}
