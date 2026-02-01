@@ -78,7 +78,7 @@ export default function Admin() {
 
   if (user?.role !== 'admin') {
     return (
-      <div className="mx-4 md:mx-8 lg:mx-24 pb-32 space-y-8 lg:pb-8">
+      <div className="mx-4 md:mx-8 lg:mx-24 pb-40 space-y-6 md:space-y-8 lg:pb-8">
         <div className="funky-card p-8 md:p-12 text-center border-4 border-red-400">
           <XCircle className="w-16 h-16 md:w-24 md:h-24 mx-auto mb-6 text-red-400" />
           <h2 className="header-font text-2xl md:text-3xl text-[#2B59C3] mb-4">Access Denied</h2>
