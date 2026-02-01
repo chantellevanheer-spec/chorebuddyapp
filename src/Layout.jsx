@@ -2,16 +2,14 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
-import { Home, Users, ClipboardList, Calendar, Sparkles, Zap, Settings, Loader2, Target, CheckCircle, MessageCircle, Megaphone, Trophy, Award, Camera, ArrowRightLeft, TrendingUp, BookOpen } from "lucide-react";
+import { Home, Users, ClipboardList, Calendar, Sparkles, Zap, Settings, Loader2, Target, CheckCircle, MessageCircle, Megaphone } from "lucide-react";
 import PublicLayout from "./components/layout/PublicLayout";
 import CookieBanner from './components/ui/CookieBanner';
 import RealTimeBadge from './components/ui/RealTimeBadge';
-import OfflineIndicator from './components/ui/OfflineIndicator';
-import { DataProvider, useData } from './components/contexts/DataContext';
+import { DataProvider } from './components/contexts/DataContext';
 import { ThemeProvider } from './components/contexts/ThemeContext';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import OnboardingTour from './components/onboarding/OnboardingTour';
-import SetupWizard from './components/onboarding/SetupWizard';
 import UserAvatar from './components/profile/UserAvatar';
 
 const navigationItems = [
@@ -96,72 +94,12 @@ const navigationItems = [
   active: "bg-green-500"
 },
 {
-  title: "Challenges",
-  url: createPageUrl("Challenges"),
-  icon: Trophy,
-  color: "bg-purple-400 text-white",
-  hover: "hover:bg-purple-500",
-  active: "bg-purple-500"
-},
-{
-  title: "Achievements",
-  url: createPageUrl("Achievements"),
-  icon: Award,
-  color: "bg-yellow-400 text-yellow-800",
-  hover: "hover:bg-yellow-500",
-  active: "bg-yellow-500"
-},
-{
-  title: "Gallery",
-  url: createPageUrl("PhotoGallery"),
-  icon: Camera,
-  color: "bg-pink-400 text-white",
-  hover: "hover:bg-pink-500",
-  active: "bg-pink-500"
-},
-{
-  title: "Trades",
-  url: createPageUrl("ChoreTrades"),
-  icon: ArrowRightLeft,
-  color: "bg-orange-400 text-white",
-  hover: "hover:bg-orange-500",
-  active: "bg-orange-500"
-},
-{
-  title: "Approvals",
-  url: createPageUrl("ApprovalQueue"),
-  icon: CheckCircle,
-  color: "bg-[#FF6B35] text-white",
-  hover: "hover:bg-[#fa5a1f]",
-  active: "bg-[#fa5a1f]",
-  parentOnly: true
-},
-{
-  title: "Analytics",
-  url: createPageUrl("Analytics"),
-  icon: TrendingUp,
-  color: "bg-green-500 text-white",
-  hover: "hover:bg-green-600",
-  active: "bg-green-600",
-  parentOnly: true
-},
-{
-  title: "Templates",
-  url: createPageUrl("Templates"),
-  icon: BookOpen,
-  color: "bg-[#C3B1E1] text-white",
-  hover: "hover:bg-[#b19dcb]",
-  active: "bg-[#b19dcb]",
-  parentOnly: true
-},
-{
   title: "Admin",
   url: createPageUrl("Admin"),
   icon: CheckCircle,
   color: "bg-[#5E3B85] text-white",
   hover: "hover:bg-[#4a2d6b]",
-  active: "bg-[#4a2d6b]",
-  parentOnly: true
+  active: "bg-[#4a2d6b]"
 }];
 
 const publicPages = ['Home', 'Index', 'Pricing', 'Help', 'Privacy', 'PaymentSuccess', 'PaymentCancel', 'JoinFamily', 'RoleSelection'];
@@ -172,9 +110,7 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
-  const [showSetupWizard, setShowSetupWizard] = useState(false);
   const onboardingShownRef = React.useRef(false);
-  const setupWizardShownRef = React.useRef(false);
 
   const isPublicPage = publicPages.includes(currentPageName);
 
@@ -197,19 +133,9 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
           return;
         }
 
-        // Show setup wizard ONCE per session for new parents (after role selection)
+        // Show onboarding ONCE per session for new users (after role selection)
         if (
-          userData.family_role === 'parent' && 
-          !userData.data?.onboarding_completed && 
-          currentPageName !== 'RoleSelection' &&
-          !setupWizardShownRef.current
-        ) {
-          setShowSetupWizard(true);
-          setupWizardShownRef.current = true;
-        } 
-        // Show quick tour for children/teens
-        else if (
-          (userData.family_role === 'child' || userData.family_role === 'teen') &&
+          userData.family_role && 
           !userData.data?.onboarding_completed && 
           currentPageName !== 'RoleSelection' &&
           !onboardingShownRef.current
@@ -249,33 +175,10 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
   }
 
   // Authenticated Layout
-  // Apply accessibility classes to root
-  const textSizeClass = currentUser?.text_size === 'large' ? 'text-lg' : 
-                        currentUser?.text_size === 'extra-large' ? 'text-xl' : '';
-  const highContrastClass = currentUser?.high_contrast ? 'high-contrast' : '';
-
   return (
-    <div className={`min-h-screen bg-[#FDFBF5] text-[#5E3B85] ${textSizeClass} ${highContrastClass}`}>
+    <div className="min-h-screen bg-[#FDFBF5] text-[#5E3B85]">
       <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;800&display=swap');
-
-          /* High Contrast Mode */
-          .high-contrast {
-            --color-bg: #FFFFFF;
-            --color-text: #000000;
-            --color-border: #000000;
-          }
-          .high-contrast .funky-card {
-            background-color: var(--color-bg);
-            border-color: var(--color-border);
-            box-shadow: 4px 4px 0px var(--color-border);
-          }
-          .high-contrast .text-gray-600 {
-            color: #333333;
-          }
-          .high-contrast .text-gray-500 {
-            color: #555555;
-          }
 
           /* Theme-based dynamic styling */
           [data-theme="ocean"] .theme-primary { color: var(--color-primary, #2B59C3); }
@@ -374,21 +277,19 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
 
             {/* Navigation */}
             <div className="space-y-4">
-              {navigationItems
-                .filter(item => !item.parentOnly || currentUser?.family_role === 'parent')
-                .map((item) => {
-                  const isActive = location.pathname === item.url;
-                  return (
-                    <Link
-                      key={item.title}
-                      to={item.url}
-                      className={`funky-button flex items-center gap-4 p-4 ${item.color} ${item.hover} ${isActive ? item.active : ''}`}
-                    >
-                      <item.icon className="w-6 h-6" />
-                      <span className="text-xl header-font">{item.title}</span>
-                    </Link>
-                  );
-                })}
+              {navigationItems.map((item) => {
+                const isActive = location.pathname === item.url;
+                return (
+                  <Link
+                    key={item.title}
+                    to={item.url}
+                    className={`funky-button flex items-center gap-4 p-4 ${item.color} ${item.hover} ${isActive ? item.active : ''}`}
+                  >
+                    <item.icon className="w-6 h-6" />
+                    <span className="text-xl header-font">{item.title}</span>
+                  </Link>
+                );
+              })}
               <div className="pt-4 border-t-2 border-dashed border-gray-300 space-y-4">
                 <Link
                   to={createPageUrl("Account")}
@@ -493,22 +394,20 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
       {/* Mobile Navigation */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#FDFBF5]/80 backdrop-blur-sm border-t-3 border-[#5E3B85] overflow-hidden">
         <div className="flex items-center justify-start gap-2 p-2 sm:p-4 overflow-x-auto whitespace-nowrap scrollbar-hide">
-            {navigationItems
-              .filter(item => !item.parentOnly || currentUser?.family_role === 'parent')
-              .map((item) => {
-                const isActive = location.pathname === item.url;
-                return (
-                  <Link
-                    key={item.title}
-                    to={item.url}
-                    className={`flex flex-col items-center gap-1 transition-transform duration-200 flex-shrink-0 ${isActive ? 'scale-105' : 'scale-95 opacity-80'}`}
-                  >
-                    <div className={`funky-button w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center ${item.color}`}>
-                      <item.icon className="w-6 h-6 sm:w-7 sm:h-7" />
-                    </div>
-                  </Link>
-                );
-              })}
+          {navigationItems.map((item) => {
+            const isActive = location.pathname === item.url;
+            return (
+              <Link
+                key={item.title}
+                to={item.url}
+                className={`flex flex-col items-center gap-1 transition-transform duration-200 flex-shrink-0 ${isActive ? 'scale-105' : 'scale-95 opacity-80'}`}
+              >
+                <div className={`funky-button w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center ${item.color}`}>
+                  <item.icon className="w-6 h-6 sm:w-7 sm:h-7" />
+                </div>
+              </Link>
+            );
+          })}
           <Link
             to={createPageUrl("Account")}
             className={`flex flex-col items-center gap-1 transition-transform duration-200 scale-95 opacity-80 flex-shrink-0`}
@@ -531,49 +430,19 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
   );
 }
 
-function LayoutContent(props) {
-  const { isOnline, isSyncing, pendingOperations, syncNow } = useData();
-
-  return (
-    <>
-      <AppLayout {...props} />
-      <RealTimeBadge />
-      <OfflineIndicator 
-        isOnline={isOnline}
-        isSyncing={isSyncing}
-        pendingOperations={pendingOperations}
-        onSync={syncNow}
-      />
-      <CookieBanner />
-      <SetupWizard 
-        isOpen={props.showSetupWizard} 
-        onComplete={() => {
-          props.setShowSetupWizard(false);
-          window.location.reload();
-        }} 
-      />
-      <OnboardingTour 
-        isOpen={props.showOnboarding} 
-        onClose={() => props.setShowOnboarding(false)} 
-      />
-    </>
-  );
-}
-
 export default function LayoutWrapper(props) {
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [showSetupWizard, setShowSetupWizard] = useState(false);
 
   return (
     <ErrorBoundary>
       <ThemeProvider>
         <DataProvider>
-          <LayoutContent 
-            {...props} 
-            showOnboarding={showOnboarding} 
-            setShowOnboarding={setShowOnboarding}
-            showSetupWizard={showSetupWizard} 
-            setShowSetupWizard={setShowSetupWizard}
+          <AppLayout {...props} showOnboarding={showOnboarding} setShowOnboarding={setShowOnboarding} />
+          <RealTimeBadge />
+          <CookieBanner />
+          <OnboardingTour 
+            isOpen={showOnboarding} 
+            onClose={() => setShowOnboarding(false)} 
           />
         </DataProvider>
       </ThemeProvider>
