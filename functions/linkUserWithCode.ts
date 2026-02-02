@@ -11,13 +11,19 @@ Deno.serve(async (req) => {
 
         // Validate user has a family
         if (!user.family_id && !user.data?.family_id) {
-            return Response.json({ error: 'You must be part of a family to link accounts' }, { status: 400 });
+            return Response.json({ 
+                error: 'You must be part of a family to link accounts',
+                reason: 'no_family'
+            }, { status: 400 });
         }
 
         const { linkingCode } = await req.json();
         
         if (!linkingCode || typeof linkingCode !== 'string') {
-            return Response.json({ error: 'Linking code is required' }, { status: 400 });
+            return Response.json({ 
+                error: 'Linking code is required',
+                reason: 'missing_code'
+            }, { status: 400 });
         }
 
         // Get the family to validate the code
@@ -50,7 +56,10 @@ Deno.serve(async (req) => {
         }
 
         if (!isValidCode) {
-            return Response.json({ error: 'Invalid or expired linking code' }, { status: 400 });
+            return Response.json({ 
+                error: 'Invalid or expired linking code',
+                reason: 'invalid_code'
+            }, { status: 400 });
         }
 
         // Get all unlinked people in the family
@@ -61,7 +70,10 @@ Deno.serve(async (req) => {
         const unlinkedPeople = allPeople.filter(p => !p.linked_user_id);
 
         if (unlinkedPeople.length === 0) {
-            return Response.json({ error: 'No available family member profiles to link' }, { status: 400 });
+            return Response.json({ 
+                error: 'No available family member profiles to link',
+                reason: 'no_unlinked_profiles'
+            }, { status: 400 });
         }
 
         // If only one unlinked person, link automatically
@@ -85,8 +97,25 @@ Deno.serve(async (req) => {
             linked_user_id: user.id
         });
 
-        if (existingLink.length > 0 && existingLink[0].id !== personToLink.id) {
-            return Response.json({ error: 'Your account is already linked to another family member' }, { status: 400 });
+        if (existingLink.length > 0) {
+            if (existingLink[0].id === personToLink.id) {
+                // Already linked to this person (idempotent success)
+                return Response.json({ 
+                    success: true,
+                    message: 'Account already linked to this family member',
+                    personId: personToLink.id,
+                    personName: personToLink.name,
+                    alreadyLinked: true
+                }, { status: 200 });
+            } else {
+                // Linked to a different person (conflict)
+                return Response.json({ 
+                    error: 'Your account is already linked to another family member',
+                    reason: 'already_linked_conflict',
+                    existingPersonId: existingLink[0].id,
+                    existingPersonName: existingLink[0].name
+                }, { status: 409 });
+            }
         }
 
         // Link the user to the person
@@ -98,7 +127,8 @@ Deno.serve(async (req) => {
             success: true,
             message: 'Successfully linked your account!',
             personId: personToLink.id,
-            personName: personToLink.name
+            personName: personToLink.name,
+            alreadyLinked: false
         }, { status: 200 });
 
     } catch (error) {
