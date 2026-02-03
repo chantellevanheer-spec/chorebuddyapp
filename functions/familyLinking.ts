@@ -1,135 +1,167 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { TIME } from './lib/constants.js';
+// functions/familyLinking.ts
+// Handles family linking code generation and joining
+// Consolidates duplicate code and improves security
 
-// Generate a random 6-character alphanumeric code (uppercase for readability)
-function generateLinkingCode() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Removed confusing chars like 0, O, 1, I
-    let code = '';
-    for (let i = 0; i < 6; i++) {
-        code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return code;
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import {
+  requireAuth,
+  requireParent,
+  generateCode,
+  sanitizeCode,
+  calculateExpiryDate,
+  getUserFamilyId,
+  getFamily,
+  updateEntityWithEnv,
+  canUserJoinFamily,
+  errorResponse,
+  successResponse,
+  logError,
+  logInfo,
+  parseRequestBody,
+} from './lib/shared-utils.ts';
+
+/**
+ * Generate a new linking code for a family
+ */
+async function handleGenerateCode(base44: any, user: any, familyId: string) {
+  // Verify user is a parent
+  if (!user || user.family_role !== 'parent') {
+    return errorResponse('Only parents can generate linking codes', 403);
+  }
+
+  // Verify user is in this family
+  const userFamilyId = getUserFamilyId(user);
+  if (userFamilyId !== familyId) {
+    return errorResponse('You can only generate codes for your own family', 403);
+  }
+
+  // Get family with environment detection
+  const { family, env } = await getFamily(base44, familyId);
+  if (!family) {
+    return errorResponse('Family not found', 404);
+  }
+
+  // Generate new code
+  const newCode = generateCode(6);
+  const expiresAt = calculateExpiryDate(24); // 24 hours
+
+  // Update family
+  await updateEntityWithEnv(
+    base44,
+    'Family',
+    familyId,
+    {
+      linking_code: newCode,
+      linking_code_expires: expiresAt,
+    },
+    env
+  );
+
+  logInfo('familyLinking', 'Generated new linking code', { familyId, userId: user.id });
+
+  return successResponse({
+    linkingCode: newCode,
+    expiresAt,
+  });
 }
 
-Deno.serve(async (req) => {
-    try {
-        const base44 = createClientFromRequest(req);
-        
-        // ==========================================
-        // SECURITY CHECKS - DO NOT REMOVE
-        // ==========================================
-        
-        const user = await base44.auth.me();
+/**
+ * Join a family using a linking code
+ */
+async function handleJoinFamily(base44: any, user: any, linkingCode: string) {
+  // Validate and sanitize code
+  const { valid, code: sanitizedCode, error } = sanitizeCode(linkingCode);
+  if (!valid) {
+    return errorResponse(error);
+  }
 
-        if (!user) {
-            return Response.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+  // Find family with this linking code
+  const families = await base44.asServiceRole.entities.Family.filter({
+    linking_code: sanitizedCode,
+  });
 
-        const { action, linkingCode, familyId } = await req.json();
+  if (families.length === 0) {
+    return errorResponse('Invalid linking code. Please check and try again.');
+  }
 
-        // Action: Generate a new linking code for a family (parent only)
-        if (action === 'generate') {
-            if (!familyId) {
-                return Response.json({ error: 'Family ID required' }, { status: 400 });
-            }
+  const family = families[0];
 
-            // Verify user is a parent
-            if (user.family_role !== 'parent') {
-                return Response.json({ error: 'Only parents can generate linking codes' }, { status: 403 });
-            }
-
-            // Verify user is in this family
-            if (user.family_id !== familyId) {
-                return Response.json({ error: 'You can only generate codes for your own family' }, { status: 403 });
-            }
-
-            const families = await base44.entities.Family.filter({ id: familyId });
-            const family = families[0];
-
-            if (!family) {
-                return Response.json({ error: 'Family not found' }, { status: 404 });
-            }
-
-            // Generate new code with 24-hour expiry
-            const newCode = generateLinkingCode();
-            const expiresAt = new Date(Date.now() + TIME.ONE_DAY_MS).toISOString();
-
-            await base44.asServiceRole.entities.Family.update(familyId, {
-                linking_code: newCode,
-                linking_code_expires: expiresAt
-            });
-
-            return Response.json({
-                success: true,
-                linkingCode: newCode,
-                expiresAt: expiresAt
-            });
-        }
-
-        // Action: Validate and join a family using a linking code (teen/child)
-        if (action === 'join') {
-            if (!linkingCode) {
-                return Response.json({ error: 'Linking code required' }, { status: 400 });
-            }
-
-            const codeUppercase = linkingCode.toUpperCase().trim();
-
-            // Find family with this linking code using service role (bypasses RLS)
-            const families = await base44.asServiceRole.entities.Family.filter({ 
-                linking_code: codeUppercase 
-            });
-
-            if (families.length === 0) {
-                return Response.json({ 
-                    success: false, 
-                    error: 'Invalid linking code. Please check and try again.' 
-                }, { status: 400 });
-            }
-
-            const family = families[0];
-
-            // Check if code is expired
-            if (family.linking_code_expires) {
-                const expiryDate = new Date(family.linking_code_expires);
-                if (expiryDate < new Date()) {
-                    return Response.json({ 
-                        success: false, 
-                        error: 'This linking code has expired. Please ask your parent for a new code.' 
-                    }, { status: 400 });
-                }
-            }
-
-            // Check if user is already a member
-            const currentMembers = family.members || [];
-            if (currentMembers.includes(user.id)) {
-                return Response.json({ 
-                    success: false, 
-                    error: 'You are already a member of this family.' 
-                }, { status: 400 });
-            }
-
-            // Add user to family members
-            const updatedMembers = [...currentMembers, user.id];
-            await base44.asServiceRole.entities.Family.update(family.id, {
-                members: updatedMembers
-            });
-
-            // Update user's family_id
-            await base44.auth.updateMe({
-                family_id: family.id
-            });
-
-            return Response.json({
-                success: true,
-                familyName: family.name,
-                familyId: family.id
-            });
-        }
-
-        return Response.json({ error: 'Invalid action' }, { status: 400 });
-
-    } catch (error) {
-        console.error('Family linking error:', error);
-        return Response.json({ error: error.message }, { status: 500 });
+  // Check if code is expired
+  if (family.linking_code_expires) {
+    const expiryDate = new Date(family.linking_code_expires);
+    if (expiryDate < new Date()) {
+      return errorResponse(
+        'This linking code has expired. Please ask your parent for a new code.'
+      );
     }
+  }
+
+  // Check if user can join
+  const currentMembers = family.members || [];
+  const joinCheck = canUserJoinFamily(user, family, currentMembers.length);
+
+  if (!joinCheck.allowed) {
+    return errorResponse(joinCheck.message, joinCheck.reason === 'already_in_family' ? 409 : 400);
+  }
+
+  // Add user to family
+  const updatedMembers = [...currentMembers, user.id];
+  await base44.asServiceRole.entities.Family.update(family.id, {
+    members: updatedMembers,
+  });
+
+  // Update user's family_id
+  await base44.auth.updateMe({
+    family_id: family.id,
+  });
+
+  logInfo('familyLinking', 'User joined family via linking code', {
+    userId: user.id,
+    familyId: family.id,
+  });
+
+  return successResponse({
+    familyName: family.name,
+    familyId: family.id,
+  });
+}
+
+/**
+ * Main handler
+ */
+Deno.serve(async (req) => {
+  const base44 = createClientFromRequest(req);
+
+  try {
+    // Authentication check
+    const { user, error: authError } = await requireAuth(base44);
+    if (authError) return authError;
+
+    // Parse request body
+    const { data: body, error: parseError } = await parseRequestBody(req);
+    if (parseError) return parseError;
+
+    const { action, linkingCode, familyId } = body;
+
+    // Route to appropriate handler
+    switch (action) {
+      case 'generate':
+        if (!familyId) {
+          return errorResponse('Family ID required for code generation');
+        }
+        return await handleGenerateCode(base44, user, familyId);
+
+      case 'join':
+        if (!linkingCode) {
+          return errorResponse('Linking code required to join family');
+        }
+        return await handleJoinFamily(base44, user, linkingCode);
+
+      default:
+        return errorResponse('Invalid action. Use "generate" or "join"');
+    }
+  } catch (error) {
+    logError('familyLinking', error);
+    return errorResponse('An internal server error occurred', 500);
+  }
 });
