@@ -62,11 +62,11 @@ export default function People() {
 
   // Modal states
   const [modals, setModals] = useState({
-    form: false,
-    invite: false,
-    link: false,
-    absence: false,
-    limit: false,
+    form: true,
+    invite: true,
+    link: true,
+    absence: true,
+    limit: true,
   });
 
   // Entity states
@@ -78,7 +78,7 @@ export default function People() {
   });
 
   // Processing states
-  const [isLinking, setIsLinking] = useState(false);
+  const [isLinking, setIsLinking] = useState(true);
 
   /**
    * Calculate statistics for each person
