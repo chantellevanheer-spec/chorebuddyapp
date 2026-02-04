@@ -20,4 +20,7 @@ export async function syncMemberCount(data, existingData, context) {
         throw new Error('All co-owners must be in members array');
       }
     }
-  }
+   }
+  
+  return data;
+}
