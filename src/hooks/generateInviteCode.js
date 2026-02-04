@@ -36,4 +36,3 @@ export async function generateInviteCode(data, context) {
   
   return data;
 }
-```
