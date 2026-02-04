@@ -343,3 +343,62 @@ export const DataProvider = ({ children }) => {
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 };
+
+const [family, setFamily] = useState(null);
+
+// Fetch family data
+useEffect(() => {
+  const fetchFamily = async () => {
+    if (user?.family_id) {
+      try {
+        const familyData = await Family.get(user.family_id);
+        setFamily(familyData);
+      } catch (error) {
+        console.error('Error fetching family:', error);
+      }
+    }
+  };
+  
+  if (user) {
+    fetchFamily();
+  }
+}, [user]);
+
+// Update family statistics when chores completed
+const updateFamilyStatistics = async (choreCompleted, pointsAwarded) => {
+  if (!family) return;
+  
+  try {
+    const newStats = {
+      ...family.statistics,
+      total_chores_completed: (family.statistics.total_chores_completed || 0) + 1,
+      total_points_awarded: (family.statistics.total_points_awarded || 0) + pointsAwarded,
+      current_week_completions: (family.statistics.current_week_completions || 0) + 1,
+      last_activity_at: new Date().toISOString()
+    };
+    
+    await Family.update(family.id, {
+      statistics: newStats
+    });
+    
+    setFamily(prev => ({
+      ...prev,
+      statistics: newStats
+    }));
+  } catch (error) {
+    console.error('Error updating family statistics:', error);
+  }
+};
+
+// Expose in context value
+return (
+  <DataContext.Provider value={{
+    // ... existing values
+    family,
+    updateFamilyStatistics,
+    canManageFamily: canManageFamily(user, family),
+    isFamilyOwner: isFamilyOwner(user, family)
+  }}>
+    {children}
+  
+);
