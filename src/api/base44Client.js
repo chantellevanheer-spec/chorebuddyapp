@@ -1,5 +1,6 @@
 import { createClient } from '@base44/sdk';
 import { appParams } from '@/lib/app-params';
+import { Person } from '@/entities/Person';
 
 const API_CONFIG = {
   baseUrl: process.env.BASE44_API_URL || 'https://app.base44.com/api',
@@ -34,8 +35,6 @@ const PERSON_FILTERABLE_FIELDS = [
 // =============================================================================
 // SDK APPROACH (RECOMMENDED)
 // =============================================================================
-
-import { Person } from '@/entities/Person';
 
 /**
  * Fetch all Person entities with optional sorting
