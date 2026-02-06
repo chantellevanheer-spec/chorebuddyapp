@@ -13,6 +13,7 @@ import { useRealTimeSync } from '../hooks/useRealTimeSync';
 import { useAssignmentNotifications } from '../hooks/useAssignmentNotifications';
 import { useOfflineSync } from '../hooks/useOfflineSync';
 import { offlineStorage, STORES } from '../utils/offlineStorage';
+import { canManageFamily as canManageFamilyUtil, isFamilyOwner as isFamilyOwnerUtil } from '@/utils/familyHelpers';
 import { toast } from "sonner";
 
 const DataContext = createContext();
@@ -670,11 +671,7 @@ export const DataProvider = ({ children }) => {
       }
       
       // Check permissions
-      const canManage = 
-        family.owner_user_id === user.id ||
-        family.co_owners?.includes(user.id);
-      
-      if (!canManage) {
+      if (!canManageFamilyUtil(user, family)) {
         throw new Error("Only owners and co-owners can update family settings");
       }
       
@@ -694,21 +691,18 @@ export const DataProvider = ({ children }) => {
 
   /**
    * Check if user can manage family (owner or co-owner)
+   * Delegates to the shared utility in familyHelpers.js
    */
   const canManageFamily = useCallback(() => {
-    if (!user || !family) return false;
-    return (
-      family.owner_user_id === user.id ||
-      family.co_owners?.includes(user.id)
-    );
+    return canManageFamilyUtil(user, family);
   }, [user, family]);
 
   /**
    * Check if user is family owner
+   * Delegates to the shared utility in familyHelpers.js
    */
   const isFamilyOwner = useCallback(() => {
-    if (!user || !family) return false;
-    return family.owner_user_id === user.id;
+    return isFamilyOwnerUtil(user, family);
   }, [user, family]);
 
   /**

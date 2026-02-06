@@ -1,18 +1,19 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { startOfWeek, endOfWeek, format } from 'npm:date-fns@3.6.0';
+import { isParent } from './lib/shared-utils.ts';
 
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
 
   try {
     // This function should only be called by automation (no user context)
-    // or by admin for testing purposes
+    // or by a parent for testing purposes
     const user = await base44.auth.me().catch(() => null);
-    
-    // If called by a user, verify they are admin
-    if (user && user.role !== 'admin') {
-      return Response.json({ 
-        error: 'Forbidden: Admin access required' 
+
+    // If called by a user, verify they are a parent
+    if (user && !isParent(user)) {
+      return Response.json({
+        error: 'Forbidden: Parent access required'
       }, { status: 403 });
     }
 

@@ -6,6 +6,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import {
   requireAuth,
   requireParent,
+  isParent,
   generateCode,
   sanitizeCode,
   calculateExpiryDate,
@@ -25,7 +26,7 @@ import {
  */
 async function handleGenerateCode(base44: any, user: any, familyId: string) {
   // Verify user is a parent
-  if (!user || user.family_role !== 'parent') {
+  if (!user || !isParent(user)) {
     return errorResponse('Only parents can generate linking codes', 403);
   }
 

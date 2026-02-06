@@ -1,11 +1,12 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { isParent } from './lib/shared-utils.ts';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    if (!user || user.data?.family_role !== 'parent') {
+    if (!user || !isParent(user)) {
       return Response.json(
         { error: 'Forbidden: Parent access required' },
         { status: 403 }

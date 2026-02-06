@@ -3,7 +3,7 @@ import { Person } from '@/entities/Person';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { isParent, isChild } from '@/utils/roles';
 import { createPageUrl } from '@/utils';
 import { Link, useNavigate } from 'react-router-dom';
 import { Loader2, User as UserIcon, Bell, Users, Settings, Shield, CreditCard, AlertCircle, Link2, Sparkles, Palette, Crown } from 'lucide-react';
@@ -41,7 +41,7 @@ export default function Account() {
   const [notificationPreferences, setNotificationPreferences] = useState({});
   const { currentTheme, updateTheme } = useTheme();
 
-  // Determine effective subscription tier (child inherits parent's)
+  // Determine effective subscription tier (child/teen inherits parent's)
   const getEffectiveSubscriptionTier = () => {
     if (user?.family_role === FAMILY_ROLES.CHILD && linkedPerson) {
       // Child uses parent's subscription

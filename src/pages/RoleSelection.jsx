@@ -74,11 +74,10 @@ export default function RoleSelection() {
           updated_at: new Date().toISOString()
         });
 
-        // Parent who creates family becomes admin
+        // Admin privileges are derived from family_role: 'parent'
         await User.updateMyUserData({
           family_id: family.id,
-          family_role: role,
-          role: 'admin'
+          family_role: role
         });
 
         toast.success(`Welcome! You're set up as a ${role}.`);

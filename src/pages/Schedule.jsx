@@ -3,6 +3,7 @@ import { useData } from '../components/contexts/DataContext';
 import { useChoreManagement } from '../components/hooks/useChoreManagement';
 import { Calendar, CheckCircle, ArrowLeft, ArrowRight, Loader2, UserX, LayoutGrid, CalendarDays } from "lucide-react";
 import { format, startOfWeek, addWeeks, subWeeks } from "date-fns";
+import { isParent as checkIsParent, isChild as checkIsChild } from '@/utils/roles';
 import { Button } from "@/components/ui/button";
 import { AnimatePresence } from 'framer-motion';
 import ScheduleChoreItem from '../components/schedule/ScheduleChoreItem';
@@ -221,7 +222,7 @@ export default function Schedule() {
                                  size="sm"
                                  variant="ghost"
                                  onClick={() => handleShowReassign(assignment)}
-                                 className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity funky-button bg-white/90 border-2 border-[#F7A1C4] text-pink-700 hover:bg-pink-50"
+                                 className="absolute top-2 right-2 md:opacity-0 md:group-hover:opacity-100 focus-within:opacity-100 transition-opacity funky-button bg-white/90 border-2 border-[#F7A1C4] text-pink-700 hover:bg-pink-50"
                                  title="Reassign to someone else"
                                >
                                  <UserX className="w-4 h-4" />

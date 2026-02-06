@@ -3,6 +3,7 @@ import { useData } from '../components/contexts/DataContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
+import { isParent as checkIsParent } from '@/utils/roles';
 import { ArrowRightLeft, Loader2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import ChoreTradeCard from '../components/trades/ChoreTradeCard';
