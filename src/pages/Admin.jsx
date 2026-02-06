@@ -77,7 +77,7 @@ export default function Admin() {
     return <LoadingSpinner size="large" message="Loading admin panel..." />;
   }
 
-  if (user?.family_role !== 'parent') {
+  if (!isParent(user)) {
     return (
       <div className="mx-4 md:mx-8 lg:mx-24 pb-40 space-y-6 md:space-y-8 lg:pb-8">
         <div className="funky-card p-8 md:p-12 text-center border-4 border-red-400">
