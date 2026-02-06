@@ -44,14 +44,6 @@ export default function RoleSelection() {
       
       // If parent, create a family, Person record, and set admin role
       if (role === 'parent') {
-        // Generate a linking code so the parent can immediately invite family members
-        const codeChars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-        let linkingCode = '';
-        for (let i = 0; i < 6; i++) {
-          linkingCode += codeChars.charAt(Math.floor(Math.random() * codeChars.length));
-        }
-        const codeExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-
         const family = await Family.create({
           name: `${userData.full_name}'s Family`,
           owner_user_id: userData.id,
@@ -59,8 +51,6 @@ export default function RoleSelection() {
           member_count: 1,
           subscription_tier: 'free',
           subscription_status: 'active',
-          linking_code: linkingCode,
-          linking_code_expires: codeExpiry,
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
           currency: 'USD',
           is_active: true,
@@ -73,7 +63,6 @@ export default function RoleSelection() {
         const parentPerson = await Person.create({
           name: userData.full_name || 'Parent',
           family_id: family.id,
-          linked_user_id: userData.id,
           role: 'parent',
           is_active: true,
           points_balance: 0,
@@ -85,12 +74,11 @@ export default function RoleSelection() {
           updated_at: new Date().toISOString()
         });
 
-        // Parent who creates family becomes admin with linked person
+        // Parent who creates family becomes admin
         await User.updateMyUserData({
           family_id: family.id,
           family_role: role,
-          role: 'admin',
-          linked_person_id: parentPerson.id
+          role: 'admin'
         });
 
         toast.success(`Welcome! You're set up as a ${role}.`);

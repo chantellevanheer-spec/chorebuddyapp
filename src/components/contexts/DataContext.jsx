@@ -75,15 +75,7 @@ export const DataProvider = ({ children }) => {
     
     initializeFamilyRef.current = (async () => {
       try {
-        // Auto-generate a linking code for the new family
-        const codeChars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-        let linkingCode = '';
-        for (let i = 0; i < 6; i++) {
-          linkingCode += codeChars.charAt(Math.floor(Math.random() * codeChars.length));
-        }
-        const codeExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-
-        // Create family with linking code ready for sharing
+        // Create family (linking code generated via backend familyLinking function)
         const newFamily = await Family.create({
           name: `${userData.full_name || 'My'}'s Family`,
           owner_user_id: userData.id,
@@ -91,15 +83,13 @@ export const DataProvider = ({ children }) => {
           member_count: 1,
           subscription_tier: userData.subscription_tier || 'free',
           subscription_status: 'active',
-          linking_code: linkingCode,
-          linking_code_expires: codeExpiry,
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
           currency: 'USD',
           is_active: true,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         });
-        
+
         console.log("[DataContext] Family created:", newFamily.id);
 
         // Auto-create a Person record for the parent so they appear
@@ -107,7 +97,6 @@ export const DataProvider = ({ children }) => {
         const parentPerson = await Person.create({
           name: userData.full_name || 'Parent',
           family_id: newFamily.id,
-          linked_user_id: userData.id,
           role: 'parent',
           is_active: true,
           points_balance: 0,
@@ -121,11 +110,10 @@ export const DataProvider = ({ children }) => {
 
         console.log("[DataContext] Parent person created:", parentPerson.id);
 
-        // Update user with family_id and linked person
+        // Update user with family_id
         await User.updateMyUserData({
           family_id: newFamily.id,
-          family_role: 'parent',
-          linked_person_id: parentPerson.id
+          family_role: 'parent'
         });
 
         console.log("[DataContext] User linked to family:", newFamily.id);
