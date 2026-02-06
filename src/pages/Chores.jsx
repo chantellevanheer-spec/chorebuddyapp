@@ -194,7 +194,7 @@ export default function Chores() {
       setBulkAssignModalOpen(false);
       await fetchData();
     } catch (error) {
-      console.error("Error bulk assigning chores:", error);
+      console.error("[Chores] Error bulk assigning chores:", error);
       toast.error("Failed to assign chores. Please try again.");
     } finally {
       setIsAssigning(false);
