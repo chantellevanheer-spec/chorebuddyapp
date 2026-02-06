@@ -24,7 +24,7 @@ const navigationItems = [
 },
 {
   title: "Family",
-  url: createPageUrl("People"),
+  url: createPageUrl("Person"),
   icon: Users,
   color: "bg-[#F7A1C4] text-pink-800",
   hover: "hover:bg-[#f590b8]",
