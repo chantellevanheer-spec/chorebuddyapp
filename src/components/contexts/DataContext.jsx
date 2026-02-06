@@ -75,7 +75,15 @@ export const DataProvider = ({ children }) => {
     
     initializeFamilyRef.current = (async () => {
       try {
-        // Create family
+        // Auto-generate a linking code for the new family
+        const codeChars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let linkingCode = '';
+        for (let i = 0; i < 6; i++) {
+          linkingCode += codeChars.charAt(Math.floor(Math.random() * codeChars.length));
+        }
+        const codeExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
+        // Create family with linking code ready for sharing
         const newFamily = await Family.create({
           name: `${userData.full_name || 'My'}'s Family`,
           owner_user_id: userData.id,
@@ -83,6 +91,8 @@ export const DataProvider = ({ children }) => {
           member_count: 1,
           subscription_tier: userData.subscription_tier || 'free',
           subscription_status: 'active',
+          linking_code: linkingCode,
+          linking_code_expires: codeExpiry,
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
           currency: 'USD',
           is_active: true,

@@ -49,14 +49,14 @@ export default function FamilyLinking() {
                     return;
                 }
 
-                // If user already has a family (and is not a parent), go to dashboard
-                if (userData.family_id && userData.family_role !== 'parent') {
+                // If user already has a family (and is not a parent/admin), go to dashboard
+                if (userData.family_id && userData.family_role !== 'parent' && userData.role !== 'admin') {
                     navigate(createPageUrl('Dashboard'));
                     return;
                 }
 
-                // For parents, fetch their family data
-                if (userData.family_role === 'parent' && userData.family_id) {
+                // For parents/admins, fetch their family data
+                if ((userData.family_role === 'parent' || userData.role === 'admin') && userData.family_id) {
                     const families = await Family.filter({ id: userData.family_id });
                     if (families.length > 0) {
                         const familyData = families[0];

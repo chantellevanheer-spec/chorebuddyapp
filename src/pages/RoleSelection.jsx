@@ -44,11 +44,28 @@ export default function RoleSelection() {
       
       // If parent, create a family, Person record, and set admin role
       if (role === 'parent') {
+        // Generate a linking code so the parent can immediately invite family members
+        const codeChars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let linkingCode = '';
+        for (let i = 0; i < 6; i++) {
+          linkingCode += codeChars.charAt(Math.floor(Math.random() * codeChars.length));
+        }
+        const codeExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
         const family = await Family.create({
           name: `${userData.full_name}'s Family`,
           owner_user_id: userData.id,
           members: [userData.id],
-          subscription_tier: 'free'
+          member_count: 1,
+          subscription_tier: 'free',
+          subscription_status: 'active',
+          linking_code: linkingCode,
+          linking_code_expires: codeExpiry,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+          currency: 'USD',
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         });
 
         // Auto-create a Person record for the parent so they are
