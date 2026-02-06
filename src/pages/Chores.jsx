@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, ClipboardList, Clock, Star, Edit, Trash2, UserPlus, CheckSquare, Sparkles } from "lucide-react";
+import { isParent } from '@/utils/roles';
 import { Assignment } from "@/entities/Assignment";
 import { CHORE_CATEGORY_COLORS, DIFFICULTY_STARS } from '@/components/lib/constants';
 import { toast } from "sonner";
@@ -319,7 +320,7 @@ export default function Chores() {
       </div>
 
       {/* Admin Tooltip */}
-      {user?.role === 'admin' && (
+      {isParent(user) && (
         <div className="funky-card p-4 bg-purple-50 border-2 border-purple-300">
           <p className="body-font text-sm text-purple-800">
             👑 <strong>Admin Mode:</strong> Hover over any chore to assign it, or use <strong>Bulk Assign</strong> to assign multiple chores at once.

@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Family } from '@/entities/Family';
 import { createPageUrl } from '@/utils';
 import { useNavigate } from 'react-router-dom';
+import { isParent as checkIsParent } from '@/utils/roles';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
@@ -35,7 +36,7 @@ export default function FamilyLinking() {
     const [joinSuccess, setJoinSuccess] = useState(false);
     const [joinedFamilyName, setJoinedFamilyName] = useState('');
 
-    const isParent = user?.family_role === 'parent';
+    const isParent = checkIsParent(user);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -50,13 +51,13 @@ export default function FamilyLinking() {
                 }
 
                 // If user already has a family (and is not a parent), go to dashboard
-                if (userData.family_id && userData.family_role !== 'parent') {
+                if (userData.family_id && !checkIsParent(userData)) {
                     navigate(createPageUrl('Dashboard'));
                     return;
                 }
 
                 // For parents, fetch their family data
-                if (userData.family_role === 'parent' && userData.family_id) {
+                if (checkIsParent(userData) && userData.family_id) {
                     const families = await Family.filter({ id: userData.family_id });
                     if (families.length > 0) {
                         const familyData = families[0];

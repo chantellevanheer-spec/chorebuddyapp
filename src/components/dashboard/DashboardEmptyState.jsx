@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { isParent as checkIsParent } from '@/utils/roles';
 import { Button } from "@/components/ui/button";
 import { ClipboardList, Users, Sparkles, AlertCircle } from "lucide-react";
 
@@ -9,7 +10,7 @@ export default function DashboardEmptyState({ currentWeekAssignments, people, ch
 
   const noPeople = !people || people.length === 0;
   const noChores = !chores || chores.length === 0;
-  const isAdmin = user?.role === 'admin' || user?.family_role === 'parent';
+  const isAdmin = checkIsParent(user);
 
   // Complete Empty State - No People AND No Chores
   if (noPeople && noChores) {

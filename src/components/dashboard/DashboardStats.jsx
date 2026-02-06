@@ -2,11 +2,12 @@ import React from "react";
 import PointsDisplay from "../gamification/PointsDisplay";
 import { calculateTotalPoints } from "../lib/pointsCalculator";
 import { useData } from "../contexts/DataContext";
+import { isChild as checkIsChild } from '@/utils/roles';
 
 export default function DashboardStats({ currentWeekAssignments, completedAssignments, pendingAssignments, people }) {
   const { rewards, user } = useData();
   const linkedPerson = people.find(p => p.linked_user_id === user?.id);
-  const isChild = user?.family_role === 'child' || user?.family_role === 'teen';
+  const isChild = checkIsChild(user);
   const totalPoints = linkedPerson ? calculateTotalPoints(rewards, linkedPerson.id) : 0;
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">

@@ -3,6 +3,7 @@ import { useData } from '../components/contexts/DataContext';
 import { useChoreManagement } from '../components/hooks/useChoreManagement';
 import { Calendar, CheckCircle, ArrowLeft, ArrowRight, Loader2, UserX, LayoutGrid, CalendarDays } from "lucide-react";
 import { format, startOfWeek, addWeeks, subWeeks } from "date-fns";
+import { isParent as checkIsParent, isChild as checkIsChild } from '@/utils/roles';
 import { Button } from "@/components/ui/button";
 import { AnimatePresence } from 'framer-motion';
 import ScheduleChoreItem from '../components/schedule/ScheduleChoreItem';
@@ -23,8 +24,8 @@ export default function Schedule() {
   const [viewMode, setViewMode] = useState('week'); // 'week' or 'calendar'
   const [selectedDate, setSelectedDate] = useState(null);
 
-  const isParent = user?.family_role === 'parent';
-  const isChild = user?.family_role === 'child' || user?.family_role === 'teen';
+  const isParent = checkIsParent(user);
+  const isChild = checkIsChild(user);
 
   const weekAssignments = useMemo(() => {
     const weekString = format(currentWeek, "yyyy-MM-dd");

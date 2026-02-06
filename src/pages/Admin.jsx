@@ -8,6 +8,7 @@ import { CheckCircle, XCircle, Clock, MessageSquare, Calendar, Star } from "luci
 import { format } from "date-fns";
 import { toast } from "sonner";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
+import { isParent } from '@/utils/roles';
 
 export default function Admin() {
   const { assignments, chores, people, user, loading, updateAssignment, addReward } = useData();
