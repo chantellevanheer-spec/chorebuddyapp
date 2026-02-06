@@ -23,11 +23,12 @@ import { createPageUrl } from '@/utils';
 import EnhancedAssignmentModal from "../components/chores/EnhancedAssignmentModal";
 import BulkAssignmentModal from "../components/chores/BulkAssignmentModal";
 import AISuggestionsModal from "../components/ai/AISuggestionsModal";
+import { isParent as checkParent } from '@/utils/roles';
 
 export default function Chores() {
   const { chores, people, user, loading, isProcessing, addChore, updateChore, deleteChore, fetchData } = useData();
   const { hasReachedLimit, canAccess, getTierDisplayName, getRequiredTier, features } = useSubscriptionAccess();
-  const isParent = user?.family_role === 'parent' || user?.role === 'admin';
+  const isParent = checkParent(user);
   const [showForm, setShowForm] = useState(false);
   const [choreToEdit, setChoreToEdit] = useState(null);
   const [choreToDelete, setChoreToDelete] = useState(null);

@@ -11,6 +11,7 @@ import { ThemeProvider } from './components/contexts/ThemeContext';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import OnboardingTour from './components/onboarding/OnboardingTour';
 import UserAvatar from './components/profile/UserAvatar';
+import { isParent as checkParent } from '@/utils/roles';
 
 const navigationItems = [
 {
@@ -293,7 +294,7 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
                   </Link>
                 );
               })}
-              {(currentUser?.family_role === 'parent' || currentUser?.role === 'admin') && adminNavigationItems.map((item) => {
+              {checkParent(currentUser) && adminNavigationItems.map((item) => {
                 const isActive = location.pathname === item.url;
                 return (
                   <Link
@@ -424,7 +425,7 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
               </Link>
             );
           })}
-          {(currentUser?.family_role === 'parent' || currentUser?.role === 'admin') && adminNavigationItems.map((item) => {
+          {checkParent(currentUser) && adminNavigationItems.map((item) => {
             const isActive = location.pathname === item.url;
             return (
               <Link

@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { familyLinking } from '@/functions/familyLinking';
+import { isParent as checkParent } from '@/utils/roles';
 
 export default function FamilyLinking() {
     const navigate = useNavigate();
@@ -35,7 +36,7 @@ export default function FamilyLinking() {
     const [joinSuccess, setJoinSuccess] = useState(false);
     const [joinedFamilyName, setJoinedFamilyName] = useState('');
 
-    const isParent = user?.family_role === 'parent' || user?.role === 'admin';
+    const isParent = checkParent(user);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -50,13 +51,13 @@ export default function FamilyLinking() {
                 }
 
                 // If user already has a family (and is not a parent/admin), go to dashboard
-                if (userData.family_id && userData.family_role !== 'parent' && userData.role !== 'admin') {
+                if (userData.family_id && !checkParent(userData)) {
                     navigate(createPageUrl('Dashboard'));
                     return;
                 }
 
                 // For parents/admins, fetch their family data
-                if ((userData.family_role === 'parent' || userData.role === 'admin') && userData.family_id) {
+                if (checkParent(userData) && userData.family_id) {
                     const families = await Family.filter({ id: userData.family_id });
                     if (families.length > 0) {
                         const familyData = families[0];

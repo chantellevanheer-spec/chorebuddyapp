@@ -9,6 +9,7 @@ import ChoreTradeCard from '../components/trades/ChoreTradeCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { isParent as checkParent } from '@/utils/roles';
 
 export default function ChoreTrades() {
   const { assignments, chores, people, user, loading } = useData();
@@ -19,7 +20,7 @@ export default function ChoreTrades() {
   const [selectedToAssignment, setSelectedToAssignment] = useState('');
   const [message, setMessage] = useState('');
 
-  const isParent = user?.family_role === 'parent' || user?.role === 'admin';
+  const isParent = checkParent(user);
   const linkedPersonId = user?.linked_person_id;
 
   const { data: trades = [], isLoading: tradesLoading } = useQuery({

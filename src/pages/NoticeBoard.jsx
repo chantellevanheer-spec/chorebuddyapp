@@ -8,6 +8,7 @@ import { Megaphone, Plus, Pin, Loader2, Trash2, AlertCircle } from 'lucide-react
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
+import { isParent as checkParent } from '@/utils/roles';
 
 export default function NoticeBoard() {
   const [notices, setNotices] = useState([]);
@@ -143,7 +144,7 @@ export default function NoticeBoard() {
               <p className="body-font-light text-gray-600 mt-2">Important family announcements</p>
             </div>
           </div>
-          {(currentUser?.family_role === 'parent' || currentUser?.role === 'admin') && (
+          {checkParent(currentUser) && (
             <Button
               onClick={() => setModalOpen(true)}
               className="funky-button bg-[#FF6B35] text-white w-full md:w-auto"
@@ -187,7 +188,7 @@ export default function NoticeBoard() {
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  {(currentUser?.family_role === 'parent' || currentUser?.role === 'admin') && (
+                  {checkParent(currentUser) && (
                     <>
                       <Button
                         variant="ghost"

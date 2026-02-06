@@ -3,11 +3,12 @@ import { useData } from '../components/contexts/DataContext';
 import { BookOpen, Loader2 } from 'lucide-react';
 import TemplateLibrary from '../components/templates/TemplateLibrary';
 import { toast } from 'sonner';
+import { isParent as checkParent } from '@/utils/roles';
 
 export default function Templates() {
   const { loading, addChore, user } = useData();
 
-  const isParent = user?.family_role === 'parent' || user?.role === 'admin';
+  const isParent = checkParent(user);
 
   const handleApplyTemplate = async (chores) => {
     if (!user?.family_id) {

@@ -11,11 +11,12 @@ import GoalFormModal from "../components/goals/GoalFormModal";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import { useSubscriptionAccess } from '../components/hooks/useSubscriptionAccess';
 import FeatureGate from "../components/ui/FeatureGate";
+import { isParent as checkParent } from '@/utils/roles';
 
 export default function Goals() {
   const { people, rewards, user, loading } = useData();
   const { canAccess } = useSubscriptionAccess();
-  const isParent = user?.family_role === 'parent' || user?.role === 'admin';
+  const isParent = checkParent(user);
   const [goals, setGoals] = useState([]);
   const [goalLoading, setGoalLoading] = useState(false);
   const [isFormModalOpen, setFormModalOpen] = useState(false);

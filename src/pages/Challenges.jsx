@@ -7,6 +7,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import ChallengeCard from '../components/challenges/ChallengeCard';
 import ChallengeFormModal from '../components/challenges/ChallengeFormModal';
+import { isParent as checkParent } from '@/utils/roles';
 
 export default function Challenges() {
   const { people, user, loading: dataLoading } = useData();
@@ -52,7 +53,7 @@ export default function Challenges() {
     );
   }
 
-  const isAdmin = user?.family_role === 'parent' || user?.role === 'admin';
+  const isAdmin = checkParent(user);
   if (!isAdmin) {
     return (
       <div className="mx-4 md:mx-8 lg:mx-24 pb-32 space-y-6 lg:pb-8">

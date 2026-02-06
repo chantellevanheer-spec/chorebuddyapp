@@ -3,13 +3,14 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { ClipboardList, Users, Sparkles, AlertCircle } from "lucide-react";
+import { isParent as checkParent } from '@/utils/roles';
 
 export default function DashboardEmptyState({ currentWeekAssignments, people, chores, user }) {
   if (currentWeekAssignments?.length > 0) return null;
 
   const noPeople = !people || people.length === 0;
   const noChores = !chores || chores.length === 0;
-  const isAdmin = user?.role === 'admin' || user?.family_role === 'parent';
+  const isAdmin = checkParent(user);
 
   // Complete Empty State - No People AND No Chores
   if (noPeople && noChores) {

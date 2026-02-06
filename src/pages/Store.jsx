@@ -11,11 +11,12 @@ import ConfirmDialog from "../components/ui/ConfirmDialog";
 import RedeemConfirmationModal from "../components/store/RedeemConfirmationModal"; // Import new modal
 import { format, startOfWeek } from "date-fns";
 import AISuggestionsModal from "../components/ai/AISuggestionsModal";
+import { isParent as checkParent } from '@/utils/roles';
 
 export default function Store() {
   const { items, rewards, people, user, loading, isProcessing, addItem, updateItem, deleteItem, addReward } = useData();
   const { hasReachedLimit, getTierDisplayName, getRequiredTier, features } = useSubscriptionAccess();
-  const isParent = user?.family_role === 'parent' || user?.role === 'admin';
+  const isParent = checkParent(user);
 
   // State for modals
   const [isFormModalOpen, setFormModalOpen] = useState(false);

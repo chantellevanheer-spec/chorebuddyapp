@@ -8,6 +8,7 @@ import { CheckCircle, XCircle, Clock, MessageSquare, Calendar, Star } from "luci
 import { format } from "date-fns";
 import { toast } from "sonner";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
+import { isParent as checkParent } from '@/utils/roles';
 
 export default function Admin() {
   const { assignments, chores, people, user, loading, updateAssignment, addReward } = useData();
@@ -76,7 +77,7 @@ export default function Admin() {
     return <LoadingSpinner size="large" message="Loading admin panel..." />;
   }
 
-  const isAdmin = user?.family_role === 'parent' || user?.role === 'admin';
+  const isAdmin = checkParent(user);
   if (!isAdmin) {
     return (
       <div className="mx-4 md:mx-8 lg:mx-24 pb-40 space-y-6 md:space-y-8 lg:pb-8">

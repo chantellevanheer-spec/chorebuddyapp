@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { AVATAR_COLORS, DIFFICULTY_STARS } from '../components/lib/constants';
 import { showNotification } from '../components/notifications/NotificationManager';
+import { isParent as checkParent } from '@/utils/roles';
 
 export default function ApprovalQueue() {
   const { assignments, chores, people, user, loading, updateAssignment, addReward } = useData();
@@ -86,7 +87,7 @@ export default function ApprovalQueue() {
     );
   }
 
-  const isAdmin = user?.family_role === 'parent' || user?.role === 'admin';
+  const isAdmin = checkParent(user);
   if (!isAdmin) {
     return (
       <div className="mx-4 md:mx-8 lg:mx-24 pb-32 lg:pb-8">
