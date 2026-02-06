@@ -9,18 +9,18 @@
  * 
  * Example file structure:
  * 
- *   import HomePage from './pages/HomePage';
+ *   import Home from './pages/Home';
  *   import Dashboard from './pages/Dashboard';
  *   import Settings from './pages/Settings';
  *   
  *   export const PAGES = {
- *       "HomePage": HomePage,
+ *       "Home": Home,
  *       "Dashboard": Dashboard,
  *       "Settings": Settings,
  *   }
  *   
  *   export const pagesConfig = {
- *       mainPage: "HomePage",
+ *       mainPage: "Home",
  *       Pages: PAGES,
  *   };
  * 
@@ -42,7 +42,7 @@
  *   };
  *
  * To change the main page from HomePage to Dashboard, use find_replace:
- *   Old: mainPage: "HomePage",
+ *   Old: mainPage: "Home",
  *   New: mainPage: "Home",
  *
  * The mainPage value must match a key in the PAGES object exactly.
