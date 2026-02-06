@@ -3,9 +3,8 @@ import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSa
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, CheckCircle, Clock, Star } from 'lucide-react';
 import { AVATAR_COLORS, DIFFICULTY_STARS, CHORE_CATEGORY_COLORS } from '@/components/lib/constants';
-import { isParent as checkIsParent, isChild as checkIsChild } from '@/utils/roles';
-import { motion, AnimatePresence } from 'framer-motion';
 import { isParent as checkParent, isChild as checkChild } from '@/utils/roles';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function CalendarView({ 
   assignments, 

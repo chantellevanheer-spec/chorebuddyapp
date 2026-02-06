@@ -3,7 +3,6 @@ import { Person } from '@/entities/Person';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { isParent, isChild } from '@/utils/roles';
 import { createPageUrl } from '@/utils';
 import { Link, useNavigate } from 'react-router-dom';
 import { Loader2, User as UserIcon, Bell, Users, Settings, Shield, CreditCard, AlertCircle, Link2, Sparkles, Palette, Crown } from 'lucide-react';
