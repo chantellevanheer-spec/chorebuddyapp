@@ -43,7 +43,7 @@
  *
  * To change the main page from HomePage to Dashboard, use find_replace:
  *   Old: mainPage: "HomePage",
- *   New: mainPage: "Dashboard",
+ *   New: mainPage: "Home",
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
