@@ -197,7 +197,7 @@ export default function Chores() {
       setBulkAssignModalOpen(false);
       await fetchData();
     } catch (error) {
-      console.error("Error bulk assigning chores:", error);
+      console.error("[Chores] Error bulk assigning chores:", error);
       toast.error("Failed to assign chores. Please try again.");
     } finally {
       setIsAssigning(false);
@@ -543,7 +543,7 @@ export default function Chores() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {chores.map((chore) => (
             <div key={chore.id} className={`funky-card p-4 md:p-6 lg:p-8 border-4 relative group ${CHORE_CATEGORY_COLORS[chore.category] || CHORE_CATEGORY_COLORS.other}`}>
-              <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute top-4 right-4 flex gap-2 md:opacity-0 md:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                 <Button
                   size="icon"
                   variant="ghost"
