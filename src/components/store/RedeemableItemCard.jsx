@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Star, Gift, Edit, Trash2, Loader2 } from 'lucide-react';
 import { REWARD_ICONS } from '@/components/lib/constants';
 
-function RedeemableItemCard({ item, onRedeem, onEdit, onDelete, canAfford }) {
+function RedeemableItemCard({ item, onRedeem, onEdit, onDelete, canAfford, isParent }) {
   const [isRedeeming, setIsRedeeming] = useState(false);
   const isDisabled = !canAfford;
   
@@ -11,14 +11,16 @@ function RedeemableItemCard({ item, onRedeem, onEdit, onDelete, canAfford }) {
 
   return (
     <div className={`funky-card-hover funky-card p-6 border-4 relative group transition-all duration-300 ${isDisabled ? 'bg-gray-50 opacity-70' : 'bg-white'} border-yellow-400`}>
-      <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        <Button size="icon" variant="ghost" onClick={() => onEdit(item)} className="h-8 w-8 rounded-full hover:bg-black/10">
-          <Edit className="w-4 h-4 text-[#5E3B85]" />
-        </Button>
-        <Button size="icon" variant="ghost" onClick={() => onDelete(item)} className="h-8 w-8 rounded-full hover:bg-black/10">
-          <Trash2 className="w-4 h-4 text-red-500" />
-        </Button>
-      </div>
+      {isParent && (
+        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <Button size="icon" variant="ghost" onClick={() => onEdit(item)} className="h-8 w-8 rounded-full hover:bg-black/10">
+            <Edit className="w-4 h-4 text-[#5E3B85]" />
+          </Button>
+          <Button size="icon" variant="ghost" onClick={() => onDelete(item)} className="h-8 w-8 rounded-full hover:bg-black/10">
+            <Trash2 className="w-4 h-4 text-red-500" />
+          </Button>
+        </div>
+      )}
 
       <div className="flex flex-col h-full">
         <div className="flex-1">

@@ -143,13 +143,15 @@ export default function NoticeBoard() {
               <p className="body-font-light text-gray-600 mt-2">Important family announcements</p>
             </div>
           </div>
-          <Button
-            onClick={() => setModalOpen(true)}
-            className="funky-button bg-[#FF6B35] text-white w-full md:w-auto"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Post Notice
-          </Button>
+          {(currentUser?.family_role === 'parent' || currentUser?.role === 'admin') && (
+            <Button
+              onClick={() => setModalOpen(true)}
+              className="funky-button bg-[#FF6B35] text-white w-full md:w-auto"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Post Notice
+            </Button>
+          )}
         </div>
       </div>
 

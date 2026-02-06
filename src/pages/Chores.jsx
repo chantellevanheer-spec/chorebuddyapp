@@ -27,6 +27,7 @@ import AISuggestionsModal from "../components/ai/AISuggestionsModal";
 export default function Chores() {
   const { chores, people, user, loading, isProcessing, addChore, updateChore, deleteChore, fetchData } = useData();
   const { hasReachedLimit, canAccess, getTierDisplayName, getRequiredTier, features } = useSubscriptionAccess();
+  const isParent = user?.family_role === 'parent' || user?.role === 'admin';
   const [showForm, setShowForm] = useState(false);
   const [choreToEdit, setChoreToEdit] = useState(null);
   const [choreToDelete, setChoreToDelete] = useState(null);
@@ -292,34 +293,36 @@ export default function Chores() {
               <p className="body-font-light text-sm md:text-base text-gray-600 mt-1 md:mt-2">{chores.length} {chores.length === 1 ? 'chore' : 'chores'} in your library</p>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Button
-              onClick={handleShowAddForm}
-              className="funky-button bg-[#C3B1E1] text-white px-4 md:px-6 py-3 md:py-4 text-base md:text-lg lg:text-xl header-font"
-            >
-              <Plus className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
-              Add Chore
-            </Button>
-            <Button
-              onClick={handleShowBulkAssign}
-              className="funky-button bg-[#FF6B35] text-white px-4 md:px-6 py-3 md:py-4 text-base md:text-lg lg:text-xl header-font"
-            >
-              <CheckSquare className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
-              Bulk Assign
-            </Button>
-            <Button
-              onClick={() => setAISuggestionsOpen(true)}
-              className="funky-button bg-[#C3B1E1] text-white px-4 md:px-6 py-3 md:py-4 text-base md:text-lg lg:text-xl header-font"
-            >
-              <Sparkles className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
-              AI Suggestions
-            </Button>
-          </div>
+          {isParent && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <Button
+                onClick={handleShowAddForm}
+                className="funky-button bg-[#C3B1E1] text-white px-4 md:px-6 py-3 md:py-4 text-base md:text-lg lg:text-xl header-font"
+              >
+                <Plus className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
+                Add Chore
+              </Button>
+              <Button
+                onClick={handleShowBulkAssign}
+                className="funky-button bg-[#FF6B35] text-white px-4 md:px-6 py-3 md:py-4 text-base md:text-lg lg:text-xl header-font"
+              >
+                <CheckSquare className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
+                Bulk Assign
+              </Button>
+              <Button
+                onClick={() => setAISuggestionsOpen(true)}
+                className="funky-button bg-[#C3B1E1] text-white px-4 md:px-6 py-3 md:py-4 text-base md:text-lg lg:text-xl header-font"
+              >
+                <Sparkles className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
+                AI Suggestions
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Admin Tooltip */}
-      {user?.role === 'admin' && (
+      {isParent && (
         <div className="funky-card p-4 bg-purple-50 border-2 border-purple-300">
           <p className="body-font text-sm text-purple-800">
             👑 <strong>Admin Mode:</strong> Hover over any chore to assign it, or use <strong>Bulk Assign</strong> to assign multiple chores at once.
@@ -539,33 +542,35 @@ export default function Chores() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {chores.map((chore) => (
             <div key={chore.id} className={`funky-card p-4 md:p-6 lg:p-8 border-4 relative group ${CHORE_CATEGORY_COLORS[chore.category] || CHORE_CATEGORY_COLORS.other}`}>
-              <div className="absolute top-4 right-4 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => handleShowAssignModal(chore)}
-                  className="h-8 w-8 rounded-full hover:bg-green-100"
-                  title="Assign to someone"
-                >
-                  <UserPlus className="w-4 h-4 text-green-600" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => handleShowEditForm(chore)}
-                  className="h-8 w-8 rounded-full hover:bg-black/10"
-                >
-                  <Edit className="w-4 h-4 text-[#5E3B85]" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => setChoreToDelete(chore)}
-                  className="h-8 w-8 rounded-full hover:bg-black/10"
-                >
-                  <Trash2 className="w-4 h-4 text-red-500" />
-                </Button>
-              </div>
+              {isParent && (
+                <div className="absolute top-4 right-4 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => handleShowAssignModal(chore)}
+                    className="h-8 w-8 rounded-full hover:bg-green-100"
+                    title="Assign to someone"
+                  >
+                    <UserPlus className="w-4 h-4 text-green-600" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => handleShowEditForm(chore)}
+                    className="h-8 w-8 rounded-full hover:bg-black/10"
+                  >
+                    <Edit className="w-4 h-4 text-[#5E3B85]" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => setChoreToDelete(chore)}
+                    className="h-8 w-8 rounded-full hover:bg-black/10"
+                  >
+                    <Trash2 className="w-4 h-4 text-red-500" />
+                  </Button>
+                </div>
+              )}
 
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1 pr-16">
@@ -671,13 +676,15 @@ export default function Chores() {
           <p className="body-font-light text-gray-600 text-base md:text-lg mb-8 max-w-md mx-auto">
             Start by adding some chores that need to be done around the house
           </p>
-          <Button
-            onClick={handleShowAddForm}
-            className="funky-button bg-[#FF6B35] text-white px-6 py-3 header-font text-lg md:text-xl"
-          >
-            <Plus className="w-5 h-5 md:w-6 md:h-6 mr-3" />
-            Add Your First Chore
-          </Button>
+          {isParent && (
+            <Button
+              onClick={handleShowAddForm}
+              className="funky-button bg-[#FF6B35] text-white px-6 py-3 header-font text-lg md:text-xl"
+            >
+              <Plus className="w-5 h-5 md:w-6 md:h-6 mr-3" />
+              Add Your First Chore
+            </Button>
+          )}
         </div>
       )}
     </div>
