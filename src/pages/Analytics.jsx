@@ -2,6 +2,7 @@ import React from 'react';
 import { useData } from '../components/contexts/DataContext';
 import { TrendingUp, Loader2 } from 'lucide-react';
 import AnalyticsDashboard from '../components/analytics/AnalyticsDashboard';
+import { isParent } from '@/utils/roles';
 
 export default function Analytics() {
   const { loading, user } = useData();
@@ -14,7 +15,7 @@ export default function Analytics() {
     );
   }
 
-  if (user?.family_role !== 'parent') {
+  if (!isParent(user)) {
     return (
       <div className="mx-4 md:mx-8 lg:mx-24 pb-32 lg:pb-8">
         <div className="funky-card p-8 text-center">

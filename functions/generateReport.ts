@@ -1,10 +1,11 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { jsPDF } from 'npm:jspdf@2.5.1';
 import { format, subWeeks, parseISO } from 'npm:date-fns@3.6.0';
+import { isParent } from './lib/shared-utils.ts';
 
 Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
-    
+
     try {
         const user = await base44.auth.me();
 
@@ -13,7 +14,7 @@ Deno.serve(async (req) => {
         }
 
         // Only parents can generate reports
-        if (user.data?.family_role !== 'parent' && user.family_role !== 'parent') {
+        if (!isParent(user)) {
             return Response.json({ error: 'Forbidden: Only parents can generate reports' }, { status: 403 });
         }
 

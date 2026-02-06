@@ -3,6 +3,7 @@ import { format, isSameDay, addDays } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CheckCircle, Clock, Star, User, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { isParent as checkIsParent, isChild as checkIsChild } from '@/utils/roles';
 import { AVATAR_COLORS, DIFFICULTY_STARS } from '@/components/lib/constants';
 import { sanitizeHTML } from '@/components/lib/sanitization';
 
@@ -16,8 +17,8 @@ export default function DayDetailPanel({
   user
 }) {
   const [completingId, setCompletingId] = useState(null);
-  const isParent = user?.family_role === 'parent';
-  const isChild = user?.family_role === 'child' || user?.family_role === 'teen';
+  const isParent = checkIsParent(user);
+  const isChild = checkIsChild(user);
 
   const getAssignmentsForDate = (date) => {
     let filtered = assignments.filter(a => {

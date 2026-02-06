@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { startOfWeek, endOfWeek, format, addDays } from 'npm:date-fns';
+import { isParent } from './lib/shared-utils.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -11,7 +12,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (user?.role !== 'admin' && user?.data?.family_role !== 'parent' && user?.family_role !== 'parent') {
+    if (!isParent(user)) {
       return Response.json({ error: 'Forbidden: Only parents can send notifications' }, { status: 403 });
     }
 

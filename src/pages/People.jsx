@@ -3,6 +3,7 @@ import { useData } from '../components/contexts/DataContext';
 import { Button } from "@/components/ui/button";
 import { Plus, Users, Mail } from "lucide-react";
 import { toast } from "sonner";
+import { isParent as checkIsParent } from '@/utils/roles';
 import { ListSkeleton } from '../components/ui/SkeletonLoader';
 import ErrorBoundaryWithRetry from '../components/ui/ErrorBoundaryWithRetry';
 import PersonCard from "../components/people/PersonCard";
@@ -105,7 +106,7 @@ export default function People() {
   /**
    * Check if current user is a parent
    */
-  const isParent = useMemo(() => user?.family_role === 'parent', [user?.family_role]);
+  const isParent = useMemo(() => checkIsParent(user), [user?.family_role]);
 
   /**
    * Modal management helpers
