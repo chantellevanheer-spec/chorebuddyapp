@@ -80,8 +80,8 @@ export default function Account() {
           setFamily(familyData);
           setFamilyName(familyData?.name || '');
 
-          // Fetch family people
-          const familyPeople = await Person.list();
+          // Fetch family people (scoped to user's family)
+          const familyPeople = await Person.filter({ family_id: userData.family_id });
           setPeople(familyPeople);
 
           // Find linked person
@@ -189,8 +189,8 @@ export default function Account() {
         toast.success("Account linked successfully!");
         setLinkModalOpen(false);
         
-        // Refresh data
-        const familyPeople = await Person.list();
+        // Refresh data (scoped to user's family)
+        const familyPeople = await Person.filter({ family_id: user.family_id });
         setPeople(familyPeople);
         const linked = familyPeople.find(p => p.id === personId);
         setLinkedPerson(linked || null);

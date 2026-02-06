@@ -26,7 +26,7 @@ export default function ChoreTrades() {
     queryKey: ['trades', user?.family_id],
     queryFn: async () => {
       if (!user?.family_id) return [];
-      return await base44.entities.ChoreTrade.list('-created_date');
+      return await base44.entities.ChoreTrade.filter({ family_id: user.family_id }, '-created_date');
     },
     enabled: !!user?.family_id
   });

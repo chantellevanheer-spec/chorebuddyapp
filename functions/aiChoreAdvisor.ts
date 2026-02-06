@@ -376,13 +376,13 @@ Deno.serve(async (req) => {
             }, { status: 400 });
         }
 
-        // Fetch all necessary data in parallel
+        // Fetch all necessary data in parallel (scoped to user's family)
         const [people, chores, assignments, rewards, completions] = await Promise.all([
-            base44.entities.Person.list(),
-            base44.entities.Chore.list(),
-            base44.entities.Assignment.list(),
-            base44.entities.Reward.list(),
-            base44.entities.ChoreCompletion.list()
+            base44.entities.Person.filter({ family_id: familyId }),
+            base44.entities.Chore.filter({ family_id: familyId }),
+            base44.entities.Assignment.filter({ family_id: familyId }),
+            base44.entities.Reward.filter({ family_id: familyId }),
+            base44.entities.ChoreCompletion.filter({ family_id: familyId })
         ]);
 
         // Validate minimum data requirements

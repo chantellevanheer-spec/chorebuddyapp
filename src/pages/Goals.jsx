@@ -29,7 +29,9 @@ export default function Goals() {
   const fetchGoals = async () => {
     setGoalLoading(true);
     try {
-      const goalsData = await FamilyGoal.list("-created_date");
+      const goalsData = user?.family_id
+        ? await FamilyGoal.filter({ family_id: user.family_id }, "-created_date")
+        : [];
       setGoals(goalsData);
     } catch (error) {
       console.error("Error fetching goals:", error);

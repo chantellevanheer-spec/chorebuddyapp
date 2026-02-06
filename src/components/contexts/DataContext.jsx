@@ -246,25 +246,26 @@ export const DataProvider = ({ children }) => {
         setFamily(null);
       }
       
-      // 6. Fetch all entity data in parallel
+      // 6. Fetch all entity data in parallel (scoped to user's family)
+      const familyId = userData.family_id;
       const [
-        peopleData, 
-        choresData, 
-        assignmentsData, 
-        rewardsData, 
-        itemsData, 
-        goalsData, 
+        peopleData,
+        choresData,
+        assignmentsData,
+        rewardsData,
+        itemsData,
+        goalsData,
         completionsData,
         achievementsData
       ] = await Promise.all([
-        Person.list("name").catch(() => []),
-        Chore.list("title").catch(() => []),
-        Assignment.list("-created_date").catch(() => []),
-        Reward.list("-created_date").catch(() => []),
-        RedeemableItem.list("cost").catch(() => []),
-        FamilyGoal.list("-created_date").catch(() => []),
-        ChoreCompletion.list("-created_date").catch(() => []),
-        Achievement.list("-created_date").catch(() => [])
+        Person.filter({ family_id: familyId }, "name").catch(() => []),
+        Chore.filter({ family_id: familyId }, "title").catch(() => []),
+        Assignment.filter({ family_id: familyId }, "-created_date").catch(() => []),
+        Reward.filter({ family_id: familyId }, "-created_date").catch(() => []),
+        RedeemableItem.filter({ family_id: familyId }, "cost").catch(() => []),
+        FamilyGoal.filter({ family_id: familyId }, "-created_date").catch(() => []),
+        ChoreCompletion.filter({ family_id: familyId }, "-created_date").catch(() => []),
+        Achievement.filter({ family_id: familyId }, "-created_date").catch(() => [])
       ]);
 
       console.log("[DataContext] Data fetched:", {

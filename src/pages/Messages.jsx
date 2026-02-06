@@ -31,15 +31,20 @@ export default function Messages() {
 
   const fetchData = async () => {
     try {
-      const [messagesData, userData, usersData] = await Promise.all([
-        base44.entities.Message.list('-created_date', 100),
-        base44.auth.me(),
-        base44.entities.User.list()
-      ]);
-      
-      setMessages(messagesData);
+      const userData = await base44.auth.me();
       setCurrentUser(userData);
-      setUsers(usersData.filter(u => u.family_id === userData.family_id && u.id !== userData.id));
+
+      const [messagesData, usersData] = await Promise.all([
+        userData.family_id
+          ? base44.entities.Message.filter({ family_id: userData.family_id }, '-created_date')
+          : [],
+        userData.family_id
+          ? base44.entities.User.filter({ family_id: userData.family_id })
+          : []
+      ]);
+
+      setMessages(messagesData);
+      setUsers(usersData.filter(u => u.id !== userData.id));
     } catch (error) {
       toast.error('Failed to load messages');
     } finally {

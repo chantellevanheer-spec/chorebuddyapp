@@ -29,7 +29,8 @@ Deno.serve(async (req) => {
             }, { status: 401 });
         }
         
-        // Fetch all users and their notification preferences
+        // Fetch all users for batch notification processing (service role, API key authenticated)
+        // Each user's family data is fetched with family_id filter below
         const users = await base44.asServiceRole.entities.User.list();
         const currentDate = new Date();
         const currentWeekStart = format(startOfWeek(currentDate), "yyyy-MM-dd");

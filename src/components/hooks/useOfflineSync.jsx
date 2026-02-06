@@ -44,10 +44,26 @@ export const useOfflineSync = (user, fetchData) => {
       let successCount = 0;
       let failCount = 0;
 
+      const userFamilyId = user.family_id;
+
       for (const operation of queue) {
         try {
+          // Validate family_id on all operations to prevent cross-family data writes
+          if (operation.data?.family_id && operation.data.family_id !== userFamilyId) {
+            console.warn(`[Sync] Skipping operation ${operation.id}: family_id mismatch`);
+            await offlineStorage.removeFromSyncQueue(operation.id);
+            continue;
+          }
+
           switch (operation.type) {
-            case 'update_assignment':
+            case 'update_assignment': {
+              // Verify the assignment belongs to this user's family before updating
+              const assignment = await base44.asServiceRole.entities.Assignment.get(operation.data.id);
+              if (assignment.family_id !== userFamilyId) {
+                console.warn(`[Sync] Skipping assignment update: family_id mismatch`);
+                await offlineStorage.removeFromSyncQueue(operation.id);
+                break;
+              }
               await base44.asServiceRole.entities.Assignment.update(
                 operation.data.id,
                 operation.data.updates
@@ -55,15 +71,22 @@ export const useOfflineSync = (user, fetchData) => {
               await offlineStorage.removeFromSyncQueue(operation.id);
               successCount++;
               break;
+            }
 
             case 'create_reward':
-              await base44.asServiceRole.entities.Reward.create(operation.data);
+              await base44.asServiceRole.entities.Reward.create({
+                ...operation.data,
+                family_id: userFamilyId
+              });
               await offlineStorage.removeFromSyncQueue(operation.id);
               successCount++;
               break;
 
             case 'create_completion':
-              await base44.asServiceRole.entities.ChoreCompletion.create(operation.data);
+              await base44.asServiceRole.entities.ChoreCompletion.create({
+                ...operation.data,
+                family_id: userFamilyId
+              });
               await offlineStorage.removeFromSyncQueue(operation.id);
               successCount++;
               break;

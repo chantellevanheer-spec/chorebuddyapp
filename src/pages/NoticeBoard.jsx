@@ -39,13 +39,14 @@ export default function NoticeBoard() {
 
   const fetchData = async () => {
     try {
-      const [noticesData, userData] = await Promise.all([
-        base44.entities.Notice.list('-created_date', 50),
-        base44.auth.me()
-      ]);
-      
-      setNotices(noticesData);
+      const userData = await base44.auth.me();
       setCurrentUser(userData);
+
+      const noticesData = userData.family_id
+        ? await base44.entities.Notice.filter({ family_id: userData.family_id }, '-created_date')
+        : [];
+
+      setNotices(noticesData);
     } catch (error) {
       toast.error('Failed to load notices');
     } finally {
