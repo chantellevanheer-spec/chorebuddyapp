@@ -38,7 +38,7 @@ const faqs = [
 
 export default function Help() {
   return (
-    <div className="mx-32 pb-32 space-y-8 lg:pb-8">
+    <div className="mx-4 md:mx-8 lg:mx-24 pb-32 space-y-8 lg:pb-8">
       {/* Header */}
       <div className="funky-card p-6 md:p-8">
         <div className="flex items-center gap-4 md:gap-6">
@@ -47,7 +47,7 @@ export default function Help() {
           </div>
           <div>
             <h1 className="header-font text-4xl md:text-5xl text-[#2B59C3]">Help & Support</h1>
-            <p className="body-font-light text-gray-600 mt-2">Find answers and get help with Chore Pals.</p>
+            <p className="body-font-light text-gray-600 mt-2">Find answers and get help with ChoreBuddy.</p>
           </div>
         </div>
       </div>
@@ -95,7 +95,7 @@ export default function Help() {
         <p className="body-font-light text-gray-700 mb-6">
           If you couldn't find the answer you were looking for, please don't hesitate to reach out to our friendly support team.
         </p>
-        <a href="mailto:support@chorepals.app">
+        <a href="mailto:support@chorebuddyapp.com">
             <Button className="funky-button bg-[#FF6B35] text-white header-font text-xl px-8 py-6">
                 Contact Support
             </Button>

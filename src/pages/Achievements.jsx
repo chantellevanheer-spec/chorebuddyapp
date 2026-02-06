@@ -37,7 +37,7 @@ export default function Achievements() {
       total: totalBadges,
       earned: earnedBadges,
       remaining: totalBadges - earnedBadges,
-      percentage: Math.round((earnedBadges / totalBadges) * 100)
+      percentage: totalBadges > 0 ? Math.round((earnedBadges / totalBadges) * 100) : 0
     };
   }, [achievements]);
 
@@ -87,6 +87,12 @@ export default function Achievements() {
       </div>
 
       {/* Family Members' Achievements */}
+      {people.length === 0 && (
+        <div className="funky-card p-8 text-center">
+          <Trophy className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+          <p className="body-font text-gray-500">Add family members to start tracking achievements</p>
+        </div>
+      )}
       {people.map(person => {
         const personAchievements = achievementsByPerson[person.id] || [];
         const earnedBadgeTypes = new Set(personAchievements.map(a => a.badge_type));

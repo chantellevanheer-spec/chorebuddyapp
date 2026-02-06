@@ -92,7 +92,9 @@ export default function EnhancedAssignmentModal({
           default:
             date = addWeeks(baseDate, i);
         }
-        dates.push(format(startOfWeek(date), 'yyyy-MM-dd'));
+        // Only snap to week start for weekly/monthly patterns, not daily
+        const finalDate = recurrencePattern === 'daily' ? date : startOfWeek(date);
+        dates.push(format(finalDate, 'yyyy-MM-dd'));
       }
       return dates;
     };
@@ -156,28 +158,18 @@ export default function EnhancedAssignmentModal({
       return;
     }
     
-    console.log("[EnhancedAssignmentModal] handleSubmit called");
-    console.log("[EnhancedAssignmentModal] chore:", chore);
-    console.log("[EnhancedAssignmentModal] familyId prop:", familyId);
-    console.log("[EnhancedAssignmentModal] assignmentsPreview:", assignmentsPreview);
-    
-    const assignments = assignmentsPreview.map(preview => {
-      const assignment = {
-        person_id: preview.person_id,
-        chore_id: chore.id,
-        family_id: chore.family_id || familyId,
-        week_start: preview.week_start,
-        due_date: dueDate,
-        completed: false,
-        is_shared: preview.is_shared || false,
-        shared_with: preview.shared_with || null,
-        is_rotation: preview.is_rotation || false
-      };
-      console.log("[EnhancedAssignmentModal] Created assignment object:", assignment);
-      return assignment;
-    });
+    const assignments = assignmentsPreview.map(preview => ({
+      person_id: preview.person_id,
+      chore_id: chore.id,
+      family_id: chore.family_id || familyId,
+      week_start: preview.week_start,
+      due_date: dueDate,
+      completed: false,
+      is_shared: preview.is_shared || false,
+      shared_with: preview.shared_with || null,
+      is_rotation: preview.is_rotation || false
+    }));
 
-    console.log("[EnhancedAssignmentModal] Calling onAssign with:", assignments);
     onAssign(assignments);
 
     // Reset form

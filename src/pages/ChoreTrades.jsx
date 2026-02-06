@@ -61,7 +61,7 @@ export default function ChoreTrades() {
       from_person_id: linkedPersonId,
       to_person_id: selectedToPerson,
       from_assignment_id: selectedFromAssignment,
-      to_assignment_id: selectedToAssignment || null,
+      to_assignment_id: selectedToAssignment && selectedToAssignment !== 'none' ? selectedToAssignment : null,
       message: message,
       family_id: user.family_id
     });
@@ -70,19 +70,27 @@ export default function ChoreTrades() {
   };
 
   const handleAccept = async (tradeId) => {
-    await updateTradeMutation.mutateAsync({
-      id: tradeId,
-      data: { status: 'accepted' }
-    });
-    toast.success('Trade accepted! Awaiting parent approval.');
+    try {
+      await updateTradeMutation.mutateAsync({
+        id: tradeId,
+        data: { status: 'accepted' }
+      });
+      toast.success('Trade accepted! Awaiting parent approval.');
+    } catch (error) {
+      toast.error('Failed to accept trade. Please try again.');
+    }
   };
 
   const handleReject = async (tradeId) => {
-    await updateTradeMutation.mutateAsync({
-      id: tradeId,
-      data: { status: 'rejected' }
-    });
-    toast.info('Trade declined.');
+    try {
+      await updateTradeMutation.mutateAsync({
+        id: tradeId,
+        data: { status: 'rejected' }
+      });
+      toast.info('Trade declined.');
+    } catch (error) {
+      toast.error('Failed to decline trade. Please try again.');
+    }
   };
 
   const handleParentApprove = async (tradeId) => {
@@ -125,16 +133,26 @@ export default function ChoreTrades() {
     );
   }
 
-  const myAssignments = assignments.filter(a => 
+  const myAssignments = assignments.filter(a =>
     a.person_id === linkedPersonId && !a.completed
   );
 
-  const activeTrades = trades.filter(t => 
+  const activeTrades = trades.filter(t =>
     t.status === 'pending' || t.status === 'accepted'
   );
-  const completedTrades = trades.filter(t => 
+  const completedTrades = trades.filter(t =>
     t.status === 'parent_approved' || t.status === 'parent_rejected' || t.status === 'rejected'
   );
+
+  // Build lookup maps to avoid O(n^2) in render
+  const peopleMap = Object.fromEntries(people.map(p => [p.id, p]));
+  const assignmentMap = Object.fromEntries(assignments.map(a => [a.id, a]));
+  const choreMap = Object.fromEntries(chores.map(c => [c.id, c]));
+
+  const getChoreForAssignment = (assignmentId) => {
+    const assignment = assignmentMap[assignmentId];
+    return assignment ? choreMap[assignment.chore_id] : undefined;
+  };
 
   return (
     <div className="mx-4 md:mx-8 lg:mx-24 pb-32 space-y-8 lg:pb-8">
@@ -216,7 +234,7 @@ export default function ChoreTrades() {
                     <SelectValue placeholder="None (asking a favor)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={null}>None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     {assignments
                       .filter(a => a.person_id === selectedToPerson && !a.completed)
                       .map(a => {
@@ -277,10 +295,10 @@ export default function ChoreTrades() {
               <ChoreTradeCard
                 key={trade.id}
                 trade={trade}
-                fromPerson={people.find(p => p.id === trade.from_person_id)}
-                toPerson={people.find(p => p.id === trade.to_person_id)}
-                fromChore={chores.find(c => assignments.find(a => a.id === trade.from_assignment_id)?.chore_id === c.id)}
-                toChore={chores.find(c => assignments.find(a => a.id === trade.to_assignment_id)?.chore_id === c.id)}
+                fromPerson={peopleMap[trade.from_person_id]}
+                toPerson={peopleMap[trade.to_person_id]}
+                fromChore={getChoreForAssignment(trade.from_assignment_id)}
+                toChore={getChoreForAssignment(trade.to_assignment_id)}
                 onAccept={handleAccept}
                 onReject={handleReject}
                 onParentApprove={handleParentApprove}
@@ -298,18 +316,25 @@ export default function ChoreTrades() {
         </TabsContent>
 
         <TabsContent value="history" className="mt-6 space-y-4">
-          {completedTrades.map(trade => (
-            <ChoreTradeCard
-              key={trade.id}
-              trade={trade}
-              fromPerson={people.find(p => p.id === trade.from_person_id)}
-              toPerson={people.find(p => p.id === trade.to_person_id)}
-              fromChore={chores.find(c => assignments.find(a => a.id === trade.from_assignment_id)?.chore_id === c.id)}
-              toChore={chores.find(c => assignments.find(a => a.id === trade.to_assignment_id)?.chore_id === c.id)}
-              isParent={isParent}
-              currentPersonId={linkedPersonId}
-            />
-          ))}
+          {completedTrades.length > 0 ? (
+            completedTrades.map(trade => (
+              <ChoreTradeCard
+                key={trade.id}
+                trade={trade}
+                fromPerson={peopleMap[trade.from_person_id]}
+                toPerson={peopleMap[trade.to_person_id]}
+                fromChore={getChoreForAssignment(trade.from_assignment_id)}
+                toChore={getChoreForAssignment(trade.to_assignment_id)}
+                isParent={isParent}
+                currentPersonId={linkedPersonId}
+              />
+            ))
+          ) : (
+            <div className="funky-card p-8 text-center">
+              <ArrowRightLeft className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+              <p className="body-font text-gray-500">No trade history yet</p>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>
