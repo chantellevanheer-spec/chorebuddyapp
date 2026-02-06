@@ -9,6 +9,7 @@ import { Megaphone, Plus, Pin, Loader2, Trash2, AlertCircle } from 'lucide-react
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
+import { isParent as checkParent } from '@/utils/roles';
 
 export default function NoticeBoard() {
   const [notices, setNotices] = useState([]);
@@ -40,13 +41,14 @@ export default function NoticeBoard() {
 
   const fetchData = async () => {
     try {
-      const [noticesData, userData] = await Promise.all([
-        base44.entities.Notice.list('-created_date', 50),
-        base44.auth.me()
-      ]);
-      
-      setNotices(noticesData);
+      const userData = await base44.auth.me();
       setCurrentUser(userData);
+
+      const noticesData = userData.family_id
+        ? await base44.entities.Notice.filter({ family_id: userData.family_id }, '-created_date')
+        : [];
+
+      setNotices(noticesData);
     } catch (error) {
       toast.error('Failed to load notices');
     } finally {
@@ -143,13 +145,15 @@ export default function NoticeBoard() {
               <p className="body-font-light text-gray-600 mt-2">Important family announcements</p>
             </div>
           </div>
-          <Button
-            onClick={() => setModalOpen(true)}
-            className="funky-button bg-[#FF6B35] text-white w-full md:w-auto"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Post Notice
-          </Button>
+          {checkParent(currentUser) && (
+            <Button
+              onClick={() => setModalOpen(true)}
+              className="funky-button bg-[#FF6B35] text-white w-full md:w-auto"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Post Notice
+            </Button>
+          )}
         </div>
       </div>
 
@@ -185,7 +189,7 @@ export default function NoticeBoard() {
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  {isParent(currentUser) && (
+                  {checkParent(currentUser) && (
                     <>
                       <Button
                         variant="ghost"

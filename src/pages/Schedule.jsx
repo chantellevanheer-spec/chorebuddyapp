@@ -13,6 +13,7 @@ import Confetti from '../components/ui/Confetti';
 import { AVATAR_COLORS } from '@/components/lib/constants';
 import { toast } from "sonner";
 import ReassignModal from '../components/chores/ReassignModal';
+import { isParent as checkParent, isChild as checkChild } from '@/utils/roles';
 
 export default function Schedule() {
   const { assignments, chores, people, user, loading, updateAssignment, fetchData } = useData();
@@ -24,8 +25,8 @@ export default function Schedule() {
   const [viewMode, setViewMode] = useState('week'); // 'week' or 'calendar'
   const [selectedDate, setSelectedDate] = useState(null);
 
-  const isParent = checkIsParent(user);
-  const isChild = checkIsChild(user);
+  const isParent = checkParent(user);
+  const isChild = checkChild(user);
 
   const weekAssignments = useMemo(() => {
     const weekString = format(currentWeek, "yyyy-MM-dd");

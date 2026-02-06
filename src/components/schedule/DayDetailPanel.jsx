@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { isParent as checkIsParent, isChild as checkIsChild } from '@/utils/roles';
 import { AVATAR_COLORS, DIFFICULTY_STARS } from '@/components/lib/constants';
 import { sanitizeHTML } from '@/components/lib/sanitization';
+import { isParent as checkParent, isChild as checkChild } from '@/utils/roles';
 
 export default function DayDetailPanel({
   selectedDate,
@@ -17,8 +18,8 @@ export default function DayDetailPanel({
   user
 }) {
   const [completingId, setCompletingId] = useState(null);
-  const isParent = checkIsParent(user);
-  const isChild = checkIsChild(user);
+  const isParent = checkParent(user);
+  const isChild = checkChild(user);
 
   const getAssignmentsForDate = (date) => {
     let filtered = assignments.filter(a => {

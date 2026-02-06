@@ -19,7 +19,7 @@ import DashboardStats from "../components/dashboard/DashboardStats";
 import ChoresSection from "../components/dashboard/ChoresSection";
 import PointsEarnedNotification from "../components/gamification/PointsEarnedNotification";
 import { Loader2 } from "lucide-react";
-import { isParent as checkIsParent, isChild as checkIsChild } from '@/utils/roles';
+import { isParent as checkParent, isChild as checkChild } from '@/utils/roles';
 
 export default function Dashboard() {
   const { assignments, chores, people, user, loading, fetchData } = useData();
@@ -33,8 +33,8 @@ export default function Dashboard() {
   const [isReassignModalOpen, setReassignModalOpen] = useState(false);
   const [reassignData, setReassignData] = useState(null);
 
-  const isParent = checkIsParent(user);
-  const isChild = checkIsChild(user);
+  const isParent = checkParent(user);
+  const isChild = checkChild(user);
 
   const currentWeekAssignments = useMemo(() => {
     const currentWeek = format(startOfWeek(new Date()), "yyyy-MM-dd");

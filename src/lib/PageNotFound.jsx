@@ -1,8 +1,7 @@
 import { useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { isParent } from '@/utils/roles';
-
+import { isParent as checkParent } from '@/utils/roles';
 
 export default function PageNotFound({}) {
     const location = useLocation();
@@ -41,7 +40,7 @@ export default function PageNotFound({}) {
                     </div>
                     
                     {/* Admin Note */}
-                    {isFetched && authData.isAuthenticated && isParent(authData.user) && (
+                    {isFetched && authData.isAuthenticated && checkParent(authData.user) && (
                         <div className="mt-8 p-4 bg-slate-100 rounded-lg border border-slate-200">
                             <div className="flex items-start space-x-3">
                                 <div className="flex-shrink-0 w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center mt-0.5">

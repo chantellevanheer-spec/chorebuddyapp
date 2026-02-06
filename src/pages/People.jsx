@@ -16,6 +16,7 @@ import { useSubscriptionAccess } from '../components/hooks/useSubscriptionAccess
 import LimitReachedModal from "../components/ui/LimitReachedModal";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import { linkUserToPerson } from '@/functions/linkUserToPerson';
+import { isParent as checkParent } from '@/utils/roles';
 
 // Constants
 const TOAST_MESSAGES = {
@@ -108,9 +109,9 @@ export default function People() {
   }, [people, assignments]);
 
   /**
-   * Check if current user is a parent
+   * Check if current user is a parent/admin
    */
-  const isParent = useMemo(() => checkIsParent(user), [user?.family_role]);
+  const isParent = checkParent(user);
 
   /**
    * Modal management helpers

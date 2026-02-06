@@ -8,7 +8,7 @@ import { CheckCircle, XCircle, Clock, MessageSquare, Calendar, Star } from "luci
 import { format } from "date-fns";
 import { toast } from "sonner";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
-import { isParent } from '@/utils/roles';
+import { isParent as checkParent } from '@/utils/roles';
 
 export default function Admin() {
   const { assignments, chores, people, user, loading, updateAssignment, addReward } = useData();
@@ -77,14 +77,15 @@ export default function Admin() {
     return <LoadingSpinner size="large" message="Loading admin panel..." />;
   }
 
-  if (!isParent(user)) {
+  const isAdmin = checkParent(user);
+  if (!isAdmin) {
     return (
       <div className="mx-4 md:mx-8 lg:mx-24 pb-40 space-y-6 md:space-y-8 lg:pb-8">
         <div className="funky-card p-8 md:p-12 text-center border-4 border-red-400">
           <XCircle className="w-16 h-16 md:w-24 md:h-24 mx-auto mb-6 text-red-400" />
           <h2 className="header-font text-2xl md:text-3xl text-[#2B59C3] mb-4">Access Denied</h2>
           <p className="body-font-light text-base md:text-lg text-gray-600">
-            Only parents can access the admin panel.
+            Only parents with admin permissions can access this panel.
           </p>
         </div>
       </div>);

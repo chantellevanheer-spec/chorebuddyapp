@@ -11,10 +11,12 @@ import GoalFormModal from "../components/goals/GoalFormModal";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import { useSubscriptionAccess } from '../components/hooks/useSubscriptionAccess';
 import FeatureGate from "../components/ui/FeatureGate";
+import { isParent as checkParent } from '@/utils/roles';
 
 export default function Goals() {
   const { people, rewards, user, loading } = useData();
   const { canAccess } = useSubscriptionAccess();
+  const isParent = checkParent(user);
   const [goals, setGoals] = useState([]);
   const [goalLoading, setGoalLoading] = useState(false);
   const [isFormModalOpen, setFormModalOpen] = useState(false);
@@ -29,7 +31,9 @@ export default function Goals() {
   const fetchGoals = async () => {
     setGoalLoading(true);
     try {
-      const goalsData = await FamilyGoal.list("-created_date");
+      const goalsData = user?.family_id
+        ? await FamilyGoal.filter({ family_id: user.family_id }, "-created_date")
+        : [];
       setGoals(goalsData);
     } catch (error) {
       console.error("Error fetching goals:", error);
@@ -187,13 +191,14 @@ export default function Goals() {
                 </p>
               </div>
             </div>
-            <Button
-              onClick={handleShowAddForm}
-              className="funky-button bg-[#C3B1E1] text-white px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl header-font w-full md:w-auto">
-
-              <Plus className="w-6 h-6 mr-3" />
-              Create Goal
-            </Button>
+            {isParent && (
+              <Button
+                onClick={handleShowAddForm}
+                className="funky-button bg-[#C3B1E1] text-white px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl header-font w-full md:w-auto">
+                <Plus className="w-6 h-6 mr-3" />
+                Create Goal
+              </Button>
+            )}
           </div>
         </div>
 
@@ -261,13 +266,14 @@ export default function Goals() {
             <p className="body-font-light text-gray-600 text-lg mb-8 max-w-md mx-auto">
               Create shared goals that the whole family can work towards together
             </p>
-            <Button
-            onClick={handleShowAddForm}
-            className="funky-button bg-green-400 text-white px-8 py-4 header-font text-xl">
-
-              <Plus className="w-6 h-6 mr-3" />
-              Create Your First Goal
-            </Button>
+            {isParent && (
+              <Button
+                onClick={handleShowAddForm}
+                className="funky-button bg-green-400 text-white px-8 py-4 header-font text-xl">
+                <Plus className="w-6 h-6 mr-3" />
+                Create Your First Goal
+              </Button>
+            )}
           </div>
         }
       </div>

@@ -76,7 +76,7 @@ Deno.serve(async (req) => {
             }
             choresToAnalyze = [chore];
         } else if (analyzeAll) {
-            choresToAnalyze = await base44.asServiceRole.entities.Chore.list();
+            choresToAnalyze = await base44.asServiceRole.entities.Chore.filter({ family_id: familyId });
         } else {
             return Response.json({ error: 'Must specify choreId or analyzeAll' }, { status: 400 });
         }

@@ -10,6 +10,7 @@ import ChoreTradeCard from '../components/trades/ChoreTradeCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { isParent as checkParent } from '@/utils/roles';
 
 export default function ChoreTrades() {
   const { assignments, chores, people, user, loading } = useData();
@@ -20,14 +21,14 @@ export default function ChoreTrades() {
   const [selectedToAssignment, setSelectedToAssignment] = useState('');
   const [message, setMessage] = useState('');
 
-  const isParent = checkIsParent(user);
+  const isParent = checkParent(user);
   const linkedPersonId = user?.linked_person_id;
 
   const { data: trades = [], isLoading: tradesLoading } = useQuery({
     queryKey: ['trades', user?.family_id],
     queryFn: async () => {
       if (!user?.family_id) return [];
-      return await base44.entities.ChoreTrade.list('-created_date');
+      return await base44.entities.ChoreTrade.filter({ family_id: user.family_id }, '-created_date');
     },
     enabled: !!user?.family_id
   });

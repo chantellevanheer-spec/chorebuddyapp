@@ -8,6 +8,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import ChallengeCard from '../components/challenges/ChallengeCard';
 import ChallengeFormModal from '../components/challenges/ChallengeFormModal';
+import { isParent as checkParent } from '@/utils/roles';
 
 export default function Challenges() {
   const { people, user, loading: dataLoading } = useData();
@@ -17,7 +18,7 @@ export default function Challenges() {
     queryKey: ['challenges', user?.family_id],
     queryFn: async () => {
       if (!user?.family_id) return [];
-      return await base44.entities.FamilyChallenge.list('-created_date');
+      return await base44.entities.FamilyChallenge.filter({ family_id: user.family_id }, '-created_date');
     },
     enabled: !!user?.family_id,
     initialData: []
@@ -53,7 +54,8 @@ export default function Challenges() {
     );
   }
 
-  if (!isParent(user)) {
+  const isAdmin = checkParent(user);
+  if (!isAdmin) {
     return (
       <div className="mx-4 md:mx-8 lg:mx-24 pb-32 space-y-6 lg:pb-8">
         {/* View-only for children */}

@@ -22,8 +22,8 @@ export function useAssignmentNotifications(familyId, enabled = true) {
 
     try {
       const [people, chores] = await Promise.all([
-        Person.list(),
-        Chore.list()
+        Person.filter({ family_id: familyId }),
+        Chore.filter({ family_id: familyId })
       ]);
 
       // Build lookup maps
@@ -46,7 +46,7 @@ export function useAssignmentNotifications(familyId, enabled = true) {
     if (!familyId || !enabled || !isActiveRef.current) return;
 
     try {
-      const assignments = await Assignment.list('-created_date');
+      const assignments = await Assignment.filter({ family_id: familyId }, '-created_date');
 
       // Skip notification on first load (just initialize the cache)
       if (!initializedRef.current) {

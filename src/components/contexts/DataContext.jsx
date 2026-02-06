@@ -76,7 +76,7 @@ export const DataProvider = ({ children }) => {
     
     initializeFamilyRef.current = (async () => {
       try {
-        // Create family
+        // Create family (linking code generated via backend familyLinking function)
         const newFamily = await Family.create({
           name: `${userData.full_name || 'My'}'s Family`,
           owner_user_id: userData.id,
@@ -90,15 +90,33 @@ export const DataProvider = ({ children }) => {
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         });
-        
+
         console.log("[DataContext] Family created:", newFamily.id);
 
+        // Auto-create a Person record for the parent so they appear
+        // as a family member immediately (no manual linking needed)
+        const parentPerson = await Person.create({
+          name: userData.full_name || 'Parent',
+          family_id: newFamily.id,
+          role: 'parent',
+          is_active: true,
+          points_balance: 0,
+          total_points_earned: 0,
+          chores_completed_count: 0,
+          current_streak: 0,
+          best_streak: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+
+        console.log("[DataContext] Parent person created:", parentPerson.id);
+
         // Update user with family_id
-        await User.updateMyUserData({ 
+        await User.updateMyUserData({
           family_id: newFamily.id,
           family_role: 'parent'
         });
-        
+
         console.log("[DataContext] User linked to family:", newFamily.id);
         familyInitializedRef.current = true;
         
@@ -227,25 +245,26 @@ export const DataProvider = ({ children }) => {
         setFamily(null);
       }
       
-      // 6. Fetch all entity data in parallel
+      // 6. Fetch all entity data in parallel (scoped to user's family)
+      const familyId = userData.family_id;
       const [
-        peopleData, 
-        choresData, 
-        assignmentsData, 
-        rewardsData, 
-        itemsData, 
-        goalsData, 
+        peopleData,
+        choresData,
+        assignmentsData,
+        rewardsData,
+        itemsData,
+        goalsData,
         completionsData,
         achievementsData
       ] = await Promise.all([
-        Person.list("name").catch(() => []),
-        Chore.list("title").catch(() => []),
-        Assignment.list("-created_date").catch(() => []),
-        Reward.list("-created_date").catch(() => []),
-        RedeemableItem.list("cost").catch(() => []),
-        FamilyGoal.list("-created_date").catch(() => []),
-        ChoreCompletion.list("-created_date").catch(() => []),
-        Achievement.list("-created_date").catch(() => [])
+        Person.filter({ family_id: familyId }, "name").catch(() => []),
+        Chore.filter({ family_id: familyId }, "title").catch(() => []),
+        Assignment.filter({ family_id: familyId }, "-created_date").catch(() => []),
+        Reward.filter({ family_id: familyId }, "-created_date").catch(() => []),
+        RedeemableItem.filter({ family_id: familyId }, "cost").catch(() => []),
+        FamilyGoal.filter({ family_id: familyId }, "-created_date").catch(() => []),
+        ChoreCompletion.filter({ family_id: familyId }, "-created_date").catch(() => []),
+        Achievement.filter({ family_id: familyId }, "-created_date").catch(() => [])
       ]);
 
       console.log("[DataContext] Data fetched:", {

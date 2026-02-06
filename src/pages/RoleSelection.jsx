@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User } from '@/entities/User';
 import { Family } from '@/entities/Family';
+import { Person } from '@/entities/Person';
 import { createPageUrl } from '@/utils';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -41,13 +42,36 @@ export default function RoleSelection() {
     try {
       const userData = await User.me();
       
-      // If parent, create a family and set admin role
+      // If parent, create a family, Person record, and set admin role
       if (role === 'parent') {
         const family = await Family.create({
           name: `${userData.full_name}'s Family`,
           owner_user_id: userData.id,
           members: [userData.id],
-          subscription_tier: 'free'
+          member_count: 1,
+          subscription_tier: 'free',
+          subscription_status: 'active',
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+          currency: 'USD',
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+
+        // Auto-create a Person record for the parent so they are
+        // immediately visible as a family member (no manual linking needed)
+        const parentPerson = await Person.create({
+          name: userData.full_name || 'Parent',
+          family_id: family.id,
+          role: 'parent',
+          is_active: true,
+          points_balance: 0,
+          total_points_earned: 0,
+          chores_completed_count: 0,
+          current_streak: 0,
+          best_streak: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         });
 
         // Admin privileges are derived from family_role: 'parent'
@@ -191,7 +215,7 @@ export default function RoleSelection() {
         </div>
 
         <p className="text-center body-font-light text-gray-500 mt-8">
-          Don't worry, you can change this later in your account settings.
+          Choose carefully! Parents can manage roles later from account settings.
         </p>
       </div>
     </div>

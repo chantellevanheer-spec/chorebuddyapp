@@ -11,11 +11,13 @@ import ConfirmDialog from "../components/ui/ConfirmDialog";
 import RedeemConfirmationModal from "../components/store/RedeemConfirmationModal"; // Import new modal
 import { format, startOfWeek } from "date-fns";
 import AISuggestionsModal from "../components/ai/AISuggestionsModal";
+import { isParent as checkParent } from '@/utils/roles';
 
 export default function Store() {
   const { items, rewards, people, user, loading, isProcessing, addItem, updateItem, deleteItem, addReward } = useData();
   const { hasReachedLimit, getTierDisplayName, getRequiredTier, features } = useSubscriptionAccess();
-  
+  const isParent = checkParent(user);
+
   // State for modals
   const [isFormModalOpen, setFormModalOpen] = useState(false);
   const [isLimitModalOpen, setLimitModalOpen] = useState(false);
@@ -188,22 +190,24 @@ export default function Store() {
               <p className="body-font-light text-sm md:text-base text-gray-600 mt-1 md:mt-2">Redeem points for awesome rewards!</p>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <Button
-              onClick={handleShowAddForm}
-              className="funky-button bg-[#C3B1E1] text-white px-4 md:px-6 py-3 md:py-4 text-base md:text-lg lg:text-xl header-font"
-            >
-              <Plus className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
-              Add Item
-            </Button>
-            <Button
-              onClick={() => setAISuggestionsOpen(true)}
-              className="funky-button bg-[#C3B1E1] text-white px-4 md:px-6 py-3 md:py-4 text-base md:text-lg lg:text-xl header-font"
-            >
-              <TrendingUp className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
-              AI Suggestions
-            </Button>
-          </div>
+          {isParent && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Button
+                onClick={handleShowAddForm}
+                className="funky-button bg-[#C3B1E1] text-white px-4 md:px-6 py-3 md:py-4 text-base md:text-lg lg:text-xl header-font"
+              >
+                <Plus className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
+                Add Item
+              </Button>
+              <Button
+                onClick={() => setAISuggestionsOpen(true)}
+                className="funky-button bg-[#C3B1E1] text-white px-4 md:px-6 py-3 md:py-4 text-base md:text-lg lg:text-xl header-font"
+              >
+                <TrendingUp className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
+                AI Suggestions
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -241,6 +245,7 @@ export default function Store() {
                 onEdit={handleShowEditForm}
                 onDelete={() => setItemToDelete(item)}
                 canAfford={canAnyoneAfford}
+                isParent={isParent}
               />
             );
           })}
@@ -252,13 +257,15 @@ export default function Store() {
           <p className="body-font-light text-gray-600 text-lg mb-8 max-w-md mx-auto">
             Add some exciting rewards that family members can redeem with their points
           </p>
-          <Button
-            onClick={handleShowAddForm}
-            className="funky-button bg-yellow-400 text-yellow-800 px-8 py-4 header-font text-xl"
-          >
-            <Plus className="w-6 h-6 mr-3" />
-            Add Your First Reward
-          </Button>
+          {isParent && (
+            <Button
+              onClick={handleShowAddForm}
+              className="funky-button bg-yellow-400 text-yellow-800 px-8 py-4 header-font text-xl"
+            >
+              <Plus className="w-6 h-6 mr-3" />
+              Add Your First Reward
+            </Button>
+          )}
         </div>
       )}
     </div>

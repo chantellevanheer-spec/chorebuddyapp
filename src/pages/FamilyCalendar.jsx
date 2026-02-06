@@ -37,13 +37,14 @@ export default function FamilyCalendar() {
 
   const fetchData = async () => {
     try {
-      const [eventsData, userData] = await Promise.all([
-        base44.entities.CalendarEvent.list(),
-        base44.auth.me()
-      ]);
-      
-      setEvents(eventsData);
+      const userData = await base44.auth.me();
       setCurrentUser(userData);
+
+      const eventsData = userData.family_id
+        ? await base44.entities.CalendarEvent.filter({ family_id: userData.family_id })
+        : [];
+
+      setEvents(eventsData);
     } catch (error) {
       toast.error('Failed to load calendar');
     } finally {

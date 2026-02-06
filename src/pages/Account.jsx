@@ -18,6 +18,7 @@ import ThemeSelector from '@/components/profile/ThemeSelector';
 import { useTheme } from '@/components/contexts/ThemeContext';
 import NotificationPreferences from '@/components/profile/NotificationPreferences';
 import AccessibilitySettings from '@/components/profile/AccessibilitySettings';
+import { isParent as checkParent, FAMILY_ROLES } from '@/utils/roles';
 
 export default function Account() {
   const [user, setUser] = useState(null);
@@ -42,7 +43,8 @@ export default function Account() {
 
   // Determine effective subscription tier (child/teen inherits parent's)
   const getEffectiveSubscriptionTier = () => {
-    if (isChild(user) && linkedPerson) {
+    if (user?.family_role === FAMILY_ROLES.CHILD && linkedPerson) {
+      // Child uses parent's subscription
       return user?.data?.parent_subscription_tier || 'free';
     }
     return user?.subscription_tier || 'free';
@@ -59,7 +61,7 @@ export default function Account() {
           receives_chore_reminders: userData.receives_chore_reminders ?? true,
           receives_achievement_alerts: userData.receives_achievement_alerts ?? true,
           receives_weekly_reports: userData.receives_weekly_reports ?? false,
-          simplified_view: userData.simplified_view ?? isChild(userData),
+          simplified_view: userData.simplified_view ?? (userData.family_role === FAMILY_ROLES.CHILD),
           high_contrast: userData.high_contrast ?? false,
           text_size: userData.text_size ?? 'normal'
         });
@@ -79,8 +81,8 @@ export default function Account() {
           setFamily(familyData);
           setFamilyName(familyData?.name || '');
 
-          // Fetch family people
-          const familyPeople = await Person.list();
+          // Fetch family people (scoped to user's family)
+          const familyPeople = await Person.filter({ family_id: userData.family_id });
           setPeople(familyPeople);
 
           // Find linked person
@@ -105,7 +107,8 @@ export default function Account() {
     setIsSaving(true);
     try {
       // Update all user attributes in a single call
-      await base44.auth.updateMe({
+      // Only parents can change family_role to prevent privilege escalation
+      const updateData = {
         receives_chore_reminders: user.receives_chore_reminders,
         receives_achievement_alerts: user.receives_achievement_alerts,
         receives_weekly_reports: user.receives_weekly_reports,
@@ -117,11 +120,15 @@ export default function Account() {
           chore_preferences: chorePreferences,
           notification_preferences: notificationPreferences
         }
-      });
+      };
+      if (checkParent(user)) {
+        updateData.family_role = user.family_role;
+      }
+      await base44.auth.updateMe(updateData);
 
       // Update family name if it changed (parents only)
       if (family && familyName !== family.name) {
-        if (!isParent(user)) {
+        if (!checkParent(user)) {
           toast.error('Only parents can update the family name');
           return;
         }
@@ -144,7 +151,7 @@ export default function Account() {
         receives_chore_reminders: updatedUser.receives_chore_reminders ?? true,
         receives_achievement_alerts: updatedUser.receives_achievement_alerts ?? true,
         receives_weekly_reports: updatedUser.receives_weekly_reports ?? false,
-        simplified_view: updatedUser.simplified_view ?? isChild(updatedUser),
+        simplified_view: updatedUser.simplified_view ?? (updatedUser.family_role === FAMILY_ROLES.CHILD),
         high_contrast: updatedUser.high_contrast ?? false,
         text_size: updatedUser.text_size ?? 'normal'
       });
@@ -183,8 +190,8 @@ export default function Account() {
         toast.success("Account linked successfully!");
         setLinkModalOpen(false);
         
-        // Refresh data
-        const familyPeople = await Person.list();
+        // Refresh data (scoped to user's family)
+        const familyPeople = await Person.filter({ family_id: user.family_id });
         setPeople(familyPeople);
         const linked = familyPeople.find(p => p.id === personId);
         setLinkedPerson(linked || null);
@@ -277,10 +284,30 @@ export default function Account() {
             </div>
             
             <div className="mt-6 pt-6 border-t border-gray-200">
-              <label className="body-font text-lg text-[#5E3B85] mb-4 block">Family Role</label>
-              <p className="body-font text-lg text-gray-700 capitalize">{user.family_role || 'parent'}</p>
+              <label htmlFor="family-role" className="body-font text-lg text-[#5E3B85] mb-4 block">Family Role</label>
+              {checkParent(user) ? (
+                <Select
+                  value={user.family_role || 'parent'}
+                  onValueChange={(value) => handleToggleChange('family_role', value)}
+                >
+                  <SelectTrigger id="family-role" className="funky-button border-3 border-[#5E3B85] body-font bg-white max-w-xs">
+                    <SelectValue placeholder="Select your role..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="parent">Parent / Guardian</SelectItem>
+                    <SelectItem value="teen">Teen</SelectItem>
+                    <SelectItem value="child">Child</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <div className="funky-button border-3 border-[#5E3B85] body-font bg-gray-50 max-w-xs px-4 py-2 text-gray-700 capitalize">
+                  {user.family_role || 'Member'}
+                </div>
+              )}
               <p className="body-font-light text-sm text-gray-500 mt-2">
-                Your role is set when you join a family. Contact a parent to change it.
+                {checkParent(user)
+                  ? 'As a parent, you have admin access to manage the family'
+                  : 'Your role is managed by a parent. Contact them to change it.'}
               </p>
             </div>
           </div>
@@ -303,11 +330,11 @@ export default function Account() {
                 <div>
                     <p className="body-font text-lg">
                       Your current plan: <span className="header-font text-xl text-[#FF6B35] capitalize">{getEffectiveSubscriptionTier()}</span>
-                      {isChild(user) && linkedPerson && <span className="body-font-light text-sm text-gray-500 ml-2">(from parent's account)</span>}
+                      {user?.family_role === FAMILY_ROLES.CHILD && linkedPerson && <span className="body-font-light text-sm text-gray-500 ml-2">(from parent's account)</span>}
                     </p>
                     <p className="body-font-light text-sm text-gray-500">Status: <span className="capitalize">{user.subscription_status || 'active'}</span></p>
                 </div>
-                {isChild(user) && linkedPerson ? (
+                {user?.family_role === FAMILY_ROLES.CHILD && linkedPerson ? (
                     <p className="body-font-light text-gray-600">Your parent manages the subscription. Contact them to upgrade.</p>
                 ) : getEffectiveSubscriptionTier() !== 'free' ? (
                     <Button 
@@ -466,8 +493,8 @@ export default function Account() {
         </TabsContent>
 
         <TabsContent value="family" className="mt-6">
-           {/* Family Name (Premium Parents Only) */}
-           {isParent(user) && isPremium && (
+           {/* Family Name (Parents Only) */}
+           {checkParent(user) && (
              <div className="funky-card p-8 mb-6">
                <h2 className="header-font text-3xl text-[#2B59C3] mb-6 flex items-center gap-3">
                  <Users className="w-8 h-8 text-[#F7A1C4]" />
@@ -545,7 +572,7 @@ export default function Account() {
           </div>
 
           {/* Save Changes Button (for Family Name) */}
-          {isParent(user) && isPremium && (
+          {checkParent(user) && (
             <Button
               onClick={handleSaveChanges}
               disabled={isSaving}
