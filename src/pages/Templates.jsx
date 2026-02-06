@@ -7,16 +7,21 @@ import { toast } from 'sonner';
 export default function Templates() {
   const { loading, addChore, user } = useData();
 
+  const isParent = user?.family_role === 'parent';
+
   const handleApplyTemplate = async (chores) => {
     if (!user?.family_id) {
       toast.error('No family found');
       return;
     }
 
+    if (!isParent) {
+      toast.error('Only parents can apply templates');
+      return;
+    }
+
     try {
-      for (const choreData of chores) {
-        await addChore(choreData);
-      }
+      await Promise.all(chores.map(choreData => addChore(choreData)));
       toast.success(`Added ${chores.length} chores from template!`);
     } catch (error) {
       console.error('Error applying template:', error);

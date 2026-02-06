@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { createPageUrl } from '@/utils';
-import { Link as RouterLink, Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Loader2, User as UserIcon, Bell, Users, Settings, Shield, CreditCard, AlertCircle, Link2, Sparkles, Palette, Crown } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
@@ -105,7 +105,7 @@ export default function Account() {
     if (!user) return;
     setIsSaving(true);
     try {
-      // Update built-in attributes separately
+      // Update all user attributes in a single call
       await base44.auth.updateMe({
         family_role: user.family_role,
         receives_chore_reminders: user.receives_chore_reminders,
@@ -113,11 +113,7 @@ export default function Account() {
         receives_weekly_reports: user.receives_weekly_reports,
         simplified_view: user.simplified_view,
         high_contrast: user.high_contrast,
-        text_size: user.text_size
-      });
-      
-      // Update custom data fields
-      await base44.auth.updateMe({
+        text_size: user.text_size,
         data: {
           avatar: avatarIcon,
           chore_preferences: chorePreferences,
@@ -428,7 +424,6 @@ export default function Account() {
           <div className="funky-card p-8">
             <h2 className="header-font text-3xl text-[#2B59C3] mb-6">Notification Preferences</h2>
             <div className="space-y-6">
-              <NotificationToggle />
               
               {isPremium ? (
                 <NotificationPreferences
@@ -579,7 +574,7 @@ export default function Account() {
             <p className="body-font-light text-gray-600 text-lg mb-6 max-w-md mx-auto">
               Add, view, or remove family members from your ChoreBuddy account on the Family page.
             </p>
-            <RouterLink to={createPageUrl("People")}>
+            <Link to={createPageUrl("People")}>
               <Button className="funky-button bg-[#F7A1C4] text-pink-800 px-8 py-4 header-font text-xl">
                 <Users className="w-6 h-6 mr-3" />
                 Go to Family Page

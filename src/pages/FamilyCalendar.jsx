@@ -5,9 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Calendar as CalendarIcon, Plus, Loader2, Trash2 } from 'lucide-react';
+import { Calendar as CalendarIcon, Plus, Loader2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, parseISO } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, parseISO, addMonths, subMonths, getDay } from 'date-fns';
 
 const colorOptions = {
   blue: { bg: 'bg-[#2B59C3]', text: 'text-white' },
@@ -129,17 +129,38 @@ export default function FamilyCalendar() {
 
       {/* Calendar Grid */}
       <div className="funky-card p-6 md:p-8">
-        <h2 className="header-font text-3xl text-[#2B59C3] mb-6">
-          {format(currentDate, 'MMMM yyyy')}
-        </h2>
-        
+        <div className="flex items-center justify-between mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => setCurrentDate(prev => subMonths(prev, 1))}
+            className="funky-button"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </Button>
+          <h2 className="header-font text-3xl text-[#2B59C3]">
+            {format(currentDate, 'MMMM yyyy')}
+          </h2>
+          <Button
+            variant="ghost"
+            onClick={() => setCurrentDate(prev => addMonths(prev, 1))}
+            className="funky-button"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </Button>
+        </div>
+
         <div className="grid grid-cols-7 gap-2">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
             <div key={day} className="text-center body-font text-sm text-gray-600 py-2">
               {day}
             </div>
           ))}
-          
+
+          {/* Empty cells for days before the first of the month */}
+          {Array.from({ length: getDay(monthStart) }).map((_, idx) => (
+            <div key={`empty-${idx}`} className="min-h-[80px]" />
+          ))}
+
           {daysInMonth.map((day, idx) => {
             const dayEvents = getEventsForDay(day);
             const isToday = isSameDay(day, new Date());
