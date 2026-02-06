@@ -3,6 +3,7 @@ import { useData } from '../components/contexts/DataContext';
 import { Button } from "@/components/ui/button";
 import { Plus, Users, Mail } from "lucide-react";
 import { toast } from "sonner";
+import { isParent as checkIsParent } from '@/utils/roles';
 import { ListSkeleton } from '../components/ui/SkeletonLoader';
 import ErrorBoundaryWithRetry from '../components/ui/ErrorBoundaryWithRetry';
 import PersonCard from "../components/people/PersonCard";
@@ -41,15 +42,16 @@ const EMPTY_STATE_TIPS = [
  */
 export default function People() {
   // Context and hooks
-  const { 
-    people, 
-    assignments, 
-    user, 
-    loading, 
-    isProcessing, 
-    addPerson, 
-    updatePerson, 
-    deletePerson 
+  const {
+    people,
+    assignments,
+    user,
+    loading,
+    isProcessing,
+    addPerson,
+    updatePerson,
+    deletePerson,
+    fetchData
   } = useData();
   
   const { 
@@ -80,6 +82,9 @@ export default function People() {
   // Processing states
   const [isLinking, setIsLinking] = useState(false);
 
+  // Stable random tip that doesn't change on re-render
+  const [randomTip] = useState(() => EMPTY_STATE_TIPS[Math.floor(Math.random() * EMPTY_STATE_TIPS.length)]);
+
   /**
    * Calculate statistics for each person
    * Memoized to prevent unnecessary recalculations
@@ -105,7 +110,7 @@ export default function People() {
   /**
    * Check if current user is a parent
    */
-  const isParent = useMemo(() => user?.family_role === 'parent', [user?.family_role]);
+  const isParent = useMemo(() => checkIsParent(user), [user?.family_role]);
 
   /**
    * Modal management helpers
@@ -230,8 +235,8 @@ export default function People() {
       } else {
         toast.success(TOAST_MESSAGES.ACCOUNT_LINKED);
         closeModal('link', 'personToLink');
-        // Reload to refresh linked account data
-        window.location.reload();
+        // Refresh data to reflect linked account
+        await fetchData();
       }
     } catch (error) {
       console.error('Failed to link account:', error);
@@ -272,8 +277,6 @@ export default function People() {
       </div>
     );
   }
-
-  const randomTip = EMPTY_STATE_TIPS[Math.floor(Math.random() * EMPTY_STATE_TIPS.length)];
 
   return (
     <ErrorBoundaryWithRetry level="page">

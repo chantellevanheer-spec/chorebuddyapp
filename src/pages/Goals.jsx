@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import FamilyGoalCard from "../components/goals/FamilyGoalCard";
 import GoalFormModal from "../components/goals/GoalFormModal";
+import ConfirmDialog from "../components/ui/ConfirmDialog";
 import { useSubscriptionAccess } from '../components/hooks/useSubscriptionAccess';
 import FeatureGate from "../components/ui/FeatureGate";
 
@@ -18,6 +19,7 @@ export default function Goals() {
   const [goalLoading, setGoalLoading] = useState(false);
   const [isFormModalOpen, setFormModalOpen] = useState(false);
   const [goalToEdit, setGoalToEdit] = useState(null);
+  const [goalToDelete, setGoalToDelete] = useState(null);
 
   // Calculate current family points
   const familyPoints = useMemo(() => {
@@ -111,16 +113,21 @@ export default function Goals() {
     }
   };
 
-  const handleDelete = async (goalId) => {
-    if (window.confirm("Are you sure you want to delete this goal?")) {
-      try {
-        await FamilyGoal.delete(goalId);
-        toast.success("Goal deleted");
-        await fetchGoals();
-      } catch (error) {
-        console.error("Error deleting goal:", error);
-        toast.error("Failed to delete goal");
-      }
+  const handleDelete = (goalId) => {
+    setGoalToDelete(goalId);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!goalToDelete) return;
+    try {
+      await FamilyGoal.delete(goalToDelete);
+      toast.success("Goal deleted");
+      await fetchGoals();
+    } catch (error) {
+      console.error("Error deleting goal:", error);
+      toast.error("Failed to delete goal");
+    } finally {
+      setGoalToDelete(null);
     }
   };
 
@@ -147,7 +154,16 @@ export default function Goals() {
       feature="family_goals"
       customMessage="Family Goals help your household work together towards shared rewards. Available on Basic and Premium plans.">
 
-      <div className="mx-1 pb-2 space-y-8 lg:pb-8">
+      <div className="mx-4 md:mx-8 lg:mx-24 pb-32 space-y-8 lg:pb-8">
+        <ConfirmDialog
+          isOpen={!!goalToDelete}
+          onClose={() => setGoalToDelete(null)}
+          onConfirm={handleDeleteConfirm}
+          title="Delete Goal"
+          message="Are you sure you want to delete this goal? This action cannot be undone."
+          confirmText="Delete"
+          cancelText="Keep"
+        />
         <GoalFormModal
           isOpen={isFormModalOpen}
           onClose={() => setFormModalOpen(false)}

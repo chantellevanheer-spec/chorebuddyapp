@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, ClipboardList, Clock, Star, Edit, Trash2, UserPlus, CheckSquare, Sparkles } from "lucide-react";
+import { isParent } from '@/utils/roles';
 import { Assignment } from "@/entities/Assignment";
 import { CHORE_CATEGORY_COLORS, DIFFICULTY_STARS } from '@/components/lib/constants';
 import { toast } from "sonner";
@@ -148,19 +149,15 @@ export default function Chores() {
 
   const handleAssignChore = async (assignments) => {
     setIsAssigning(true);
-    console.log("[Chores] handleAssignChore called with:", assignments);
-    console.log("[Chores] User family_id:", user?.family_id);
     try {
       // assignments is now an array from the enhanced modal
-      const createdAssignments = await Promise.all(assignments.map(a => {
+      await Promise.all(assignments.map(a => {
         const assignmentData = {
           ...a,
           family_id: user.family_id
         };
-        console.log("[Chores] Creating assignment:", assignmentData);
         return Assignment.create(assignmentData);
       }));
-      console.log("[Chores] Created assignments:", createdAssignments);
       toast.success(`Successfully created ${assignments.length} assignment${assignments.length > 1 ? 's' : ''}!`);
       setAssignModalOpen(false);
       setChoreToAssign(null);
@@ -323,7 +320,7 @@ export default function Chores() {
       </div>
 
       {/* Admin Tooltip */}
-      {user?.role === 'admin' && (
+      {isParent(user) && (
         <div className="funky-card p-4 bg-purple-50 border-2 border-purple-300">
           <p className="body-font text-sm text-purple-800">
             👑 <strong>Admin Mode:</strong> Hover over any chore to assign it, or use <strong>Bulk Assign</strong> to assign multiple chores at once.
@@ -543,7 +540,7 @@ export default function Chores() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {chores.map((chore) => (
             <div key={chore.id} className={`funky-card p-4 md:p-6 lg:p-8 border-4 relative group ${CHORE_CATEGORY_COLORS[chore.category] || CHORE_CATEGORY_COLORS.other}`}>
-              <div className="absolute top-4 right-4 flex gap-2 md:opacity-0 md:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+              <div className="absolute top-4 right-4 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                 <Button
                   size="icon"
                   variant="ghost"

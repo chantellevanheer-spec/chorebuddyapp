@@ -101,14 +101,21 @@ export function useRealTimeSync(familyId, enabled = true, onUpdate = null) {
     // Initial check
     checkForUpdates();
 
-    // Poll every 30 seconds (or with backoff if errors) to avoid rate limits
-    intervalRef.current = setInterval(() => {
-      checkForUpdates();
-    }, 30000 * backoffRef.current);
+    // Use setTimeout-based polling that re-evaluates backoff each cycle
+    const scheduleNext = () => {
+      intervalRef.current = setTimeout(() => {
+        checkForUpdates().then(() => {
+          if (familyId && enabled) {
+            scheduleNext();
+          }
+        });
+      }, 30000 * backoffRef.current);
+    };
+    scheduleNext();
 
     return () => {
       if (intervalRef.current) {
-        clearInterval(intervalRef.current);
+        clearTimeout(intervalRef.current);
         intervalRef.current = null;
       }
       // Reset refs on cleanup

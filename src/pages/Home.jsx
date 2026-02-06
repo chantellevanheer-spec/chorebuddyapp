@@ -1,29 +1,37 @@
 import React, { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { User } from '@/entities/User';
 import { Button } from '@/components/ui/button';
-import { Zap, Users, Gift } from 'lucide-react';
+import { Zap, Users, Gift, Loader2 } from 'lucide-react';
 import FeatureCard from '../components/landing/FeatureCard';
 import StepCard from '../components/landing/StepCard';
 
 export default function Home() {
-  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+  const [isAuthenticated, setIsAuthenticated] = React.useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is logged in and redirect to dashboard
     const checkUserStatus = async () => {
       try {
         await User.me();
         setIsAuthenticated(true);
-        window.location.href = createPageUrl("Dashboard");
+        navigate(createPageUrl("Dashboard"), { replace: true });
       } catch (error) {
-        // User is not logged in, stay on the home page
         setIsAuthenticated(false);
       }
     };
     checkUserStatus();
-  }, []);
+  }, [navigate]);
+
+  // Show loading while checking auth to prevent flash of landing page
+  if (isAuthenticated === null) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-12 h-12 animate-spin text-[#C3B1E1]" />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#FDFBF5] text-[#5E3B85]">

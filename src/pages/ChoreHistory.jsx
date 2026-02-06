@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useData } from '../components/contexts/DataContext';
-import { format, parseISO, isWithinInterval, startOfDay, endOfDay } from "date-fns";
-import { History, Filter, User, Calendar, Award, CheckCircle, Clock, Search, X } from "lucide-react";
+import { format, startOfDay, endOfDay } from "date-fns";
+import { History, Filter, User, Calendar, Award, CheckCircle, Clock, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";

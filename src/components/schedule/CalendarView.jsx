@@ -3,6 +3,7 @@ import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSa
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, CheckCircle, Clock, Star } from 'lucide-react';
 import { AVATAR_COLORS, DIFFICULTY_STARS, CHORE_CATEGORY_COLORS } from '@/components/lib/constants';
+import { isParent as checkIsParent, isChild as checkIsChild } from '@/utils/roles';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function CalendarView({ 
@@ -33,8 +34,8 @@ export default function CalendarView({
     return days;
   }, [currentMonth]);
 
-  const isParentMemo = useMemo(() => user?.family_role === 'parent', [user?.family_role]);
-  const isChildMemo = useMemo(() => user?.family_role === 'child' || user?.family_role === 'teen', [user?.family_role]);
+  const isParentMemo = useMemo(() => checkIsParent(user), [user?.family_role]);
+  const isChildMemo = useMemo(() => checkIsChild(user), [user?.family_role]);
   const linkedPersonId = useMemo(() => user?.linked_person_id, [user?.linked_person_id]);
 
   const assignmentsByDate = useMemo(() => {

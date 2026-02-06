@@ -3,16 +3,19 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { isParent } from '@/utils/roles';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Megaphone, Plus, Pin, Loader2, Trash2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
 
 export default function NoticeBoard() {
   const [notices, setNotices] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setModalOpen] = useState(false);
+  const [noticeToDelete, setNoticeToDelete] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -91,12 +94,15 @@ export default function NoticeBoard() {
     }
   };
 
-  const handleDeleteNotice = async (noticeId) => {
+  const handleDeleteNotice = async () => {
+    if (!noticeToDelete) return;
     try {
-      await base44.entities.Notice.delete(noticeId);
+      await base44.entities.Notice.delete(noticeToDelete);
       toast.success('Notice deleted');
     } catch (error) {
       toast.error('Failed to delete notice');
+    } finally {
+      setNoticeToDelete(null);
     }
   };
 
@@ -116,6 +122,15 @@ export default function NoticeBoard() {
 
   return (
     <div className="pb-32 lg:pb-8 space-y-6">
+      <ConfirmDialog
+        isOpen={!!noticeToDelete}
+        onClose={() => setNoticeToDelete(null)}
+        onConfirm={handleDeleteNotice}
+        title="Delete Notice"
+        message="Are you sure you want to delete this notice? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
       {/* Header */}
       <div className="funky-card p-6 md:p-8">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -170,7 +185,7 @@ export default function NoticeBoard() {
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  {currentUser?.family_role === 'parent' && (
+                  {isParent(currentUser) && (
                     <>
                       <Button
                         variant="ghost"
@@ -183,7 +198,7 @@ export default function NoticeBoard() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDeleteNotice(notice.id)}
+                        onClick={() => setNoticeToDelete(notice.id)}
                         className="text-gray-400 hover:text-red-500"
                       >
                         <Trash2 className="w-5 h-5" />
