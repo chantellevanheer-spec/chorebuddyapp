@@ -184,7 +184,7 @@ export default function NoticeBoard() {
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  {currentUser?.family_role === 'parent' && (
+                  {(currentUser?.family_role === 'parent' || currentUser?.role === 'admin') && (
                     <>
                       <Button
                         variant="ghost"

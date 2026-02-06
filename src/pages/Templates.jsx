@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 export default function Templates() {
   const { loading, addChore, user } = useData();
 
-  const isParent = user?.family_role === 'parent';
+  const isParent = user?.family_role === 'parent' || user?.role === 'admin';
 
   const handleApplyTemplate = async (chores) => {
     if (!user?.family_id) {

@@ -19,7 +19,7 @@ export default function ChoreTrades() {
   const [selectedToAssignment, setSelectedToAssignment] = useState('');
   const [message, setMessage] = useState('');
 
-  const isParent = user?.family_role === 'parent';
+  const isParent = user?.family_role === 'parent' || user?.role === 'admin';
   const linkedPersonId = user?.linked_person_id;
 
   const { data: trades = [], isLoading: tradesLoading } = useQuery({

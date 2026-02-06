@@ -92,12 +92,32 @@ export const DataProvider = ({ children }) => {
         
         console.log("[DataContext] Family created:", newFamily.id);
 
-        // Update user with family_id
-        await User.updateMyUserData({ 
+        // Auto-create a Person record for the parent so they appear
+        // as a family member immediately (no manual linking needed)
+        const parentPerson = await Person.create({
+          name: userData.full_name || 'Parent',
           family_id: newFamily.id,
-          family_role: 'parent'
+          linked_user_id: userData.id,
+          role: 'parent',
+          is_active: true,
+          points_balance: 0,
+          total_points_earned: 0,
+          chores_completed_count: 0,
+          current_streak: 0,
+          best_streak: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         });
-        
+
+        console.log("[DataContext] Parent person created:", parentPerson.id);
+
+        // Update user with family_id and linked person
+        await User.updateMyUserData({
+          family_id: newFamily.id,
+          family_role: 'parent',
+          linked_person_id: parentPerson.id
+        });
+
         console.log("[DataContext] User linked to family:", newFamily.id);
         familyInitializedRef.current = true;
         

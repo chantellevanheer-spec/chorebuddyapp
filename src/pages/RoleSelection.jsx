@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User } from '@/entities/User';
 import { Family } from '@/entities/Family';
+import { Person } from '@/entities/Person';
 import { createPageUrl } from '@/utils';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -41,7 +42,7 @@ export default function RoleSelection() {
     try {
       const userData = await User.me();
       
-      // If parent, create a family and set admin role
+      // If parent, create a family, Person record, and set admin role
       if (role === 'parent') {
         const family = await Family.create({
           name: `${userData.full_name}'s Family`,
@@ -50,11 +51,29 @@ export default function RoleSelection() {
           subscription_tier: 'free'
         });
 
-        // Parent who creates family becomes admin
+        // Auto-create a Person record for the parent so they are
+        // immediately visible as a family member (no manual linking needed)
+        const parentPerson = await Person.create({
+          name: userData.full_name || 'Parent',
+          family_id: family.id,
+          linked_user_id: userData.id,
+          role: 'parent',
+          is_active: true,
+          points_balance: 0,
+          total_points_earned: 0,
+          chores_completed_count: 0,
+          current_streak: 0,
+          best_streak: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+
+        // Parent who creates family becomes admin with linked person
         await User.updateMyUserData({
           family_id: family.id,
           family_role: role,
-          role: 'admin'
+          role: 'admin',
+          linked_person_id: parentPerson.id
         });
 
         toast.success(`Welcome! You're set up as a ${role}.`);

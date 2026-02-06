@@ -35,7 +35,7 @@ export default function FamilyLinking() {
     const [joinSuccess, setJoinSuccess] = useState(false);
     const [joinedFamilyName, setJoinedFamilyName] = useState('');
 
-    const isParent = user?.family_role === 'parent';
+    const isParent = user?.family_role === 'parent' || user?.role === 'admin';
 
     useEffect(() => {
         const fetchData = async () => {

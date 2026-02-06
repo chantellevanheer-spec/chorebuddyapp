@@ -33,7 +33,7 @@ export default function CalendarView({
     return days;
   }, [currentMonth]);
 
-  const isParentMemo = useMemo(() => user?.family_role === 'parent', [user?.family_role]);
+  const isParentMemo = useMemo(() => user?.family_role === 'parent' || user?.role === 'admin', [user?.family_role, user?.role]);
   const isChildMemo = useMemo(() => user?.family_role === 'child' || user?.family_role === 'teen', [user?.family_role]);
   const linkedPersonId = useMemo(() => user?.linked_person_id, [user?.linked_person_id]);
 

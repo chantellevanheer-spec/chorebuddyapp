@@ -127,7 +127,7 @@ export default function Account() {
 
       // Update family name if it changed (parents only)
       if (family && familyName !== family.name) {
-        if (user.family_role !== 'parent') {
+        if (user.family_role !== 'parent' && user.role !== 'admin') {
           toast.error('Only parents can update the family name');
           return;
         }
@@ -492,8 +492,8 @@ export default function Account() {
         </TabsContent>
 
         <TabsContent value="family" className="mt-6">
-           {/* Family Name (Premium Parents Only) */}
-           {user?.family_role === 'parent' && isPremium && (
+           {/* Family Name (Parents Only) */}
+           {(user?.family_role === 'parent' || user?.role === 'admin') && (
              <div className="funky-card p-8 mb-6">
                <h2 className="header-font text-3xl text-[#2B59C3] mb-6 flex items-center gap-3">
                  <Users className="w-8 h-8 text-[#F7A1C4]" />
@@ -571,7 +571,7 @@ export default function Account() {
           </div>
 
           {/* Save Changes Button (for Family Name) */}
-          {user?.family_role === 'parent' && isPremium && (
+          {(user?.family_role === 'parent' || user?.role === 'admin') && (
             <Button
               onClick={handleSaveChanges}
               disabled={isSaving}

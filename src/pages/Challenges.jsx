@@ -52,7 +52,8 @@ export default function Challenges() {
     );
   }
 
-  if (user?.family_role !== 'parent') {
+  const isAdmin = user?.family_role === 'parent' || user?.role === 'admin';
+  if (!isAdmin) {
     return (
       <div className="mx-4 md:mx-8 lg:mx-24 pb-32 space-y-6 lg:pb-8">
         {/* View-only for children */}

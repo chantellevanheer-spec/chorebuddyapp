@@ -23,7 +23,7 @@ export default function Schedule() {
   const [viewMode, setViewMode] = useState('week'); // 'week' or 'calendar'
   const [selectedDate, setSelectedDate] = useState(null);
 
-  const isParent = user?.family_role === 'parent';
+  const isParent = user?.family_role === 'parent' || user?.role === 'admin';
   const isChild = user?.family_role === 'child' || user?.family_role === 'teen';
 
   const weekAssignments = useMemo(() => {

@@ -16,7 +16,7 @@ export default function DayDetailPanel({
   user
 }) {
   const [completingId, setCompletingId] = useState(null);
-  const isParent = user?.family_role === 'parent';
+  const isParent = user?.family_role === 'parent' || user?.role === 'admin';
   const isChild = user?.family_role === 'child' || user?.family_role === 'teen';
 
   const getAssignmentsForDate = (date) => {

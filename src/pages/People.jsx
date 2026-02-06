@@ -107,9 +107,9 @@ export default function People() {
   }, [people, assignments]);
 
   /**
-   * Check if current user is a parent
+   * Check if current user is a parent/admin
    */
-  const isParent = useMemo(() => user?.family_role === 'parent', [user?.family_role]);
+  const isParent = useMemo(() => user?.family_role === 'parent' || user?.role === 'admin', [user?.family_role, user?.role]);
 
   /**
    * Modal management helpers
