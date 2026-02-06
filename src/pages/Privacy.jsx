@@ -10,7 +10,7 @@ import {
 
 export default function Privacy() {
   return (
-    <div className="mt-6 mr-32 ml-32 pb-40 space-y-8 lg:pb-8">
+    <div className="mx-4 md:mx-8 lg:mx-24 pb-40 space-y-8 lg:pb-8">
       {/* Header */}
       <div className="funky-card p-6 md:p-8">
         <div className="flex items-center gap-4 md:gap-6">
@@ -32,7 +32,7 @@ export default function Privacy() {
             Welcome to the ChoreBuddy Legal Hub. We are committed to protecting your privacy and being transparent about how we operate. Here you can find important legal documents that govern your use of our service.
           </p>
           <p>
-            <strong>Last updated:</strong> {new Date().toLocaleDateString()}
+            <strong>Last updated:</strong> February 6, 2026
           </p>
         </div>
       </div>

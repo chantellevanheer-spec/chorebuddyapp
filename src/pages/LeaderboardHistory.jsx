@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useData } from '../components/contexts/DataContext';
 import { Trophy, Calendar, TrendingUp, Loader2, Medal, Crown } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -24,8 +24,8 @@ export default function LeaderboardHistory() {
 
   const loading = dataLoading || archivesLoading;
 
-  // Calculate current period rankings
-  const calculateCurrentRankings = () => {
+  // Calculate current period rankings (memoized)
+  const currentRankings = useMemo(() => {
     const now = new Date();
     let startDate, endDate;
 
@@ -60,9 +60,7 @@ export default function LeaderboardHistory() {
     rankings.forEach((r, index) => r.rank = index + 1);
 
     return rankings;
-  };
-
-  const currentRankings = calculateCurrentRankings();
+  }, [selectedPeriod, rewards, people]);
 
   // Get historical archives
   const monthlyArchives = archives.filter(a => a.period_type === 'monthly');

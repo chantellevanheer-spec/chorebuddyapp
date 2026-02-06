@@ -17,7 +17,7 @@ export default function PaymentSuccess() {
         <h1 className="header-font text-4xl md:text-5xl text-[#2B59C3] mb-4">Success!</h1>
         
         <p className="body-font-light text-gray-600 text-lg mb-8">
-          Your subscription is now active! You can now enjoy all the premium features of ChoreFlow.
+          Your subscription is now active! You can now enjoy all the premium features of ChoreBuddy.
         </p>
 
         <Link to={createPageUrl('Dashboard')}>
