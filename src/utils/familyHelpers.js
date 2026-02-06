@@ -1,3 +1,5 @@
+import { Family } from '@/entities/Family';
+
 /**
  * Check if user can manage family settings
  */

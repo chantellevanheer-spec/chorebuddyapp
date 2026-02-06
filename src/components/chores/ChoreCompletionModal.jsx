@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { X, Camera, Upload, Loader2 } from 'lucide-react';
@@ -25,6 +25,15 @@ export default function ChoreCompletionModal({
   const [isUploading, setIsUploading] = useState(false);
   const [difficultyRating, setDifficultyRating] = useState(null);
 
+  // Cleanup object URL on unmount or when preview changes to prevent memory leak
+  useEffect(() => {
+    return () => {
+      if (photoPreview) {
+        URL.revokeObjectURL(photoPreview);
+      }
+    };
+  }, [photoPreview]);
+
   const handlePhotoChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -34,12 +43,16 @@ export default function ChoreCompletionModal({
         toast.error('Please upload a valid image file (JPEG, PNG, GIF, or WebP)');
         return;
       }
-      
+
       if (file.size > 5 * 1024 * 1024) {
         toast.error('Photo must be less than 5MB');
         return;
       }
-      
+
+      // Revoke old URL before creating new one
+      if (photoPreview) {
+        URL.revokeObjectURL(photoPreview);
+      }
       setPhotoFile(file);
       setPhotoPreview(URL.createObjectURL(file));
     }
@@ -141,6 +154,7 @@ export default function ChoreCompletionModal({
                   />
                   <button
                     onClick={() => {
+                      if (photoPreview) URL.revokeObjectURL(photoPreview);
                       setPhotoFile(null);
                       setPhotoPreview(null);
                     }}
