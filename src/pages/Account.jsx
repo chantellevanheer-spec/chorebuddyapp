@@ -579,7 +579,7 @@ export default function Account() {
                 <Users className="w-6 h-6 mr-3" />
                 Go to Family Page
               </Button>
-            </RouterLink>
+            </Link>
           </div>
         </TabsContent>
       </Tabs>
