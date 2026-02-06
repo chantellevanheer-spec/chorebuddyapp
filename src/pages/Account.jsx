@@ -106,8 +106,8 @@ export default function Account() {
     setIsSaving(true);
     try {
       // Update all user attributes in a single call
-      await base44.auth.updateMe({
-        family_role: user.family_role,
+      // Only parents can change family_role to prevent privilege escalation
+      const updateData = {
         receives_chore_reminders: user.receives_chore_reminders,
         receives_achievement_alerts: user.receives_achievement_alerts,
         receives_weekly_reports: user.receives_weekly_reports,
@@ -119,7 +119,11 @@ export default function Account() {
           chore_preferences: chorePreferences,
           notification_preferences: notificationPreferences
         }
-      });
+      };
+      if (user.family_role === 'parent') {
+        updateData.family_role = user.family_role;
+      }
+      await base44.auth.updateMe(updateData);
 
       // Update family name if it changed (parents only)
       if (family && familyName !== family.name) {
@@ -280,20 +284,29 @@ export default function Account() {
             
             <div className="mt-6 pt-6 border-t border-gray-200">
               <label htmlFor="family-role" className="body-font text-lg text-[#5E3B85] mb-4 block">Family Role</label>
-              <Select 
-                value={user.family_role || 'parent'} 
-                onValueChange={(value) => handleToggleChange('family_role', value)}
-              >
-                <SelectTrigger id="family-role" className="funky-button border-3 border-[#5E3B85] body-font bg-white max-w-xs">
-                  <SelectValue placeholder="Select your role..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="parent">Parent / Guardian</SelectItem>
-                  <SelectItem value="child">Teen / Child</SelectItem>
-                </SelectContent>
-              </Select>
+              {user.family_role === 'parent' ? (
+                <Select
+                  value={user.family_role || 'parent'}
+                  onValueChange={(value) => handleToggleChange('family_role', value)}
+                >
+                  <SelectTrigger id="family-role" className="funky-button border-3 border-[#5E3B85] body-font bg-white max-w-xs">
+                    <SelectValue placeholder="Select your role..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="parent">Parent / Guardian</SelectItem>
+                    <SelectItem value="teen">Teen</SelectItem>
+                    <SelectItem value="child">Child</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <div className="funky-button border-3 border-[#5E3B85] body-font bg-gray-50 max-w-xs px-4 py-2 text-gray-700 capitalize">
+                  {user.family_role || 'Member'}
+                </div>
+              )}
               <p className="body-font-light text-sm text-gray-500 mt-2">
-                Your role determines what features and permissions you have in the app
+                {user.family_role === 'parent'
+                  ? 'As a parent, you have admin access to manage the family'
+                  : 'Your role is managed by a parent. Contact them to change it.'}
               </p>
             </div>
           </div>

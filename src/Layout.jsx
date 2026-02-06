@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
-import { Home, Users, ClipboardList, Calendar, Sparkles, Zap, Settings, Loader2, Target, CheckCircle, MessageCircle, Megaphone } from "lucide-react";
+import { Home, Users, ClipboardList, Calendar, Sparkles, Zap, Settings, Loader2, Target, CheckCircle, MessageCircle, Megaphone, Shield } from "lucide-react";
 import PublicLayout from "./components/layout/PublicLayout";
 import CookieBanner from './components/ui/CookieBanner';
 import RealTimeBadge from './components/ui/RealTimeBadge';
@@ -92,7 +92,10 @@ const navigationItems = [
   color: "bg-green-400 text-green-800",
   hover: "hover:bg-green-500",
   active: "bg-green-500"
-},
+}];
+
+// Parent/admin-only navigation items
+const adminNavigationItems = [
 {
   title: "Admin",
   url: createPageUrl("Admin"),
@@ -290,6 +293,19 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
                   </Link>
                 );
               })}
+              {(currentUser?.family_role === 'parent' || currentUser?.role === 'admin') && adminNavigationItems.map((item) => {
+                const isActive = location.pathname === item.url;
+                return (
+                  <Link
+                    key={item.title}
+                    to={item.url}
+                    className={`funky-button flex items-center gap-4 p-4 ${item.color} ${item.hover} ${isActive ? item.active : ''}`}
+                  >
+                    <item.icon className="w-6 h-6" />
+                    <span className="text-xl header-font">{item.title}</span>
+                  </Link>
+                );
+              })}
               <div className="pt-4 border-t-2 border-dashed border-gray-300 space-y-4">
                 <Link
                   to={createPageUrl("Account")}
@@ -395,6 +411,20 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#FDFBF5]/80 backdrop-blur-sm border-t-3 border-[#5E3B85] overflow-hidden">
         <div className="flex items-center justify-start gap-2 p-2 sm:p-4 overflow-x-auto whitespace-nowrap scrollbar-hide">
           {navigationItems.map((item) => {
+            const isActive = location.pathname === item.url;
+            return (
+              <Link
+                key={item.title}
+                to={item.url}
+                className={`flex flex-col items-center gap-1 transition-transform duration-200 flex-shrink-0 ${isActive ? 'scale-105' : 'scale-95 opacity-80'}`}
+              >
+                <div className={`funky-button w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center ${item.color}`}>
+                  <item.icon className="w-6 h-6 sm:w-7 sm:h-7" />
+                </div>
+              </Link>
+            );
+          })}
+          {(currentUser?.family_role === 'parent' || currentUser?.role === 'admin') && adminNavigationItems.map((item) => {
             const isActive = location.pathname === item.url;
             return (
               <Link

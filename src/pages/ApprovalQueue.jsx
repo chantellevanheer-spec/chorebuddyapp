@@ -86,12 +86,13 @@ export default function ApprovalQueue() {
     );
   }
 
-  if (user?.family_role !== 'parent') {
+  const isAdmin = user?.family_role === 'parent' || user?.role === 'admin';
+  if (!isAdmin) {
     return (
       <div className="mx-4 md:mx-8 lg:mx-24 pb-32 lg:pb-8">
         <div className="funky-card p-8 text-center">
           <h2 className="header-font text-2xl text-red-600 mb-4">Access Denied</h2>
-          <p className="body-font-light text-gray-600">Only parents can access the approval queue.</p>
+          <p className="body-font-light text-gray-600">Only parents with admin permissions can access the approval queue.</p>
         </div>
       </div>
     );

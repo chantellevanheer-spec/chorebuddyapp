@@ -192,7 +192,7 @@ export default function RoleSelection() {
         </div>
 
         <p className="text-center body-font-light text-gray-500 mt-8">
-          Don't worry, you can change this later in your account settings.
+          Choose carefully! Parents can manage roles later from account settings.
         </p>
       </div>
     </div>
