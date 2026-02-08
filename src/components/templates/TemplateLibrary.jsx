@@ -27,7 +27,10 @@ export default function TemplateLibrary({ onApplyTemplate }) {
 
   const { data: templates = [], isLoading } = useQuery({
     queryKey: ['chore-templates'],
-    queryFn: () => base44.entities.ChoreTemplate.list('name')
+    queryFn: async () => {
+      const all = await base44.entities.ChoreTemplate.list();
+      return all.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    }
   });
 
   const handleApplyTemplate = async (template) => {
