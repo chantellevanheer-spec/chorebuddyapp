@@ -14,6 +14,7 @@ import { useAssignmentNotifications } from '../hooks/useAssignmentNotifications'
 import { useOfflineSync } from '../hooks/useOfflineSync';
 import { offlineStorage, STORES } from '../utils/offlineStorage';
 import { canManageFamily as canManageFamilyUtil, isFamilyOwner as isFamilyOwnerUtil } from '@/utils/familyHelpers';
+import { listForFamily } from '@/utils/entityHelpers';
 import { toast } from "sonner";
 
 const DataContext = createContext();
@@ -257,14 +258,14 @@ export const DataProvider = ({ children }) => {
         completionsData,
         achievementsData
       ] = await Promise.all([
-        Person.filter({ family_id: familyId }, "name").catch(() => []),
-        Chore.filter({ family_id: familyId }, "title").catch(() => []),
-        Assignment.filter({ family_id: familyId }, "-created_date").catch(() => []),
-        Reward.filter({ family_id: familyId }, "-created_date").catch(() => []),
-        RedeemableItem.filter({ family_id: familyId }, "cost").catch(() => []),
-        FamilyGoal.filter({ family_id: familyId }, "-created_date").catch(() => []),
-        ChoreCompletion.filter({ family_id: familyId }, "-created_date").catch(() => []),
-        Achievement.filter({ family_id: familyId }, "-created_date").catch(() => [])
+        listForFamily(Person, familyId, "name").catch(() => []),
+        listForFamily(Chore, familyId, "title").catch(() => []),
+        listForFamily(Assignment, familyId, "-created_date").catch(() => []),
+        listForFamily(Reward, familyId, "-created_date").catch(() => []),
+        listForFamily(RedeemableItem, familyId, "cost").catch(() => []),
+        listForFamily(FamilyGoal, familyId, "-created_date").catch(() => []),
+        listForFamily(ChoreCompletion, familyId, "-created_date").catch(() => []),
+        listForFamily(Achievement, familyId, "-created_date").catch(() => [])
       ]);
 
       console.log("[DataContext] Data fetched:", {

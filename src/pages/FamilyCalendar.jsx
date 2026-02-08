@@ -41,7 +41,7 @@ export default function FamilyCalendar() {
       setCurrentUser(userData);
 
       const eventsData = userData.family_id
-        ? await base44.entities.CalendarEvent.filter({ family_id: userData.family_id })
+        ? await base44.entities.CalendarEvent.list().then(all => all.filter(e => e.family_id === userData.family_id))
         : [];
 
       setEvents(eventsData);

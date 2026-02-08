@@ -59,9 +59,8 @@ export default function FamilyLinking() {
 
                 // For parents/admins, fetch their family data
                 if (checkParent(userData) && userData.family_id) {
-                    const families = await Family.filter({ id: userData.family_id });
-                    if (families.length > 0) {
-                        const familyData = families[0];
+                    const familyData = await Family.get(userData.family_id);
+                    if (familyData) {
                         setFamily(familyData);
                         if (familyData.linking_code) {
                             setLinkingCode(familyData.linking_code);
