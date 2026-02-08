@@ -43,7 +43,7 @@ export default function RoleSelection() {
       const userData = await User.me();
       
       // If parent, create a family, Person record, and set admin role
-      if (family_role === 'parent') {
+      if (role === 'parent') {
         const family = await Family.create({
           name: `${userData.full_name}'s Family`,
           owner_user_id: userData.id,
