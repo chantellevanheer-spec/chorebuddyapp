@@ -18,8 +18,9 @@ export default function Challenges() {
     queryKey: ['challenges', user?.family_id],
     queryFn: async () => {
       if (!user?.family_id) return [];
-      const all = await base44.entities.FamilyChallenge.list('-created_date');
-      return all.filter(item => item.family_id === user.family_id);
+      const all = await base44.entities.FamilyChallenge.list();
+      return all.filter(item => item.family_id === user.family_id)
+        .sort((a, b) => (b.created_date || '').localeCompare(a.created_date || ''));
     },
     enabled: !!user?.family_id,
     initialData: []

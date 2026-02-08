@@ -36,7 +36,7 @@ export default function Messages() {
 
       const [messagesData, usersData] = await Promise.all([
         userData.family_id
-          ? base44.entities.Message.list('-created_date').then(all => all.filter(m => m.family_id === userData.family_id))
+          ? base44.entities.Message.list().then(all => all.filter(m => m.family_id === userData.family_id).sort((a, b) => (b.created_date || '').localeCompare(a.created_date || '')))
           : [],
         userData.family_id
           ? base44.entities.User.list().then(all => all.filter(u => u.family_id === userData.family_id))
