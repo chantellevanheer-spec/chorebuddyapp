@@ -32,7 +32,7 @@ export default function Goals() {
     setGoalLoading(true);
     try {
       const goalsData = user?.family_id
-        ? await FamilyGoal.filter({ family_id: user.family_id }, "-created_date")
+        ? await FamilyGoal.list("-created_date").then(all => all.filter(g => g.family_id === user.family_id))
         : [];
       setGoals(goalsData);
     } catch (error) {

@@ -12,7 +12,8 @@ export default function Achievements() {
     queryKey: ['achievements', user?.family_id],
     queryFn: async () => {
       if (!user?.family_id) return [];
-      return await base44.entities.Achievement.filter({ family_id: user.family_id }, '-earned_date');
+      const all = await base44.entities.Achievement.list('-earned_date');
+      return all.filter(item => item.family_id === user.family_id);
     },
     enabled: !!user?.family_id,
     initialData: []

@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { isParent, isChild } from '@/utils/roles';
+import { listForFamily } from '@/utils/entityHelpers';
 import { createPageUrl } from '@/utils';
 import { Link, useNavigate } from 'react-router-dom';
 import { Loader2, User as UserIcon, Bell, Users, Settings, Shield, CreditCard, AlertCircle, Link2, Sparkles, Palette, Crown } from 'lucide-react';
@@ -82,7 +83,7 @@ export default function Account() {
           setFamilyName(familyData?.name || '');
 
           // Fetch family people (scoped to user's family)
-          const familyPeople = await Person.filter({ family_id: userData.family_id });
+          const familyPeople = await listForFamily(Person, userData.family_id);
           setPeople(familyPeople);
 
           // Find linked person
@@ -191,7 +192,7 @@ export default function Account() {
         setLinkModalOpen(false);
         
         // Refresh data (scoped to user's family)
-        const familyPeople = await Person.filter({ family_id: user.family_id });
+        const familyPeople = await listForFamily(Person, user.family_id);
         setPeople(familyPeople);
         const linked = familyPeople.find(p => p.id === personId);
         setLinkedPerson(linked || null);
