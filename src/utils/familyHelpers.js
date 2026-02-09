@@ -25,8 +25,7 @@ export function isFamilyOwner(user, family) {
 export function getMemberLimit(tier) {
   const limits = {
     free: 6,
-    premium: 15,
-    family_plus: 30,
+    premium: 15
     enterprise: 50
   };
   return limits[tier] || limits.free;
@@ -54,9 +53,7 @@ export function getRemainingSlots(family) {
 export function formatTier(tier) {
   const names = {
     free: 'Free',
-    premium: 'Premium',
-    family_plus: 'Family Plus',
-    enterprise: 'Enterprise'
+    premium: 'Premium'
   };
   return names[tier] || 'Free';
 }
