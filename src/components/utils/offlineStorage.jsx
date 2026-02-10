@@ -1,11 +1,13 @@
 // IndexedDB wrapper for offline storage
 const DB_NAME = 'chorebuddy_offline';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORES = {
   CHORES: 'chores',
   ASSIGNMENTS: 'assignments',
   PEOPLE: 'people',
-  SYNC_QUEUE: 'sync_queue'
+  SYNC_QUEUE: 'sync_queue',
+  REWARDS: 'rewards',
+  ITEMS: 'items'
 };
 
 class OfflineStorage {
@@ -40,6 +42,12 @@ class OfflineStorage {
         if (!db.objectStoreNames.contains(STORES.SYNC_QUEUE)) {
           const store = db.createObjectStore(STORES.SYNC_QUEUE, { keyPath: 'id', autoIncrement: true });
           store.createIndex('timestamp', 'timestamp', { unique: false });
+        }
+        if (!db.objectStoreNames.contains(STORES.REWARDS)) {
+          db.createObjectStore(STORES.REWARDS, { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains(STORES.ITEMS)) {
+          db.createObjectStore(STORES.ITEMS, { keyPath: 'id' });
         }
       };
     });

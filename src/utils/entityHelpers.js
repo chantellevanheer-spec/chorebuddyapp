@@ -10,7 +10,8 @@
  * @returns {Promise<Array>}
  */
 export async function listForFamily(entity, familyId, sort) {
-  const all = await entity.list();
+  const result = await entity.list();
+  const all = Array.isArray(result) ? result : [];
   const filtered = all.filter(item => item.family_id === familyId);
   if (sort) {
     const desc = sort.startsWith('-');

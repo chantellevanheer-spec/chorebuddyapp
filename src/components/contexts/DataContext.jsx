@@ -213,8 +213,13 @@ export const DataProvider = ({ children }) => {
       // 3. Initialize family if needed
       if (!userData.family_id) {
         console.log("[DataContext] User has no family, initializing...");
-        const familyId = await initializeFamily(userData);
-        userData.family_id = familyId;
+        try {
+          const familyId = await initializeFamily(userData);
+          userData.family_id = familyId;
+        } catch (initError) {
+          console.error("[DataContext] Family initialization failed:", initError);
+          // Continue with empty data rather than failing completely
+        }
       }
       
       setUser(userData);
