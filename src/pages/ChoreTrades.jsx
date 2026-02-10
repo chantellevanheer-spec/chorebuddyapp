@@ -28,7 +28,8 @@ export default function ChoreTrades() {
     queryKey: ['trades', user?.family_id],
     queryFn: async () => {
       if (!user?.family_id) return [];
-      const all = await base44.entities.ChoreTrade.list();
+      const result = await base44.entities.ChoreTrade.list();
+      const all = Array.isArray(result) ? result : [];
       return all.filter(item => item.family_id === user.family_id)
         .sort((a, b) => (b.created_date || '').localeCompare(a.created_date || ''));
     },

@@ -275,14 +275,14 @@ export const DataProvider = ({ children }) => {
           completionsData,
           achievementsData
         ] = await Promise.all([
-          listForFamily(Person, familyId, "name"),
-          listForFamily(Chore, familyId, "title"),
-          listForFamily(Assignment, familyId, "-created_date"),
-          listForFamily(Reward, familyId, "-created_date"),
-          listForFamily(RedeemableItem, familyId, "cost"),
-          listForFamily(FamilyGoal, familyId, "-created_date"),
-          listForFamily(ChoreCompletion, familyId, "-created_date"),
-          listForFamily(Achievement, familyId, "-created_date")
+          listForFamily(Person, familyId, "name").catch(() => []),
+          listForFamily(Chore, familyId, "title").catch(() => []),
+          listForFamily(Assignment, familyId, "-created_date").catch(() => []),
+          listForFamily(Reward, familyId, "-created_date").catch(() => []),
+          listForFamily(RedeemableItem, familyId, "cost").catch(() => []),
+          listForFamily(FamilyGoal, familyId, "-created_date").catch(() => []),
+          listForFamily(ChoreCompletion, familyId, "-created_date").catch(() => []),
+          listForFamily(Achievement, familyId, "-created_date").catch(() => [])
         ]);
       } catch (entityError) {
         console.error("[DataContext] Unexpected error fetching entities:", entityError);

@@ -32,7 +32,7 @@ export default function Goals() {
     setGoalLoading(true);
     try {
       const goalsData = user?.family_id
-        ? await FamilyGoal.list().then(all => all.filter(g => g.family_id === user.family_id).sort((a, b) => (b.created_date || '').localeCompare(a.created_date || '')))
+        ? await FamilyGoal.list().then(r => (Array.isArray(r) ? r : []).filter(g => g.family_id === user.family_id).sort((a, b) => (b.created_date || '').localeCompare(a.created_date || '')))
         : [];
       setGoals(goalsData);
     } catch (error) {
