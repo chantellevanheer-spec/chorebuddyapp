@@ -252,26 +252,42 @@ export const DataProvider = ({ children }) => {
       }
       
       // 6. Fetch all entity data in parallel (scoped to user's family)
+      // listForFamily now handles its own errors internally (with retry for
+      // transient failures), so each call always resolves to an array.
       const familyId = userData.family_id;
-      const [
-        peopleData,
-        choresData,
-        assignmentsData,
-        rewardsData,
-        itemsData,
-        goalsData,
-        completionsData,
-        achievementsData
-      ] = await Promise.all([
-        listForFamily(Person, familyId, "name").catch(() => []),
-        listForFamily(Chore, familyId, "title").catch(() => []),
-        listForFamily(Assignment, familyId, "-created_date").catch(() => []),
-        listForFamily(Reward, familyId, "-created_date").catch(() => []),
-        listForFamily(RedeemableItem, familyId, "cost").catch(() => []),
-        listForFamily(FamilyGoal, familyId, "-created_date").catch(() => []),
-        listForFamily(ChoreCompletion, familyId, "-created_date").catch(() => []),
-        listForFamily(Achievement, familyId, "-created_date").catch(() => [])
-      ]);
+      let peopleData = [];
+      let choresData = [];
+      let assignmentsData = [];
+      let rewardsData = [];
+      let itemsData = [];
+      let goalsData = [];
+      let completionsData = [];
+      let achievementsData = [];
+
+      try {
+        [
+          peopleData,
+          choresData,
+          assignmentsData,
+          rewardsData,
+          itemsData,
+          goalsData,
+          completionsData,
+          achievementsData
+        ] = await Promise.all([
+          listForFamily(Person, familyId, "name"),
+          listForFamily(Chore, familyId, "title"),
+          listForFamily(Assignment, familyId, "-created_date"),
+          listForFamily(Reward, familyId, "-created_date"),
+          listForFamily(RedeemableItem, familyId, "cost"),
+          listForFamily(FamilyGoal, familyId, "-created_date"),
+          listForFamily(ChoreCompletion, familyId, "-created_date"),
+          listForFamily(Achievement, familyId, "-created_date")
+        ]);
+      } catch (entityError) {
+        console.error("[DataContext] Unexpected error fetching entities:", entityError);
+        // Continue with whatever data we have (defaults to empty arrays)
+      }
 
       console.log("[DataContext] Data fetched:", {
         people: peopleData.length,
