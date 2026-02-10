@@ -13,7 +13,7 @@ import { useRealTimeSync } from '../hooks/useRealTimeSync';
 import { useAssignmentNotifications } from '../hooks/useAssignmentNotifications';
 import { useOfflineSync } from '../hooks/useOfflineSync';
 import { offlineStorage, STORES } from '../utils/offlineStorage';
-import { canManageFamily as canManageFamilyUtil, isFamilyOwner as isFamilyOwnerUtil } from '@/utils';
+import { canManageFamily as canManageFamilyUtil, isFamilyOwner as isFamilyOwnerUtil } from '@/components/utils';
 import { listForFamily } from '@/utils/entityHelpers';
 import { toast } from "sonner";
 
