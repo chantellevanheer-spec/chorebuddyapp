@@ -17,20 +17,21 @@ export async function listForFamily(EntityClass, familyId, sortBy = "-created_da
   }
   
   try {
-    // Use list() with family_id filter
-    const entities = await EntityClass.list();
-    
-    // Client-side filter by family_id
-    const filtered = entities.filter(entity => entity.family_id === familyId);
+    // Use filter() instead of list() to avoid invalid query issues
+    const entities = await EntityClass.filter({ family_id: familyId });
     
     // Client-side sort if needed
-    if (sortBy) {
+    if (sortBy && entities.length > 0) {
       const isDescending = sortBy.startsWith('-');
       const field = isDescending ? sortBy.substring(1) : sortBy;
       
-      filtered.sort((a, b) => {
+      entities.sort((a, b) => {
         const aVal = a[field];
         const bVal = b[field];
+        
+        if (aVal == null && bVal == null) return 0;
+        if (aVal == null) return isDescending ? -1 : 1;
+        if (bVal == null) return isDescending ? 1 : -1;
         
         if (aVal < bVal) return isDescending ? 1 : -1;
         if (aVal > bVal) return isDescending ? -1 : 1;
@@ -38,7 +39,7 @@ export async function listForFamily(EntityClass, familyId, sortBy = "-created_da
       });
     }
     
-    return filtered;
+    return entities;
   } catch (error) {
     console.error(`[entityHelpers] Error listing ${EntityClass.name} for family ${familyId}:`, error);
     return [];
