@@ -3,6 +3,7 @@
  * Used for permission checks, member limits, and subscription tier management
  */
 
+
 /**
  * Check if user can manage family (owner or co-owner)
  */
