@@ -666,7 +666,7 @@ export const DataProvider = ({ children }) => {
         throw new Error("Only owners and co-owners can update family settings");
       }
       
-      const updatedFamily = await Family.update(family.id, {
+      const updatedFamily = await base44.entities.Family.update(family.id, {
         ...data,
         updated_at: new Date().toISOString()
       });
