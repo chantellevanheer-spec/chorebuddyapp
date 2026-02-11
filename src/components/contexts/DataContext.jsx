@@ -248,14 +248,14 @@ export const DataProvider = ({ children }) => {
         completionsData,
         achievementsData
       ] = await Promise.all([
-        listForFamily(Person, familyId, "name").catch(() => []),
-        listForFamily(Chore, familyId, "title").catch(() => []),
-        listForFamily(Assignment, familyId, "-created_date").catch(() => []),
-        listForFamily(Reward, familyId, "-created_date").catch(() => []),
-        listForFamily(RedeemableItem, familyId, "cost").catch(() => []),
-        listForFamily(FamilyGoal, familyId, "-created_date").catch(() => []),
-        listForFamily(ChoreCompletion, familyId, "-created_date").catch(() => []),
-        listForFamily(Achievement, familyId, "-created_date").catch(() => [])
+        base44.entities.Person.filter({ family_id: familyId }).catch(() => []),
+        base44.entities.Chore.filter({ family_id: familyId }).catch(() => []),
+        base44.entities.Assignment.filter({ family_id: familyId }).catch(() => []),
+        base44.entities.Reward.filter({ family_id: familyId }).catch(() => []),
+        base44.entities.RedeemableItem.filter({ family_id: familyId }).catch(() => []),
+        base44.entities.FamilyGoal.filter({ family_id: familyId }).catch(() => []),
+        base44.entities.ChoreCompletion.filter({ family_id: familyId }).catch(() => []),
+        base44.entities.Achievement.filter({ family_id: familyId }).catch(() => [])
       ]);
 
       console.log("[DataContext] Data fetched:", {
