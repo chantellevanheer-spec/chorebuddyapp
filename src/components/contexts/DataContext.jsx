@@ -103,7 +103,7 @@ export const DataProvider = ({ children }) => {
         console.log("[DataContext] Parent person created:", parentPerson.id);
 
         // Update user with family_id
-        await User.updateMyUserData({
+        await base44.auth.updateMe({
           family_id: newFamily.id,
           family_role: 'parent'
         });
