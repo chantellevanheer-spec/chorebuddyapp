@@ -228,7 +228,7 @@ export const DataProvider = ({ children }) => {
 
       // 5. Fetch family data
       try {
-        const familyData = await Family.get(userData.family_id);
+        const familyData = await base44.entities.Family.get(userData.family_id);
         setFamily(familyData);
         console.log("[DataContext] Family loaded:", familyData.id);
       } catch (error) {
