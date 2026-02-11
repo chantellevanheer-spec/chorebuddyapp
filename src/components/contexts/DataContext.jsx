@@ -462,7 +462,7 @@ export const DataProvider = ({ children }) => {
     
     // Online mode
     return wrapProcessing(
-      () => Assignment.update(id, {
+      () => base44.entities.Assignment.update(id, {
         ...data,
         updated_at: new Date().toISOString()
       }),
@@ -474,7 +474,7 @@ export const DataProvider = ({ children }) => {
     wrapProcessing(async () => {
       const familyId = await ensureFamily();
       
-      const newAssignment = await Assignment.create({
+      const newAssignment = await base44.entities.Assignment.create({
         ...data,
         family_id: familyId,
         completed: false,
@@ -489,7 +489,7 @@ export const DataProvider = ({ children }) => {
 
   const deleteAssignment = useCallback((id) => 
     wrapProcessing(
-      () => Assignment.delete(id),
+      () => base44.entities.Assignment.delete(id),
       "Assignment removed"
     )
   , [wrapProcessing]);
