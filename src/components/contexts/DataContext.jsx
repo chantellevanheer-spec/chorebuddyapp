@@ -403,7 +403,7 @@ export const DataProvider = ({ children }) => {
     wrapProcessing(async () => {
       const familyId = await ensureFamily();
       
-      const newChore = await Chore.create({ 
+      const newChore = await base44.entities.Chore.create({ 
         ...data, 
         family_id: familyId,
         created_at: new Date().toISOString(),
@@ -417,7 +417,7 @@ export const DataProvider = ({ children }) => {
 
   const updateChore = useCallback((id, data) => 
     wrapProcessing(
-      () => Chore.update(id, {
+      () => base44.entities.Chore.update(id, {
         ...data,
         updated_at: new Date().toISOString()
       }),
@@ -427,7 +427,7 @@ export const DataProvider = ({ children }) => {
 
   const deleteChore = useCallback((id) => 
     wrapProcessing(
-      () => Chore.delete(id),
+      () => base44.entities.Chore.delete(id),
       "Chore deleted"
     )
   , [wrapProcessing]);
