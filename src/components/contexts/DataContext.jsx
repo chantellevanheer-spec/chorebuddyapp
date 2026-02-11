@@ -1,19 +1,10 @@
 import React, { createContext, useState, useEffect, useCallback, useContext, useRef } from 'react';
-import { Person } from "@/entities/Person";
-import { Chore } from "@/entities/Chore";
-import { Assignment } from "@/entities/Assignment";
-import { Reward } from "@/entities/Reward";
-import { RedeemableItem } from "@/entities/RedeemableItem";
-import { User } from "@/entities/User";
-import { FamilyGoal } from "@/entities/FamilyGoal";
-import { ChoreCompletion } from "@/entities/ChoreCompletion";
-import { Family } from "@/entities/Family";
-import { Achievement } from "@/entities/Achievement";
+import { base44 } from '@/api/base44Client';
 import { useRealTimeSync } from '../hooks/useRealTimeSync';
 import { useAssignmentNotifications } from '../hooks/useAssignmentNotifications';
 import { useOfflineSync } from '../hooks/useOfflineSync';
 import { offlineStorage, STORES } from '../utils/offlineStorage';
-import { canManageFamily as canManageFamilyUtil, isFamilyOwner as isFamilyOwnerUtil } from '@/utils/familyHelpers';
+import { canManageFamily as canManageFamilyUtil, isFamilyOwner as isFamilyOwnerUtil } from '@/components/utils';
 import { toast } from "sonner";
 
 const DataContext = createContext();
@@ -77,7 +68,7 @@ export const DataProvider = ({ children }) => {
     initializeFamilyRef.current = (async () => {
       try {
         // Create family (linking code generated via backend familyLinking function)
-        const newFamily = await Family.create({
+        const newFamily = await base44.entities.Family.create({
           name: `${userData.full_name || 'My'}'s Family`,
           owner_user_id: userData.id,
           members: [userData.id],
@@ -95,7 +86,7 @@ export const DataProvider = ({ children }) => {
 
         // Auto-create a Person record for the parent so they appear
         // as a family member immediately (no manual linking needed)
-        const parentPerson = await Person.create({
+        const parentPerson = await base44.entities.Person.create({
           name: userData.full_name || 'Parent',
           family_id: newFamily.id,
           role: 'parent',
@@ -112,7 +103,7 @@ export const DataProvider = ({ children }) => {
         console.log("[DataContext] Parent person created:", parentPerson.id);
 
         // Update user with family_id
-        await User.updateMyUserData({
+        await base44.auth.updateMe({
           family_id: newFamily.id,
           family_role: 'parent'
         });
@@ -152,7 +143,7 @@ export const DataProvider = ({ children }) => {
 
     try {
       // 1. Get current user
-      const userData = await User.me().catch(() => null);
+      const userData = await base44.auth.me().catch(() => null);
       
       if (!userData) {
         console.log("[DataContext] No user authenticated");
@@ -237,7 +228,7 @@ export const DataProvider = ({ children }) => {
 
       // 5. Fetch family data
       try {
-        const familyData = await Family.get(userData.family_id);
+        const familyData = await base44.entities.Family.get(userData.family_id);
         setFamily(familyData);
         console.log("[DataContext] Family loaded:", familyData.id);
       } catch (error) {
@@ -257,14 +248,14 @@ export const DataProvider = ({ children }) => {
         completionsData,
         achievementsData
       ] = await Promise.all([
-        Person.filter({ family_id: familyId }, "name").catch(() => []),
-        Chore.filter({ family_id: familyId }, "title").catch(() => []),
-        Assignment.filter({ family_id: familyId }, "-created_date").catch(() => []),
-        Reward.filter({ family_id: familyId }, "-created_date").catch(() => []),
-        RedeemableItem.filter({ family_id: familyId }, "cost").catch(() => []),
-        FamilyGoal.filter({ family_id: familyId }, "-created_date").catch(() => []),
-        ChoreCompletion.filter({ family_id: familyId }, "-created_date").catch(() => []),
-        Achievement.filter({ family_id: familyId }, "-created_date").catch(() => [])
+        base44.entities.Person.filter({ family_id: familyId }).catch(() => []),
+        base44.entities.Chore.filter({ family_id: familyId }).catch(() => []),
+        base44.entities.Assignment.filter({ family_id: familyId }).catch(() => []),
+        base44.entities.Reward.filter({ family_id: familyId }).catch(() => []),
+        base44.entities.RedeemableItem.filter({ family_id: familyId }).catch(() => []),
+        base44.entities.FamilyGoal.filter({ family_id: familyId }).catch(() => []),
+        base44.entities.ChoreCompletion.filter({ family_id: familyId }).catch(() => []),
+        base44.entities.Achievement.filter({ family_id: familyId }).catch(() => [])
       ]);
 
       console.log("[DataContext] Data fetched:", {
@@ -351,7 +342,7 @@ export const DataProvider = ({ children }) => {
    * Validate user has family before operations
    */
   const ensureFamily = useCallback(async () => {
-    const currentUser = await User.me();
+    const currentUser = await base44.auth.me();
     
     if (!currentUser.family_id) {
       throw new Error("No family found. Please refresh the page.");
@@ -369,7 +360,7 @@ export const DataProvider = ({ children }) => {
       const familyId = await ensureFamily();
       console.log("[DataContext] Adding person to family:", familyId);
       
-      const newPerson = await Person.create({ 
+      const newPerson = await base44.entities.Person.create({ 
         ...data, 
         family_id: familyId,
         is_active: true,
@@ -389,7 +380,7 @@ export const DataProvider = ({ children }) => {
 
   const updatePerson = useCallback((id, data) => 
     wrapProcessing(
-      () => Person.update(id, {
+      () => base44.entities.Person.update(id, {
         ...data,
         updated_at: new Date().toISOString()
       }),
@@ -399,7 +390,7 @@ export const DataProvider = ({ children }) => {
 
   const deletePerson = useCallback((id) => 
     wrapProcessing(
-      () => Person.delete(id),
+      () => base44.entities.Person.delete(id),
       "Family member removed"
     )
   , [wrapProcessing]);
@@ -412,7 +403,7 @@ export const DataProvider = ({ children }) => {
     wrapProcessing(async () => {
       const familyId = await ensureFamily();
       
-      const newChore = await Chore.create({ 
+      const newChore = await base44.entities.Chore.create({ 
         ...data, 
         family_id: familyId,
         created_at: new Date().toISOString(),
@@ -426,7 +417,7 @@ export const DataProvider = ({ children }) => {
 
   const updateChore = useCallback((id, data) => 
     wrapProcessing(
-      () => Chore.update(id, {
+      () => base44.entities.Chore.update(id, {
         ...data,
         updated_at: new Date().toISOString()
       }),
@@ -436,7 +427,7 @@ export const DataProvider = ({ children }) => {
 
   const deleteChore = useCallback((id) => 
     wrapProcessing(
-      () => Chore.delete(id),
+      () => base44.entities.Chore.delete(id),
       "Chore deleted"
     )
   , [wrapProcessing]);
@@ -471,7 +462,7 @@ export const DataProvider = ({ children }) => {
     
     // Online mode
     return wrapProcessing(
-      () => Assignment.update(id, {
+      () => base44.entities.Assignment.update(id, {
         ...data,
         updated_at: new Date().toISOString()
       }),
@@ -483,7 +474,7 @@ export const DataProvider = ({ children }) => {
     wrapProcessing(async () => {
       const familyId = await ensureFamily();
       
-      const newAssignment = await Assignment.create({
+      const newAssignment = await base44.entities.Assignment.create({
         ...data,
         family_id: familyId,
         completed: false,
@@ -498,7 +489,7 @@ export const DataProvider = ({ children }) => {
 
   const deleteAssignment = useCallback((id) => 
     wrapProcessing(
-      () => Assignment.delete(id),
+      () => base44.entities.Assignment.delete(id),
       "Assignment removed"
     )
   , [wrapProcessing]);
@@ -511,7 +502,7 @@ export const DataProvider = ({ children }) => {
     wrapProcessing(async () => {
       const familyId = await ensureFamily();
       
-      const newItem = await RedeemableItem.create({ 
+      const newItem = await base44.entities.RedeemableItem.create({ 
         ...data, 
         family_id: familyId,
         is_active: true,
@@ -526,7 +517,7 @@ export const DataProvider = ({ children }) => {
 
   const updateItem = useCallback((id, data) => 
     wrapProcessing(
-      () => RedeemableItem.update(id, {
+      () => base44.entities.RedeemableItem.update(id, {
         ...data,
         updated_at: new Date().toISOString()
       }),
@@ -536,7 +527,7 @@ export const DataProvider = ({ children }) => {
 
   const deleteItem = useCallback((id) => 
     wrapProcessing(
-      () => RedeemableItem.delete(id),
+      () => base44.entities.RedeemableItem.delete(id),
       "Reward item deleted"
     )
   , [wrapProcessing]);
@@ -549,7 +540,7 @@ export const DataProvider = ({ children }) => {
     wrapProcessing(async () => {
       const familyId = await ensureFamily();
       
-      const newReward = await Reward.create({ 
+      const newReward = await base44.entities.Reward.create({ 
         ...data, 
         family_id: familyId,
         created_at: new Date().toISOString()
@@ -566,7 +557,7 @@ export const DataProvider = ({ children }) => {
             last_activity_at: new Date().toISOString()
           };
           
-          await Family.update(family.id, { statistics: newStats });
+          await base44.entities.Family.update(family.id, { statistics: newStats });
           setFamily(prev => ({ ...prev, statistics: newStats }));
         } catch (error) {
           console.error("[DataContext] Failed to update family stats:", error);
@@ -579,7 +570,7 @@ export const DataProvider = ({ children }) => {
 
   const deleteReward = useCallback((id) => 
     wrapProcessing(
-      () => Reward.delete(id),
+      () => base44.entities.Reward.delete(id),
       "Reward deleted"
     )
   , [wrapProcessing]);
@@ -592,7 +583,7 @@ export const DataProvider = ({ children }) => {
     wrapProcessing(async () => {
       const familyId = await ensureFamily();
       
-      const newGoal = await FamilyGoal.create({ 
+      const newGoal = await base44.entities.FamilyGoal.create({ 
         ...data, 
         family_id: familyId,
         status: 'active',
@@ -608,7 +599,7 @@ export const DataProvider = ({ children }) => {
 
   const updateGoal = useCallback((id, data) => 
     wrapProcessing(
-      () => FamilyGoal.update(id, {
+      () => base44.entities.FamilyGoal.update(id, {
         ...data,
         updated_at: new Date().toISOString()
       }),
@@ -618,7 +609,7 @@ export const DataProvider = ({ children }) => {
 
   const deleteGoal = useCallback((id) => 
     wrapProcessing(
-      () => FamilyGoal.delete(id),
+      () => base44.entities.FamilyGoal.delete(id),
       "Goal deleted"
     )
   , [wrapProcessing]);
@@ -631,7 +622,7 @@ export const DataProvider = ({ children }) => {
     wrapProcessing(async () => {
       const familyId = await ensureFamily();
       
-      const newCompletion = await ChoreCompletion.create({ 
+      const newCompletion = await base44.entities.ChoreCompletion.create({ 
         ...data, 
         family_id: familyId,
         created_at: new Date().toISOString()
@@ -649,7 +640,7 @@ export const DataProvider = ({ children }) => {
             last_activity_at: new Date().toISOString()
           };
           
-          await Family.update(family.id, { statistics: newStats });
+          await base44.entities.Family.update(family.id, { statistics: newStats });
           setFamily(prev => ({ ...prev, statistics: newStats }));
         } catch (error) {
           console.error("[DataContext] Failed to update family stats:", error);
@@ -675,7 +666,7 @@ export const DataProvider = ({ children }) => {
         throw new Error("Only owners and co-owners can update family settings");
       }
       
-      const updatedFamily = await Family.update(family.id, {
+      const updatedFamily = await base44.entities.Family.update(family.id, {
         ...data,
         updated_at: new Date().toISOString()
       });

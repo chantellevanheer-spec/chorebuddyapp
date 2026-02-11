@@ -16,7 +16,9 @@ export default function LeaderboardHistory() {
     queryKey: ['leaderboard_archives', user?.family_id],
     queryFn: async () => {
       if (!user?.family_id) return [];
-      return await base44.entities.LeaderboardArchive.filter({ family_id: user.family_id }, '-period_start');
+      const all = await base44.entities.LeaderboardArchive.list();
+      return all.filter(item => item.family_id === user.family_id)
+        .sort((a, b) => (b.period_start || '').localeCompare(a.period_start || ''));
     },
     enabled: !!user?.family_id,
     initialData: []

@@ -7,8 +7,8 @@ export async function initializeTrialPeriod(data, context) {
     data.subscription_tier = 'free';
   }
   
-  // If premium tier, set 14-day trial
-  if (data.subscription_tier === 'premium' || data.subscription_tier === 'family_plus') {
+  // If paid tier, set 14-day trial
+  if (['premium', 'family_plus', 'enterprise'].includes(data.subscription_tier)) {
     data.subscription_status = 'trial';
     
     // Trial period: 14 days

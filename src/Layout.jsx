@@ -265,7 +265,7 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
                   <Sparkles className="w-8 h-8 text-white" />
                 </div>
                 <div>
-                  <h1 className="header-font text-4xl no-underline uppercase">CHOREBUDDY</h1>
+                  <h1 className="header-font text-4xl no-underline uppercase">CHOREBUDDY APP</h1>
                 </div>
               </div>
               {currentUser?.data?.avatar && (
@@ -273,7 +273,7 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
                   <UserAvatar avatarId={currentUser.data.avatar} size="md" />
                   <div>
                     <p className="body-font text-sm text-[#5E3B85]">{currentUser.full_name}</p>
-                    <p className="text-xs text-gray-500 capitalize">{currentUser.subscription_tier}</p>
+                    <p className="text-xs text-gray-500">{{ free: 'Free', premium: 'Premium', family_plus: 'Family Plus', enterprise: 'Enterprise' }[currentUser.subscription_tier] || 'Free'}</p>
                   </div>
                 </div>
               )}
@@ -334,7 +334,7 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
               <Sparkles className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl header-font text-[#2B59C3]">ChoreBuddy</h1>
+              <h1 className="text-3xl header-font text-[#2B59C3]">ChoreBuddy App</h1>
             </div>
           </div>
           {children}
@@ -351,7 +351,7 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
                 <div className="funky-button w-12 h-12 bg-[#C3B1E1] flex items-center justify-center">
                   <Sparkles className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="header-font text-2xl text-[#2B59C3]">ChoreBuddy</h3>
+                <h3 className="header-font text-2xl text-[#2B59C3]">ChoreBuddy App</h3>
               </div>
               <p className="body-font-light text-gray-600 text-sm">
                 Making household chores fun and manageable for the whole family.

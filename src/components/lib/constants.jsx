@@ -33,11 +33,19 @@ export const DIFFICULTY_STARS = {
 
 export const SUBSCRIPTION_LIMITS = {
   free: {
-    family_members: 2,
-    redeemable_items: 3
+    family_members: 6,
+    redeemable_items: 5
   },
   premium: {
-    family_members: -1, // unlimited
+    family_members: 15,
+    redeemable_items: -1 // unlimited
+  },
+  family_plus: {
+    family_members: 30,
+    redeemable_items: -1 // unlimited
+  },
+  enterprise: {
+    family_members: 50,
     redeemable_items: -1 // unlimited
   }
 };

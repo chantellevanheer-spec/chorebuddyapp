@@ -3,6 +3,8 @@ import { Person } from '@/entities/Person';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { isParent, isChild } from '@/utils/roles';
+import { listForFamily } from '@/utils/entityHelpers';
 import { createPageUrl } from '@/utils';
 import { Link, useNavigate } from 'react-router-dom';
 import { Loader2, User as UserIcon, Bell, Users, Settings, Shield, CreditCard, AlertCircle, Link2, Sparkles, Palette, Crown } from 'lucide-react';
@@ -49,7 +51,8 @@ export default function Account() {
     return user?.subscription_tier || 'free';
   };
 
-  const isPremium = getEffectiveSubscriptionTier() === 'premium';
+  const effectiveTier = getEffectiveSubscriptionTier();
+  const isPaidTier = effectiveTier !== 'free';
 
   useEffect(() => {
     const fetchData = async () => {
@@ -81,7 +84,7 @@ export default function Account() {
           setFamilyName(familyData?.name || '');
 
           // Fetch family people (scoped to user's family)
-          const familyPeople = await Person.filter({ family_id: userData.family_id });
+          const familyPeople = await listForFamily(Person, userData.family_id);
           setPeople(familyPeople);
 
           // Find linked person
@@ -190,7 +193,7 @@ export default function Account() {
         setLinkModalOpen(false);
         
         // Refresh data (scoped to user's family)
-        const familyPeople = await Person.filter({ family_id: user.family_id });
+        const familyPeople = await listForFamily(Person, user.family_id);
         setPeople(familyPeople);
         const linked = familyPeople.find(p => p.id === personId);
         setLinkedPerson(linked || null);
@@ -257,7 +260,7 @@ export default function Account() {
           <TabsTrigger value="profile" className="mx-3 my-1 px-3 py-1 text-sm font-medium funky-button inline-flex items-center justify-center whitespace-nowrap rounded-sm ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm md:text-base">
             <UserIcon className="w-4 h-4 mr-2" /> Profile
           </TabsTrigger>
-          {isPremium && (
+          {isPaidTier && (
             <TabsTrigger value="personalize" className="mx-3 my-1 px-3 py-1 text-sm font-medium funky-button inline-flex items-center justify-center whitespace-nowrap rounded-sm ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm md:text-base">
               <Crown className="w-4 h-4 mr-2" /> Personalize
             </TabsTrigger>
@@ -438,7 +441,7 @@ export default function Account() {
             <h2 className="header-font text-3xl text-[#2B59C3] mb-6">Notification Preferences</h2>
             <div className="space-y-6">
               
-              {isPremium ? (
+              {isPaidTier ? (
                 <NotificationPreferences
                   preferences={notificationPreferences}
                   onChange={setNotificationPreferences}

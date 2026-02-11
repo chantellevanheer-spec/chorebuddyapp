@@ -29,16 +29,17 @@ export function useRealTimeSync(familyId, enabled = true, onUpdate = null) {
           const lastCheck = lastCheckRef.current[entityType] || new Date(0).toISOString();
           
           try {
-            // Fetch only recently updated items with server-side filtering
-            const updated = await base44.entities[entityType].filter({
-              family_id: familyId,
-              updated_date__gt: lastCheck,
-            });
+            // Fetch all items and filter client-side (SDK .filter() returns 500)
+            const all = await base44.entities[entityType].list();
+            const updated = all.filter(item =>
+              item.family_id === familyId &&
+              item.updated_date && item.updated_date > lastCheck
+            );
 
-            return { 
-              entityType, 
-              hasUpdates: updated.length > 0, 
-              count: updated.length 
+            return {
+              entityType,
+              hasUpdates: updated.length > 0,
+              count: updated.length
             };
           } catch (error) {
             console.error(`[RealTimeSync] Error checking ${entityType}:`, error);

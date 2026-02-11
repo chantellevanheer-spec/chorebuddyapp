@@ -44,7 +44,7 @@ export default function NoticeBoard() {
       setCurrentUser(userData);
 
       const noticesData = userData.family_id
-        ? await base44.entities.Notice.filter({ family_id: userData.family_id }, '-created_date')
+        ? await base44.entities.Notice.list().then(all => all.filter(n => n.family_id === userData.family_id).sort((a, b) => (b.created_date || '').localeCompare(a.created_date || '')))
         : [];
 
       setNotices(noticesData);

@@ -27,9 +27,12 @@ export const CALENDAR_CONSTANTS = {
 
 // Subscription Limits (duplicated from constants.js, consider consolidating)
 export const SUBSCRIPTION_LIMITS = {
-  FREE_FAMILY_MEMBERS: 2,
-  FREE_REDEEMABLE_ITEMS: 3,
-  PREMIUM_UNLIMITED: -1,
+  FREE_FAMILY_MEMBERS: 6,
+  FREE_REDEEMABLE_ITEMS: 5,
+  PREMIUM_FAMILY_MEMBERS: 15,
+  FAMILY_PLUS_FAMILY_MEMBERS: 30,
+  ENTERPRISE_FAMILY_MEMBERS: 50,
+  PAID_UNLIMITED: -1,
 };
 
 // Time Durations (milliseconds)
