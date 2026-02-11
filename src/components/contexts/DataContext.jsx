@@ -342,7 +342,7 @@ export const DataProvider = ({ children }) => {
    * Validate user has family before operations
    */
   const ensureFamily = useCallback(async () => {
-    const currentUser = await User.me();
+    const currentUser = await base44.auth.me();
     
     if (!currentUser.family_id) {
       throw new Error("No family found. Please refresh the page.");
