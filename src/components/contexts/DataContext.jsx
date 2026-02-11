@@ -622,7 +622,7 @@ export const DataProvider = ({ children }) => {
     wrapProcessing(async () => {
       const familyId = await ensureFamily();
       
-      const newCompletion = await ChoreCompletion.create({ 
+      const newCompletion = await base44.entities.ChoreCompletion.create({ 
         ...data, 
         family_id: familyId,
         created_at: new Date().toISOString()
@@ -640,7 +640,7 @@ export const DataProvider = ({ children }) => {
             last_activity_at: new Date().toISOString()
           };
           
-          await Family.update(family.id, { statistics: newStats });
+          await base44.entities.Family.update(family.id, { statistics: newStats });
           setFamily(prev => ({ ...prev, statistics: newStats }));
         } catch (error) {
           console.error("[DataContext] Failed to update family stats:", error);
