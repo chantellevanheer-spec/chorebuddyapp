@@ -380,7 +380,7 @@ export const DataProvider = ({ children }) => {
 
   const updatePerson = useCallback((id, data) => 
     wrapProcessing(
-      () => Person.update(id, {
+      () => base44.entities.Person.update(id, {
         ...data,
         updated_at: new Date().toISOString()
       }),
@@ -390,7 +390,7 @@ export const DataProvider = ({ children }) => {
 
   const deletePerson = useCallback((id) => 
     wrapProcessing(
-      () => Person.delete(id),
+      () => base44.entities.Person.delete(id),
       "Family member removed"
     )
   , [wrapProcessing]);
