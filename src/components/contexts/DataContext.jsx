@@ -540,7 +540,7 @@ export const DataProvider = ({ children }) => {
     wrapProcessing(async () => {
       const familyId = await ensureFamily();
       
-      const newReward = await Reward.create({ 
+      const newReward = await base44.entities.Reward.create({ 
         ...data, 
         family_id: familyId,
         created_at: new Date().toISOString()
@@ -557,7 +557,7 @@ export const DataProvider = ({ children }) => {
             last_activity_at: new Date().toISOString()
           };
           
-          await Family.update(family.id, { statistics: newStats });
+          await base44.entities.Family.update(family.id, { statistics: newStats });
           setFamily(prev => ({ ...prev, statistics: newStats }));
         } catch (error) {
           console.error("[DataContext] Failed to update family stats:", error);
@@ -570,7 +570,7 @@ export const DataProvider = ({ children }) => {
 
   const deleteReward = useCallback((id) => 
     wrapProcessing(
-      () => Reward.delete(id),
+      () => base44.entities.Reward.delete(id),
       "Reward deleted"
     )
   , [wrapProcessing]);
