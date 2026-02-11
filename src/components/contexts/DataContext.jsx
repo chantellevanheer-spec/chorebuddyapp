@@ -502,7 +502,7 @@ export const DataProvider = ({ children }) => {
     wrapProcessing(async () => {
       const familyId = await ensureFamily();
       
-      const newItem = await RedeemableItem.create({ 
+      const newItem = await base44.entities.RedeemableItem.create({ 
         ...data, 
         family_id: familyId,
         is_active: true,
@@ -517,7 +517,7 @@ export const DataProvider = ({ children }) => {
 
   const updateItem = useCallback((id, data) => 
     wrapProcessing(
-      () => RedeemableItem.update(id, {
+      () => base44.entities.RedeemableItem.update(id, {
         ...data,
         updated_at: new Date().toISOString()
       }),
@@ -527,7 +527,7 @@ export const DataProvider = ({ children }) => {
 
   const deleteItem = useCallback((id) => 
     wrapProcessing(
-      () => RedeemableItem.delete(id),
+      () => base44.entities.RedeemableItem.delete(id),
       "Reward item deleted"
     )
   , [wrapProcessing]);
