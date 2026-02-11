@@ -143,7 +143,7 @@ export const DataProvider = ({ children }) => {
 
     try {
       // 1. Get current user
-      const userData = await User.me().catch(() => null);
+      const userData = await base44.auth.me().catch(() => null);
       
       if (!userData) {
         console.log("[DataContext] No user authenticated");
