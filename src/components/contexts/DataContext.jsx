@@ -68,7 +68,7 @@ export const DataProvider = ({ children }) => {
     initializeFamilyRef.current = (async () => {
       try {
         // Create family (linking code generated via backend familyLinking function)
-        const newFamily = await Family.create({
+        const newFamily = await base44.entities.Family.create({
           name: `${userData.full_name || 'My'}'s Family`,
           owner_user_id: userData.id,
           members: [userData.id],
