@@ -86,7 +86,7 @@ export const DataProvider = ({ children }) => {
 
         // Auto-create a Person record for the parent so they appear
         // as a family member immediately (no manual linking needed)
-        const parentPerson = await Person.create({
+        const parentPerson = await base44.entities.Person.create({
           name: userData.full_name || 'Parent',
           family_id: newFamily.id,
           role: 'parent',
