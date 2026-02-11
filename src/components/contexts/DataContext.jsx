@@ -360,7 +360,7 @@ export const DataProvider = ({ children }) => {
       const familyId = await ensureFamily();
       console.log("[DataContext] Adding person to family:", familyId);
       
-      const newPerson = await Person.create({ 
+      const newPerson = await base44.entities.Person.create({ 
         ...data, 
         family_id: familyId,
         is_active: true,
