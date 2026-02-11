@@ -84,7 +84,7 @@ export default function SimpleChoreCard({ assignment, chore, person, onComplete,
           onComplete={handleCompleteWithDetails}
           assignment={assignment}
           chore={chore}
-          isPremium={user?.subscription_tier === 'premium'}
+          isPremium={user?.subscription_tier !== 'free'}
           requiresPhoto={chore?.photo_required}
         />
       )}

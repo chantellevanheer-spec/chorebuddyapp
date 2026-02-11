@@ -5,10 +5,10 @@ import { useData } from '../contexts/DataContext';
 const SUBSCRIPTION_FEATURES = {
   free: {
     // Core limits
-    max_family_members: 3,
-    max_redeemable_items: 3,
+    max_family_members: 6,
+    max_redeemable_items: 5,
     max_chores: 10,
-    
+
     // Feature access
     choreai_smart_assignment: false,
     advanced_chore_settings: false,
@@ -25,11 +25,53 @@ const SUBSCRIPTION_FEATURES = {
     family_invitations: false
   },
   premium: {
-    // Core limits (unlimited)
-    max_family_members: -1,
+    // Core limits
+    max_family_members: 15,
     max_redeemable_items: -1,
     max_chores: -1,
-    
+
+    // Feature access (core premium features)
+    choreai_smart_assignment: true,
+    advanced_chore_settings: true,
+    family_goals: false,
+    analytics_export: false,
+    premium_support: false,
+    recurring_chores: true,
+    chore_approval_system: true,
+    photo_verification: true,
+    custom_points: true,
+    weekly_reports: false,
+    priority_assignment: true,
+    early_completion_bonus: true,
+    family_invitations: true
+  },
+  family_plus: {
+    // Core limits
+    max_family_members: 30,
+    max_redeemable_items: -1,
+    max_chores: -1,
+
+    // Feature access (all premium + family-oriented features)
+    choreai_smart_assignment: true,
+    advanced_chore_settings: true,
+    family_goals: true,
+    analytics_export: true,
+    premium_support: false,
+    recurring_chores: true,
+    chore_approval_system: true,
+    photo_verification: true,
+    custom_points: true,
+    weekly_reports: true,
+    priority_assignment: true,
+    early_completion_bonus: true,
+    family_invitations: true
+  },
+  enterprise: {
+    // Core limits
+    max_family_members: 50,
+    max_redeemable_items: -1,
+    max_chores: -1,
+
     // Feature access (all features)
     choreai_smart_assignment: true,
     advanced_chore_settings: true,
@@ -94,10 +136,14 @@ export const useSubscriptionAccess = () => {
   const getTierDisplayName = (tier) => {
     const names = {
       free: 'Free',
-      premium: 'Premium'
+      premium: 'Premium',
+      family_plus: 'Family Plus',
+      enterprise: 'Enterprise'
     };
     return names[tier] || 'Premium';
   };
+
+  const isPaidTier = currentTier !== 'free' && isActive;
 
   return {
     currentTier,
@@ -109,6 +155,9 @@ export const useSubscriptionAccess = () => {
     getTierDisplayName,
     // Convenience getters
     isPremium: currentTier === 'premium' && isActive,
+    isFamilyPlus: currentTier === 'family_plus' && isActive,
+    isEnterprise: currentTier === 'enterprise' && isActive,
+    isPaidTier,
     isFree: currentTier === 'free'
   };
 };

@@ -79,7 +79,7 @@ function ChoreCard({ assignment, chore, person, onComplete, user }) {
         onComplete={handleCompleteWithDetails}
         assignment={assignment}
         chore={chore}
-        isPremium={user?.subscription_tier === 'premium'}
+        isPremium={user?.subscription_tier !== 'free'}
         requiresPhoto={chore?.photo_required}
       />
     )}

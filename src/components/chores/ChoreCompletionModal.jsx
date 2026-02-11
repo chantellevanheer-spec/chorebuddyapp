@@ -184,7 +184,7 @@ export default function ChoreCompletionModal({
           {!isPremium && requiresPhoto && (
             <div className="mb-6 p-4 bg-yellow-50 border-2 border-yellow-300 rounded-lg">
               <p className="body-font-light text-sm text-yellow-800">
-                This chore requires photo verification. Upgrade to Premium to unlock this feature!
+                This chore requires photo verification. Upgrade your plan to unlock this feature!
               </p>
             </div>
           )}

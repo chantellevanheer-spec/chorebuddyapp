@@ -31,6 +31,7 @@ export function getMemberLimit(tier) {
   const limits = {
     free: 6,
     premium: 15,
+    family_plus: 30,
     enterprise: 50
   };
   return limits[tier] || limits.free;
@@ -67,6 +68,7 @@ export function formatTier(tier) {
   const names = {
     free: 'Free',
     premium: 'Premium',
+    family_plus: 'Family Plus',
     enterprise: 'Enterprise'
   };
   return names[tier] || 'Free';

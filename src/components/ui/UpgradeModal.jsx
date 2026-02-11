@@ -27,11 +27,11 @@ export default function UpgradeModal({ isOpen, onClose, featureName, requiredPla
               <Zap className="w-10 h-10 text-white" />
             </div>
             
-            <h2 className="header-font text-4xl text-[#2B59C3] mb-4">Upgrade to Unlock!</h2>
-            
+            <h2 className="header-font text-4xl text-[#2B59C3] mb-4">Upgrade Your Plan!</h2>
+
             <p className="body-font-light text-gray-600 text-lg mb-2">
-              The <span className="body-font text-[#FF6B35]">{featureName}</span> feature is available on the{' '}
-              <span className="body-font capitalize text-[#2B59C3]">{requiredPlan}</span> plan.
+              The <span className="body-font text-[#FF6B35]">{featureName}</span> feature requires the{' '}
+              <span className="body-font text-[#2B59C3]">{requiredPlan}</span> plan or higher.
             </p>
             <p className="body-font-light text-gray-600 text-lg mb-8">
               Upgrade your plan to take your chore management to the next level.

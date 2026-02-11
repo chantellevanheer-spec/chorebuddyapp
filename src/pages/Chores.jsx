@@ -493,11 +493,11 @@ export default function Chores() {
               <div className="space-y-4 p-4 funky-card border-2 border-gray-300 bg-gray-50">
                 <h3 className="header-font text-xl text-gray-600">🔒 Premium Features</h3>
                 <p className="body-font-light text-gray-500 text-sm">
-                  Unlock custom points, approval workflows, and photo verification with a Premium subscription.
+                  Unlock custom points, approval workflows, and photo verification with a paid subscription.
                 </p>
                 <Link to={createPageUrl('Pricing')}>
                   <Button className="funky-button bg-[#FF6B35] text-white px-4 py-2 text-sm header-font">
-                    Upgrade to Premium
+                    View Plans
                   </Button>
                 </Link>
               </div>
