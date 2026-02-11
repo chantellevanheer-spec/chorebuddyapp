@@ -583,7 +583,7 @@ export const DataProvider = ({ children }) => {
     wrapProcessing(async () => {
       const familyId = await ensureFamily();
       
-      const newGoal = await FamilyGoal.create({ 
+      const newGoal = await base44.entities.FamilyGoal.create({ 
         ...data, 
         family_id: familyId,
         status: 'active',
@@ -599,7 +599,7 @@ export const DataProvider = ({ children }) => {
 
   const updateGoal = useCallback((id, data) => 
     wrapProcessing(
-      () => FamilyGoal.update(id, {
+      () => base44.entities.FamilyGoal.update(id, {
         ...data,
         updated_at: new Date().toISOString()
       }),
@@ -609,7 +609,7 @@ export const DataProvider = ({ children }) => {
 
   const deleteGoal = useCallback((id) => 
     wrapProcessing(
-      () => FamilyGoal.delete(id),
+      () => base44.entities.FamilyGoal.delete(id),
       "Goal deleted"
     )
   , [wrapProcessing]);
