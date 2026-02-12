@@ -1,4 +1,7 @@
 import { Family } from '@/entities/Family';
+import { getMemberLimit, formatTier, getTierColor } from '@/constants/subscriptionTiers';
+
+export { getMemberLimit, formatTier, getTierColor };
 
 /**
  * Check if user can manage family settings
@@ -20,18 +23,6 @@ export function isFamilyOwner(user, family) {
 }
 
 /**
- * Get member limit for subscription tier
- */
-export function getMemberLimit(tier) {
-  const limits = {
-    free: 6,
-    premium: 15
-    enterprise: 50
-  };
-  return limits[tier] || limits.free;
-}
-
-/**
  * Check if family can add more members
  */
 export function canAddMember(family) {
@@ -45,30 +36,6 @@ export function canAddMember(family) {
 export function getRemainingSlots(family) {
   const limit = getMemberLimit(family.subscription_tier);
   return Math.max(0, limit - family.member_count);
-}
-
-/**
- * Format subscription tier for display
- */
-export function formatTier(tier) {
-  const names = {
-    free: 'Free',
-    premium: 'Premium'
-  };
-  return names[tier] || 'Free';
-}
-
-/**
- * Get subscription badge color
- */
-export function getTierColor(tier) {
-  const colors = {
-    free: 'gray',
-    premium: 'blue',
-    family_plus: 'purple',
-    enterprise: 'yellow'
-  };
-  return colors[tier] || 'gray';
 }
 
 /**

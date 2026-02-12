@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from "sonner";
 import { base44 } from '@/api/base44Client';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import moment from 'moment';
+import { format } from 'date-fns';
 
 export default function FamilyInviteModal({ isOpen, onClose, onSuccess }) {
   const [formData, setFormData] = useState({
@@ -253,7 +253,7 @@ export default function FamilyInviteModal({ isOpen, onClose, onSuccess }) {
                     </div>
                     {linkingCodeExpiry && (
                       <p className="body-font-light text-xs text-gray-500 mt-1 text-center">
-                        Expires: {moment(linkingCodeExpiry).format('MMM D, YYYY h:mm A')}
+                        Expires: {format(new Date(linkingCodeExpiry), 'MMM d, yyyy h:mm a')}
                       </p>
                     )}
                   </div>

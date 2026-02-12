@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { X, Camera, Upload, Loader2 } from 'lucide-react';
+import { X, Camera, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 import { sanitizeHTML } from '@/components/lib/sanitization';
 import { VALIDATION } from '@/components/lib/appConstants';
-import DifficultyRating from './DifficultyRating';
 import DifficultyFeedback from './DifficultyFeedback';
 
 export default function ChoreCompletionModal({ 
@@ -184,7 +183,7 @@ export default function ChoreCompletionModal({
           {!isPremium && requiresPhoto && (
             <div className="mb-6 p-4 bg-yellow-50 border-2 border-yellow-300 rounded-lg">
               <p className="body-font-light text-sm text-yellow-800">
-                This chore requires photo verification. Upgrade to Premium to unlock this feature!
+                This chore requires photo verification. Upgrade your plan to unlock this feature!
               </p>
             </div>
           )}

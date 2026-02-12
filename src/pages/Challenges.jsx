@@ -3,12 +3,10 @@ import { useData } from '../components/contexts/DataContext';
 import { Button } from '@/components/ui/button';
 import { Plus, Trophy, Loader2, Target } from 'lucide-react';
 import { toast } from 'sonner';
-import { isParent } from '@/utils/roles';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import ChallengeCard from '../components/challenges/ChallengeCard';
 import ChallengeFormModal from '../components/challenges/ChallengeFormModal';
-import { isParent as checkParent } from '@/utils/roles';
 
 export default function Challenges() {
   const { people, user, loading: dataLoading } = useData();

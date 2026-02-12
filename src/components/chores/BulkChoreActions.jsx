@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Trash2, UserPlus, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';

@@ -7,7 +7,7 @@ export async function generateInviteCode(data, context) {
   let code = '';
   
   let isUnique = false;
-  let attempts = 0;
+  let attempts = 1;
   const maxAttempts = 10;
   
   while (!isUnique && attempts < maxAttempts) {

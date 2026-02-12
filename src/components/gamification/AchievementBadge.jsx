@@ -1,5 +1,5 @@
 import React from 'react';
-import { Award, Zap, Clock, Users, Target, Star, Trophy, Crown, Flame, Heart } from 'lucide-react';
+import { Award, Zap, Clock, Target, Star, Trophy, Crown, Flame, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const BADGE_CONFIG = {

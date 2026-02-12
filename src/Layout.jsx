@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
-import { Home, Users, ClipboardList, Calendar, Sparkles, Zap, Settings, Loader2, Target, CheckCircle, MessageCircle, Megaphone, Shield } from "lucide-react";
+import { Home, Users, ClipboardList, Calendar, Sparkles, Zap, Settings, Loader2, Target, CheckCircle, MessageCircle, Megaphone } from "lucide-react";
 import PublicLayout from "./components/layout/PublicLayout";
 import CookieBanner from './components/ui/CookieBanner';
 import RealTimeBadge from './components/ui/RealTimeBadge';
@@ -12,6 +12,7 @@ import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import OnboardingTour from './components/onboarding/OnboardingTour';
 import UserAvatar from './components/profile/UserAvatar';
 import { isParent as checkParent } from '@/utils/roles';
+import { PUBLIC_PAGES } from '@/constants/publicPages';
 
 const navigationItems = [
 {
@@ -106,8 +107,6 @@ const adminNavigationItems = [
   active: "bg-[#4a2d6b]"
 }];
 
-const publicPages = ['Home', 'Index', 'Pricing', 'Help', 'Privacy', 'PaymentSuccess', 'PaymentCancel', 'JoinFamily', 'RoleSelection'];
-
 function AppLayout({ children, currentPageName, showOnboarding, setShowOnboarding }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -116,7 +115,7 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
   const [currentUser, setCurrentUser] = useState(null);
   const onboardingShownRef = React.useRef(false);
 
-  const isPublicPage = publicPages.includes(currentPageName);
+  const isPublicPage = PUBLIC_PAGES.includes(currentPageName);
 
   useEffect(() => {
     // No need to run auth check for public pages
@@ -273,7 +272,7 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
                   <UserAvatar avatarId={currentUser.data.avatar} size="md" />
                   <div>
                     <p className="body-font text-sm text-[#5E3B85]">{currentUser.full_name}</p>
-                    <p className="text-xs text-gray-500 capitalize">{currentUser.subscription_tier}</p>
+                    <p className="text-xs text-gray-500">{{ free: 'Free', premium: 'Premium', family_plus: 'Family Plus', enterprise: 'Enterprise' }[currentUser.subscription_tier] || 'Free'}</p>
                   </div>
                 </div>
               )}
@@ -395,7 +394,7 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
           <div className="border-t-2 border-dashed border-gray-300 mt-8 pt-6">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <p className="body-font-light text-sm text-gray-600">
-                © 2024 ChoreBuddy App. All rights reserved.
+                © 2025 ChoreBuddy App. All rights reserved.
               </p>
               <div className="flex items-center gap-4 body-font-light text-sm text-gray-600">
                 <span>Version 1.0.0</span>

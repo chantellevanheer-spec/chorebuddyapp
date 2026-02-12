@@ -3,7 +3,6 @@ import { useData } from '../components/contexts/DataContext';
 import { useChoreManagement } from '../components/hooks/useChoreManagement';
 import { Calendar, CheckCircle, ArrowLeft, ArrowRight, Loader2, UserX, LayoutGrid, CalendarDays } from "lucide-react";
 import { format, startOfWeek, addWeeks, subWeeks } from "date-fns";
-import { isParent as checkIsParent, isChild as checkIsChild } from '@/utils/roles';
 import { Button } from "@/components/ui/button";
 import { AnimatePresence } from 'framer-motion';
 import ScheduleChoreItem from '../components/schedule/ScheduleChoreItem';
@@ -13,7 +12,6 @@ import Confetti from '../components/ui/Confetti';
 import { AVATAR_COLORS } from '@/components/lib/constants';
 import { toast } from "sonner";
 import ReassignModal from '../components/chores/ReassignModal';
-import { isParent as checkParent, isChild as checkChild } from '@/utils/roles';
 
 export default function Schedule() {
   const { assignments, chores, people, user, loading, updateAssignment, fetchData } = useData();
@@ -65,6 +63,15 @@ export default function Schedule() {
     }
   };
   
+  const reassignmentData = useMemo(() => {
+    if (!assignmentToReassign) return null;
+    return {
+      assignment: assignmentToReassign,
+      chore: chores.find(c => c.id === assignmentToReassign.chore_id),
+      currentPerson: people.find(p => p.id === assignmentToReassign.person_id)
+    };
+  }, [assignmentToReassign, chores, people]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -74,15 +81,6 @@ export default function Schedule() {
   }
 
   const isCurrentWeek = format(currentWeek, "yyyy-MM-dd") === format(startOfWeek(new Date()), "yyyy-MM-dd");
-
-  const reassignmentData = useMemo(() => {
-    if (!assignmentToReassign) return null;
-    return {
-      assignment: assignmentToReassign,
-      chore: chores.find(c => c.id === assignmentToReassign.chore_id),
-      currentPerson: people.find(p => p.id === assignmentToReassign.person_id)
-    };
-  }, [assignmentToReassign, chores, people]);
 
   return (
     <div className="mx-4 md:mx-8 lg:mx-24 pb-32 space-y-6 md:space-y-8 lg:pb-8 relative">

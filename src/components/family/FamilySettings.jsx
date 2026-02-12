@@ -7,7 +7,6 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Users, 
   Settings as SettingsIcon, 
   Crown, 
   Copy, 
@@ -15,7 +14,6 @@ import {
   Shield,
   Bell,
   Zap,
-  Calendar,
   TrendingUp,
   AlertTriangle
 } from 'lucide-react';
@@ -151,9 +149,16 @@ export default function FamilySettings() {
       enterprise: 'bg-yellow-200 text-yellow-800'
     };
 
+    const tierNames = {
+      free: 'FREE',
+      premium: 'PREMIUM',
+      family_plus: 'FAMILY PLUS',
+      enterprise: 'ENTERPRISE'
+    };
+
     return (
       <Badge className={colors[family.subscription_tier] || colors.free}>
-        {family.subscription_tier?.toUpperCase()}
+        {tierNames[family.subscription_tier] || 'FREE'}
       </Badge>
     );
   };

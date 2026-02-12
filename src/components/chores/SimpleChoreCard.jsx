@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CheckCircle2, Star } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 import ChoreCompletionModal from "./ChoreCompletionModal";
 import { AVATAR_COLORS } from '../lib/constants';
@@ -84,7 +84,7 @@ export default function SimpleChoreCard({ assignment, chore, person, onComplete,
           onComplete={handleCompleteWithDetails}
           assignment={assignment}
           chore={chore}
-          isPremium={user?.subscription_tier === 'premium'}
+          isPremium={user?.subscription_tier !== 'free'}
           requiresPhoto={chore?.photo_required}
         />
       )}

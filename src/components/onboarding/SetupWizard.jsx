@@ -8,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useData } from '../contexts/DataContext';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
-import { createPageUrl } from '@/utils';
 
 const AVATAR_COLORS = ['lavender', 'mint', 'blue', 'peach', 'pink'];
 

@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useOnlineStatus } from './useOnlineStatus';
-import { offlineStorage, STORES } from '../utils/offlineStorage';
+import { offlineStorage } from '../utils/offlineStorage';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
