@@ -143,8 +143,11 @@ export const DataProvider = ({ children }) => {
 
     try {
       // 1. Get current user
-      const userData = await base44.auth.me().catch(() => null);
-      
+      const userData = await base44.auth.me().catch((err) => {
+        console.warn("[DataContext] Failed to fetch user:", err.message || err);
+        return null;
+      });
+
       if (!userData) {
         console.log("[DataContext] No user authenticated");
         setUser(null);
@@ -238,6 +241,12 @@ export const DataProvider = ({ children }) => {
       
       // 6. Fetch all entity data in parallel (scoped to user's family)
       const familyId = userData.family_id;
+      const safeFilter = (entity, name) =>
+        entity.filter({ family_id: familyId }).catch((err) => {
+          console.error(`[DataContext] Failed to fetch ${name}:`, err.message || err);
+          return [];
+        });
+
       const [
         peopleData,
         choresData,
@@ -248,14 +257,14 @@ export const DataProvider = ({ children }) => {
         completionsData,
         achievementsData
       ] = await Promise.all([
-        base44.entities.Person.filter({ family_id: familyId }).catch(() => []),
-        base44.entities.Chore.filter({ family_id: familyId }).catch(() => []),
-        base44.entities.Assignment.filter({ family_id: familyId }).catch(() => []),
-        base44.entities.Reward.filter({ family_id: familyId }).catch(() => []),
-        base44.entities.RedeemableItem.filter({ family_id: familyId }).catch(() => []),
-        base44.entities.FamilyGoal.filter({ family_id: familyId }).catch(() => []),
-        base44.entities.ChoreCompletion.filter({ family_id: familyId }).catch(() => []),
-        base44.entities.Achievement.filter({ family_id: familyId }).catch(() => [])
+        safeFilter(base44.entities.Person, 'people'),
+        safeFilter(base44.entities.Chore, 'chores'),
+        safeFilter(base44.entities.Assignment, 'assignments'),
+        safeFilter(base44.entities.Reward, 'rewards'),
+        safeFilter(base44.entities.RedeemableItem, 'items'),
+        safeFilter(base44.entities.FamilyGoal, 'goals'),
+        safeFilter(base44.entities.ChoreCompletion, 'completions'),
+        safeFilter(base44.entities.Achievement, 'achievements')
       ]);
 
       console.log("[DataContext] Data fetched:", {

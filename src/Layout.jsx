@@ -12,6 +12,7 @@ import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import OnboardingTour from './components/onboarding/OnboardingTour';
 import UserAvatar from './components/profile/UserAvatar';
 import { isParent as checkParent } from '@/utils/roles';
+import { PUBLIC_PAGES } from '@/constants/publicPages';
 
 const navigationItems = [
 {
@@ -106,8 +107,6 @@ const adminNavigationItems = [
   active: "bg-[#4a2d6b]"
 }];
 
-const publicPages = ['Home', 'Index', 'Pricing', 'Help', 'Privacy', 'PaymentSuccess', 'PaymentCancel', 'JoinFamily', 'RoleSelection'];
-
 function AppLayout({ children, currentPageName, showOnboarding, setShowOnboarding }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -116,7 +115,7 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
   const [currentUser, setCurrentUser] = useState(null);
   const onboardingShownRef = React.useRef(false);
 
-  const isPublicPage = publicPages.includes(currentPageName);
+  const isPublicPage = PUBLIC_PAGES.includes(currentPageName);
 
   useEffect(() => {
     // No need to run auth check for public pages

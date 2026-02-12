@@ -7,6 +7,7 @@ import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-route
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import { PUBLIC_PAGES } from '@/constants/publicPages';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -16,8 +17,6 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   <Layout currentPageName={currentPageName}>{children}</Layout>
   : <>{children}</>;
 
-// Pages that can be viewed without authentication (must match Layout.jsx publicPages)
-const publicPages = ['Home', 'Index', 'Pricing', 'Help', 'Privacy', 'PaymentSuccess', 'PaymentCancel', 'JoinFamily', 'RoleSelection'];
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -25,7 +24,7 @@ const AuthenticatedApp = () => {
 
   // Determine current page name from URL path
   const currentPath = location.pathname.replace(/^\//, '') || mainPageKey;
-  const isPublicPage = publicPages.includes(currentPath);
+  const isPublicPage = PUBLIC_PAGES.includes(currentPath);
 
   // For non-public pages, enforce auth loading and error handling
   if (!isPublicPage) {
