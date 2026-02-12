@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Megaphone, Plus, Pin, Loader2, Trash2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { stripHTMLTags } from '@/components/lib/sanitization';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import { isParent as checkParent } from '@/utils/roles';
 
@@ -44,7 +45,9 @@ export default function NoticeBoard() {
       setCurrentUser(userData);
 
       const noticesData = userData.family_id
-        ? await base44.entities.Notice.list().then(all => all.filter(n => n.family_id === userData.family_id).sort((a, b) => (b.created_date || '').localeCompare(a.created_date || '')))
+        ? await base44.entities.Notice.filter({ family_id: userData.family_id })
+            .then(all => [...all].sort((a, b) => (b.created_date || '').localeCompare(a.created_date || '')))
+            .catch(() => [])
         : [];
 
       setNotices(noticesData);
@@ -61,6 +64,8 @@ export default function NoticeBoard() {
     try {
       await base44.entities.Notice.create({
         ...formData,
+        title: stripHTMLTags(formData.title),
+        content: stripHTMLTags(formData.content),
         created_by_user_id: currentUser.id,
         created_by_name: currentUser.full_name,
         family_id: currentUser.family_id

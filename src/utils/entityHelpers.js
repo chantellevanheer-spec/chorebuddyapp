@@ -1,17 +1,10 @@
 /**
- * Fetch entities scoped to a family using .list() + client-side filtering & sorting.
- *
- * The frontend SDK's .filter() and .list(sort) can return 500 from the Base44 API,
- * so we fetch everything with .list() (no params) and handle filtering + sorting in JS.
- *
- * @param {Object} entity  - SDK entity (e.g. Person, Chore)
- * @param {string} familyId - The family_id to filter by
- * @param {string} [sort]  - Optional sort field (prefix with '-' for descending)
- * @returns {Promise<Array>}
+ * @deprecated Use entity.filter({ family_id }) instead.
+ * The SDK's .filter() works reliably (proven in DataContext.jsx for 8+ entity types).
+ * This function used .list() which fetches ALL records from all families — a data exposure risk.
  */
 export async function listForFamily(entity, familyId, sort) {
-  const all = await entity.list();
-  const filtered = all.filter(item => item.family_id === familyId);
+  const filtered = await entity.filter({ family_id: familyId });
   if (sort) {
     const desc = sort.startsWith('-');
     const field = desc ? sort.slice(1) : sort;

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, Trophy, Loader2, Target } from 'lucide-react';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
+import { stripHTMLTags } from '@/components/lib/sanitization';
 import { useQuery } from '@tanstack/react-query';
 import ChallengeCard from '../components/challenges/ChallengeCard';
 import ChallengeFormModal from '../components/challenges/ChallengeFormModal';
@@ -17,9 +18,8 @@ export default function Challenges() {
     queryKey: ['challenges', user?.family_id],
     queryFn: async () => {
       if (!user?.family_id) return [];
-      const all = await base44.entities.FamilyChallenge.list();
-      return all.filter(item => item.family_id === user.family_id)
-        .sort((a, b) => (b.created_date || '').localeCompare(a.created_date || ''));
+      const data = await base44.entities.FamilyChallenge.filter({ family_id: user.family_id });
+      return [...data].sort((a, b) => (b.created_date || '').localeCompare(a.created_date || ''));
     },
     enabled: !!user?.family_id,
     initialData: []
@@ -34,6 +34,8 @@ export default function Challenges() {
     try {
       await base44.entities.FamilyChallenge.create({
         ...challengeData,
+        title: stripHTMLTags(challengeData.title),
+        description: stripHTMLTags(challengeData.description),
         family_id: user.family_id,
         current_value: 0,
         status: 'active'

@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Calendar as CalendarIcon, Plus, Loader2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, parseISO, addMonths, subMonths, getDay } from 'date-fns';
+import { stripHTMLTags } from '@/components/lib/sanitization';
 
 const colorOptions = {
   blue: { bg: 'bg-[#2B59C3]', text: 'text-white' },
@@ -41,7 +42,7 @@ export default function FamilyCalendar() {
       setCurrentUser(userData);
 
       const eventsData = userData.family_id
-        ? await base44.entities.CalendarEvent.list().then(all => all.filter(e => e.family_id === userData.family_id))
+        ? await base44.entities.CalendarEvent.filter({ family_id: userData.family_id }).catch(() => [])
         : [];
 
       setEvents(eventsData);
@@ -58,6 +59,8 @@ export default function FamilyCalendar() {
     try {
       await base44.entities.CalendarEvent.create({
         ...formData,
+        title: stripHTMLTags(formData.title),
+        description: stripHTMLTags(formData.description),
         created_by_user_id: currentUser.id,
         created_by_name: currentUser.full_name,
         family_id: currentUser.family_id

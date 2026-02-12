@@ -5,6 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { ArrowRightLeft, Loader2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import { stripHTMLTags } from '@/components/lib/sanitization';
 import ChoreTradeCard from '../components/trades/ChoreTradeCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -27,9 +28,8 @@ export default function ChoreTrades() {
     queryKey: ['trades', user?.family_id],
     queryFn: async () => {
       if (!user?.family_id) return [];
-      const all = await base44.entities.ChoreTrade.list();
-      return all.filter(item => item.family_id === user.family_id)
-        .sort((a, b) => (b.created_date || '').localeCompare(a.created_date || ''));
+      const data = await base44.entities.ChoreTrade.filter({ family_id: user.family_id });
+      return [...data].sort((a, b) => (b.created_date || '').localeCompare(a.created_date || ''));
     },
     enabled: !!user?.family_id
   });
@@ -64,7 +64,7 @@ export default function ChoreTrades() {
       to_person_id: selectedToPerson,
       from_assignment_id: selectedFromAssignment,
       to_assignment_id: selectedToAssignment && selectedToAssignment !== 'none' ? selectedToAssignment : null,
-      message: message,
+      message: stripHTMLTags(message),
       family_id: user.family_id
     });
 
