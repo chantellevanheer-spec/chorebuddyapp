@@ -12,7 +12,6 @@ import Confetti from '../components/ui/Confetti';
 import { AVATAR_COLORS } from '@/components/lib/constants';
 import { toast } from "sonner";
 import ReassignModal from '../components/chores/ReassignModal';
-import { isParent as checkParent, isChild as checkChild } from '@/utils/roles';
 
 export default function Schedule() {
   const { assignments, chores, people, user, loading, updateAssignment, fetchData } = useData();

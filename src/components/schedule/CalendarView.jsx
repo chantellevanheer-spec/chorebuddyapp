@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, CheckCircle, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { isParent as checkParent, isChild as checkChild } from '@/utils/roles';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function CalendarView({ 
   assignments, 

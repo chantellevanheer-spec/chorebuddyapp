@@ -5,13 +5,13 @@ import { createPageUrl } from '@/utils';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { 
-    Loader2, 
-    Copy, 
-    Check, 
-    RefreshCw, 
-    Link2, 
-    Sparkles, 
+import {
+    Loader2,
+    Copy,
+    Check,
+    RefreshCw,
+    Link2,
+    Sparkles,
     Users,
     ArrowRight,
     Clock,
@@ -20,7 +20,6 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { familyLinking } from '@/functions/familyLinking';
-import { isParent as checkParent } from '@/utils/roles';
 
 export default function FamilyLinking() {
     const navigate = useNavigate();
