@@ -3,7 +3,7 @@ import { useData } from '../components/contexts/DataContext';
 import { Button } from "@/components/ui/button";
 import { Plus, Users, Mail } from "lucide-react";
 import { toast } from "sonner";
-import { isParent as checkIsParent } from '@/utils/roles';
+import { isParent as checkParent } from '@/utils/roles';
 import { ListSkeleton } from '../components/ui/SkeletonLoader';
 import ErrorBoundaryWithRetry from '../components/ui/ErrorBoundaryWithRetry';
 import PersonCard from "../components/people/PersonCard";
@@ -16,7 +16,6 @@ import { useSubscriptionAccess } from '../components/hooks/useSubscriptionAccess
 import LimitReachedModal from "../components/ui/LimitReachedModal";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import { linkUserToPerson } from '@/functions/linkUserToPerson';
-import { isParent as checkParent } from '@/utils/roles';
 
 // Constants
 const TOAST_MESSAGES = {

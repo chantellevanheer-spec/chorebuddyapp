@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, ClipboardList, Clock, Star, Edit, Trash2, UserPlus, CheckSquare, Sparkles } from "lucide-react";
-import { isParent } from '@/utils/roles';
 import { Assignment } from "@/entities/Assignment";
 import { CHORE_CATEGORY_COLORS, DIFFICULTY_STARS } from '@/components/lib/constants';
 import { toast } from "sonner";

@@ -60,7 +60,7 @@ export default function RoleSelection() {
 
         // Auto-create a Person record for the parent so they are
         // immediately visible as a family member (no manual linking needed)
-        const parentPerson = await Person.create({
+        await Person.create({
           name: userData.full_name || 'Parent',
           family_id: family.id,
           role: 'parent',
@@ -79,20 +79,16 @@ export default function RoleSelection() {
           family_id: family.id,
           family_role: role
         });
-
-        toast.success(`Welcome! You're set up as a ${role}.`);
-        // Navigate to family linking page to generate/share code
-        navigate(createPageUrl('FamilyLinking'));
       } else {
         // Teen/Child - just set role, they'll join family via linking code
         await User.updateMyUserData({
           family_role: role
         });
-
-        toast.success(`Welcome! You're set up as a ${role}.`);
-        // Navigate to family linking page to enter code
-        navigate(createPageUrl('FamilyLinking'));
       }
+
+      toast.success(`Welcome! You're set up as a ${role}.`);
+      // Navigate to family linking page to generate/share code or enter code
+      navigate(createPageUrl('FamilyLinking'));
     } catch (error) {
       console.error("Error setting up role:", error);
       toast.error("Failed to set up your account. Please try again.");

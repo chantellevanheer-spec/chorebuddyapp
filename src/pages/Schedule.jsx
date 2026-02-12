@@ -3,7 +3,7 @@ import { useData } from '../components/contexts/DataContext';
 import { useChoreManagement } from '../components/hooks/useChoreManagement';
 import { Calendar, CheckCircle, ArrowLeft, ArrowRight, Loader2, UserX, LayoutGrid, CalendarDays } from "lucide-react";
 import { format, startOfWeek, addWeeks, subWeeks } from "date-fns";
-import { isParent as checkIsParent, isChild as checkIsChild } from '@/utils/roles';
+import { isParent as checkParent, isChild as checkChild } from '@/utils/roles';
 import { Button } from "@/components/ui/button";
 import { AnimatePresence } from 'framer-motion';
 import ScheduleChoreItem from '../components/schedule/ScheduleChoreItem';
@@ -13,7 +13,6 @@ import Confetti from '../components/ui/Confetti';
 import { AVATAR_COLORS } from '@/components/lib/constants';
 import { toast } from "sonner";
 import ReassignModal from '../components/chores/ReassignModal';
-import { isParent as checkParent, isChild as checkChild } from '@/utils/roles';
 
 export default function Schedule() {
   const { assignments, chores, people, user, loading, updateAssignment, fetchData } = useData();
