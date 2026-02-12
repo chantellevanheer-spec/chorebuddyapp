@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Star } from "lucide-react";
-import { toast } from "sonner";
 
 export default function PointsEarnedNotification({ points, reason, isVisible, onClose }) {
   useEffect(() => {

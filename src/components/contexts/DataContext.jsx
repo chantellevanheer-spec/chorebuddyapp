@@ -1,13 +1,14 @@
 import React, { createContext, useState, useEffect, useCallback, useContext, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useRealTimeSync } from '../hooks/useRealTimeSync';
-import { useAssignmentNotifications } from '../hooks/useAssignmentNotifications';
 import { useOfflineSync } from '../hooks/useOfflineSync';
 import { offlineStorage, STORES } from '../utils/offlineStorage';
 import { canManageFamily as canManageFamilyUtil, isFamilyOwner as isFamilyOwnerUtil } from '@/components/utils';
 import { toast } from "sonner";
 
 const DataContext = createContext();
+
+// Only keep completions and rewards from the last 60 days to avoid unbounded growth
+const DATA_RETENTION_DAYS = 60;
 
 export const useData = () => {
   const context = useContext(DataContext);
@@ -267,14 +268,33 @@ export const DataProvider = ({ children }) => {
         safeFilter(base44.entities.Achievement, 'achievements')
       ]);
 
+      // 6b. Filter completions and rewards to recent data only
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - DATA_RETENTION_DAYS);
+      const cutoffISO = cutoff.toISOString();
+
+      const recentCompletions = completionsData.filter(c =>
+        (c.created_at || c.created_date || '') >= cutoffISO
+      );
+      const recentRewards = rewardsData.filter(r =>
+        (r.created_at || r.created_date || '') >= cutoffISO
+      );
+
+      if (recentCompletions.length < completionsData.length || recentRewards.length < rewardsData.length) {
+        console.log("[DataContext] Filtered old data:", {
+          completions: `${completionsData.length} → ${recentCompletions.length}`,
+          rewards: `${rewardsData.length} → ${recentRewards.length}`,
+        });
+      }
+
       console.log("[DataContext] Data fetched:", {
         people: peopleData.length,
         chores: choresData.length,
         assignments: assignmentsData.length,
-        rewards: rewardsData.length,
+        rewards: recentRewards.length,
         items: itemsData.length,
         goals: goalsData.length,
-        completions: completionsData.length,
+        completions: recentCompletions.length,
         achievements: achievementsData.length
       });
 
@@ -282,10 +302,10 @@ export const DataProvider = ({ children }) => {
       setPeople(peopleData);
       setChores(choresData);
       setAssignments(assignmentsData);
-      setRewards(rewardsData);
+      setRewards(recentRewards);
       setItems(itemsData);
       setGoals(goalsData);
-      setCompletions(completionsData);
+      setCompletions(recentCompletions);
       setAchievements(achievementsData);
 
       // 8. Cache data for offline use

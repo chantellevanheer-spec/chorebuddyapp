@@ -1,13 +1,13 @@
 import React, { useState, useMemo } from "react";
 import { useData } from '../components/contexts/DataContext';
 import { format, startOfDay, endOfDay } from "date-fns";
-import { History, Filter, User, Calendar, Award, CheckCircle, Clock, X } from "lucide-react";
+import { History, Filter, User, Calendar, Award, CheckCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
-import { AVATAR_COLORS, DIFFICULTY_STARS } from '@/components/lib/constants';
+import { AVATAR_COLORS } from '@/components/lib/constants';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ChoreHistory() {

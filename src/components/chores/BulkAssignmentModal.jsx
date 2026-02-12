@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { X, Users, CheckSquare } from 'lucide-react';
+import { X, CheckSquare } from 'lucide-react';
 import { format, startOfWeek, addDays } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Loader2, Zap, Star, ShieldCheck, AlertCircle, Users, Building2 } from 'lucide-react';
+import { Loader2, Star, ShieldCheck, AlertCircle, Users, Building2 } from 'lucide-react';
 import PlanCard from '../components/pricing/PlanCard';
 import { stripeCheckout } from '@/functions/stripeCheckout';
 import { toast } from 'sonner';

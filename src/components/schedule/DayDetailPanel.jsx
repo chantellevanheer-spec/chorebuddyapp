@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { format, isSameDay, addDays } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, CheckCircle, Clock, Star, User, Loader2 } from 'lucide-react';
+import { X, CheckCircle, Clock, Star, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { isParent as checkParent, isChild as checkChild } from '@/utils/roles';
 import { AVATAR_COLORS, DIFFICULTY_STARS } from '@/components/lib/constants';
 import { sanitizeHTML } from '@/components/lib/sanitization';
 
