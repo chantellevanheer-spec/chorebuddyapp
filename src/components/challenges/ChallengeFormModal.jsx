@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { addDays, addWeeks } from 'date-fns';
+import { addDays } from 'date-fns';
 
 const CHALLENGE_TYPES = [
   { value: 'total_chores', label: 'Total Chores', description: 'Complete X chores as a family' },

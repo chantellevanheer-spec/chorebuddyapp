@@ -3,7 +3,6 @@ import { useData } from '../components/contexts/DataContext';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, XCircle, Clock, Camera, MessageSquare, Loader2, Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { isParent } from '@/utils/roles';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { AVATAR_COLORS, DIFFICULTY_STARS } from '../components/lib/constants';

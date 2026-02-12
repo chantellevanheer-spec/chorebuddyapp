@@ -9,13 +9,7 @@ import PersonPreferencesForm from "./PersonPreferencesForm";
 import { useSubscriptionAccess } from '../hooks/useSubscriptionAccess';
 import { validateName } from '../utils/validation';
 import { sanitizeHTML } from '../lib/sanitization';
-
-const TIER_MEMBER_LIMITS = {
-  free: 6,
-  premium: 15,
-  family_plus: 30,
-  enterprise: 50
-};
+import { getMemberLimit } from '@/constants/subscriptionTiers';
 
 export default function PersonFormModal({
   isOpen,
@@ -85,7 +79,7 @@ export default function PersonFormModal({
     }
   };
 
-  const tierLimit = TIER_MEMBER_LIMITS[currentUser?.subscription_tier || 'free'] || TIER_MEMBER_LIMITS.free;
+  const tierLimit = getMemberLimit(currentUser?.subscription_tier || 'free');
   const canAddMore = tierLimit === -1 || peopleCount < tierLimit;
 
   if (!isOpen) return null;

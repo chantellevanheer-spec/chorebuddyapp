@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { X, Camera, Upload, Loader2 } from 'lucide-react';
+import { X, Camera, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 import { sanitizeHTML } from '@/components/lib/sanitization';
 import { VALIDATION } from '@/components/lib/appConstants';
-import DifficultyRating from './DifficultyRating';
 import DifficultyFeedback from './DifficultyFeedback';
 
 export default function ChoreCompletionModal({ 

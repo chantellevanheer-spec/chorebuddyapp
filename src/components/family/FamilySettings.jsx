@@ -7,7 +7,6 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Users, 
   Settings as SettingsIcon, 
   Crown, 
   Copy, 
@@ -15,7 +14,6 @@ import {
   Shield,
   Bell,
   Zap,
-  Calendar,
   TrendingUp,
   AlertTriangle
 } from 'lucide-react';

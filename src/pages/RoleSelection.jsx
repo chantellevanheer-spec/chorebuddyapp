@@ -4,7 +4,6 @@ import { Family } from '@/entities/Family';
 import { Person } from '@/entities/Person';
 import { createPageUrl } from '@/utils';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { Users, Baby, Sparkles, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 

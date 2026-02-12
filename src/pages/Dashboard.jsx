@@ -1,9 +1,8 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { smartAssignChores } from "@/functions/smartAssignChores";
-import { format, startOfWeek, addDays } from "date-fns";
+import { format, startOfWeek } from "date-fns";
 import { useData } from '../components/contexts/DataContext';
 import { toast } from "sonner";
-import { User } from '@/entities/User';
 import { Assignment } from "@/entities/Assignment";
 import { Chore } from "@/entities/Chore";
 

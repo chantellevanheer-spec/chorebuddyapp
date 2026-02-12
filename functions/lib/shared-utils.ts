@@ -32,6 +32,8 @@ export const SUBSCRIPTION_TIERS = {
   ENTERPRISE: 'enterprise',
 };
 
+// Frontend source of truth for tier limits: src/constants/subscriptionTiers.js
+// Keep this value in sync when updating tier limits.
 export const MAX_FAMILY_SIZE = 50;
 export const CODE_EXPIRY_HOURS = 24;
 

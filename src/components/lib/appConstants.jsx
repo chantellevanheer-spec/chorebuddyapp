@@ -25,15 +25,7 @@ export const CALENDAR_CONSTANTS = {
   WEEKS_TO_DISPLAY: 6, // Typical calendar grid
 };
 
-// Subscription Limits (duplicated from constants.js, consider consolidating)
-export const SUBSCRIPTION_LIMITS = {
-  FREE_FAMILY_MEMBERS: 6,
-  FREE_REDEEMABLE_ITEMS: 5,
-  PREMIUM_FAMILY_MEMBERS: 15,
-  FAMILY_PLUS_FAMILY_MEMBERS: 30,
-  ENTERPRISE_FAMILY_MEMBERS: 50,
-  PAID_UNLIMITED: -1,
-};
+// Subscription limits: see src/constants/subscriptionTiers.js
 
 // Time Durations (milliseconds)
 export const TIME_DURATIONS = {

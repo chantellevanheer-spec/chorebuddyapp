@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { BookOpen, Download, Users, Clock } from 'lucide-react';
+import { BookOpen, Download, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
