@@ -3,14 +3,12 @@ import { useData } from '../components/contexts/DataContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { isParent as checkIsParent } from '@/utils/roles';
 import { ArrowRightLeft, Loader2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import ChoreTradeCard from '../components/trades/ChoreTradeCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { isParent as checkParent } from '@/utils/roles';
 
 export default function ChoreTrades() {
   const { assignments, chores, people, user, loading } = useData();
@@ -28,7 +26,8 @@ export default function ChoreTrades() {
     queryKey: ['trades', user?.family_id],
     queryFn: async () => {
       if (!user?.family_id) return [];
-      const all = await base44.entities.ChoreTrade.list();
+      const result = await base44.entities.ChoreTrade.list();
+      const all = Array.isArray(result) ? result : [];
       return all.filter(item => item.family_id === user.family_id)
         .sort((a, b) => (b.created_date || '').localeCompare(a.created_date || ''));
     },

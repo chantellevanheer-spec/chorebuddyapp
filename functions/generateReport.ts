@@ -18,8 +18,9 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Forbidden: Only parents can generate reports' }, { status: 403 });
         }
 
-        if (user.subscription_tier === 'free') {
-            return Response.json({ error: 'Report generation is a premium feature.' }, { status: 403 });
+        const reportTiers = ['family_plus', 'enterprise'];
+        if (!reportTiers.includes(user.subscription_tier)) {
+            return Response.json({ error: 'Report generation requires a Family Plus or Enterprise subscription.' }, { status: 403 });
         }
 
         const { payload } = await req.json();

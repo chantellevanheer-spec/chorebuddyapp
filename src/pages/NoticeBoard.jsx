@@ -3,13 +3,11 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { isParent } from '@/utils/roles';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Megaphone, Plus, Pin, Loader2, Trash2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
-import { isParent as checkParent } from '@/utils/roles';
 
 export default function NoticeBoard() {
   const [notices, setNotices] = useState([]);
@@ -45,7 +43,7 @@ export default function NoticeBoard() {
       setCurrentUser(userData);
 
       const noticesData = userData.family_id
-        ? await base44.entities.Notice.list().then(all => all.filter(n => n.family_id === userData.family_id).sort((a, b) => (b.created_date || '').localeCompare(a.created_date || '')))
+        ? await base44.entities.Notice.list().then(r => (Array.isArray(r) ? r : []).filter(n => n.family_id === userData.family_id).sort((a, b) => (b.created_date || '').localeCompare(a.created_date || '')))
         : [];
 
       setNotices(noticesData);

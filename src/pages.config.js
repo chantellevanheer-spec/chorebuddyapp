@@ -9,18 +9,18 @@
  * 
  * Example file structure:
  * 
- *   import Home from './pages/Home';
+ *   import HomePage from './pages/HomePage';
  *   import Dashboard from './pages/Dashboard';
  *   import Settings from './pages/Settings';
  *   
  *   export const PAGES = {
- *       "Home": Home,
+ *       "HomePage": HomePage,
  *       "Dashboard": Dashboard,
  *       "Settings": Settings,
  *   }
  *   
  *   export const pagesConfig = {
- *       mainPage: "Home",
+ *       mainPage: "HomePage",
  *       Pages: PAGES,
  *   };
  * 
@@ -41,24 +41,17 @@
  *       Layout: __Layout,
  *   };
  *
- * To change the main page from Home to Dashboard, use find_replace:
- *   Old: mainPage: "Home",
+ * To change the main page from HomePage to Dashboard, use find_replace:
+ *   Old: mainPage: "HomePage",
  *   New: mainPage: "Dashboard",
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import Account from './pages/Account';
 import Achievements from './pages/Achievements';
 import Admin from './pages/Admin';
 import Analytics from './pages/Analytics';
-import ApprovalQueue from './pages/ApprovalQueue';
-import Challenges from './pages/Challenges';
-import ChoreHistory from './pages/ChoreHistory';
-import ChoreTrades from './pages/ChoreTrades';
 import Chores from './pages/Chores';
-import Dashboard from './pages/Dashboard';
 import FamilyCalendar from './pages/FamilyCalendar';
-import FamilyLinking from './pages/FamilyLinking';
 import Goals from './pages/Goals';
 import Help from './pages/Help';
 import Home from './pages/Home';
@@ -66,33 +59,33 @@ import Index from './pages/Index';
 import JoinFamily from './pages/JoinFamily';
 import LeaderboardHistory from './pages/LeaderboardHistory';
 import Messages from './pages/Messages';
-import NoticeBoard from './pages/NoticeBoard';
 import PaymentCancel from './pages/PaymentCancel';
 import PaymentSuccess from './pages/PaymentSuccess';
-import People from './pages/People';
 import PhotoGallery from './pages/PhotoGallery';
-import Pricing from './pages/Pricing';
 import Privacy from './pages/Privacy';
-import RoleSelection from './pages/RoleSelection';
-import Schedule from './pages/Schedule';
 import Store from './pages/Store';
 import Templates from './pages/Templates';
+import Account from './pages/Account';
+import ApprovalQueue from './pages/ApprovalQueue';
+import Challenges from './pages/Challenges';
+import ChoreHistory from './pages/ChoreHistory';
+import ChoreTrades from './pages/ChoreTrades';
+import Dashboard from './pages/Dashboard';
+import FamilyLinking from './pages/FamilyLinking';
+import NoticeBoard from './pages/NoticeBoard';
+import People from './pages/People';
+import Pricing from './pages/Pricing';
+import RoleSelection from './pages/RoleSelection';
+import Schedule from './pages/Schedule';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Account": Account,
     "Achievements": Achievements,
     "Admin": Admin,
     "Analytics": Analytics,
-    "ApprovalQueue": ApprovalQueue,
-    "Challenges": Challenges,
-    "ChoreHistory": ChoreHistory,
-    "ChoreTrades": ChoreTrades,
     "Chores": Chores,
-    "Dashboard": Dashboard,
     "FamilyCalendar": FamilyCalendar,
-    "FamilyLinking": FamilyLinking,
     "Goals": Goals,
     "Help": Help,
     "Home": Home,
@@ -100,17 +93,24 @@ export const PAGES = {
     "JoinFamily": JoinFamily,
     "LeaderboardHistory": LeaderboardHistory,
     "Messages": Messages,
-    "NoticeBoard": NoticeBoard,
     "PaymentCancel": PaymentCancel,
     "PaymentSuccess": PaymentSuccess,
-    "People": People,
     "PhotoGallery": PhotoGallery,
-    "Pricing": Pricing,
     "Privacy": Privacy,
-    "RoleSelection": RoleSelection,
-    "Schedule": Schedule,
     "Store": Store,
     "Templates": Templates,
+    "Account": Account,
+    "ApprovalQueue": ApprovalQueue,
+    "Challenges": Challenges,
+    "ChoreHistory": ChoreHistory,
+    "ChoreTrades": ChoreTrades,
+    "Dashboard": Dashboard,
+    "FamilyLinking": FamilyLinking,
+    "NoticeBoard": NoticeBoard,
+    "People": People,
+    "Pricing": Pricing,
+    "RoleSelection": RoleSelection,
+    "Schedule": Schedule,
 }
 
 export const pagesConfig = {

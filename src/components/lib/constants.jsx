@@ -31,16 +31,7 @@ export const DIFFICULTY_STARS = {
   hard: 3
 };
 
-export const SUBSCRIPTION_LIMITS = {
-  free: {
-    family_members: 2,
-    redeemable_items: 3
-  },
-  premium: {
-    family_members: -1, // unlimited
-    redeemable_items: -1 // unlimited
-  }
-};
+// Subscription limits: see src/constants/subscriptionTiers.js
 
 export const REWARD_ICONS = {
   Gamepad2, Film, IceCream, DollarSign, Gift, Star,

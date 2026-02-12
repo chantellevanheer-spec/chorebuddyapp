@@ -32,7 +32,7 @@ export default function Goals() {
     setGoalLoading(true);
     try {
       const goalsData = user?.family_id
-        ? await FamilyGoal.list().then(all => all.filter(g => g.family_id === user.family_id).sort((a, b) => (b.created_date || '').localeCompare(a.created_date || '')))
+        ? await FamilyGoal.list().then(r => (Array.isArray(r) ? r : []).filter(g => g.family_id === user.family_id).sort((a, b) => (b.created_date || '').localeCompare(a.created_date || '')))
         : [];
       setGoals(goalsData);
     } catch (error) {
@@ -156,7 +156,7 @@ export default function Goals() {
   return (
     <FeatureGate
       feature="family_goals"
-      customMessage="Family Goals help your household work together towards shared rewards. Available on Basic and Premium plans.">
+      customMessage="Family Goals help your household work together towards shared rewards. Available on Family Plus and Enterprise plans.">
 
       <div className="mx-4 md:mx-8 lg:mx-24 pb-32 space-y-8 lg:pb-8">
         <ConfirmDialog

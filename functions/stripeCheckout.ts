@@ -5,6 +5,14 @@ const PLAN_PRICE_IDS = {
   premium: {
     monthly: Deno.env.get("STRIPE_PRICE_ID_MONTHLY"),
     yearly: Deno.env.get("STRIPE_PRICE_ID_YEARLY")
+  },
+  family_plus: {
+    monthly: Deno.env.get("STRIPE_PRICE_ID_FAMILY_PLUS_MONTHLY"),
+    yearly: Deno.env.get("STRIPE_PRICE_ID_FAMILY_PLUS_YEARLY")
+  },
+  enterprise: {
+    monthly: Deno.env.get("STRIPE_PRICE_ID_ENTERPRISE_MONTHLY"),
+    yearly: Deno.env.get("STRIPE_PRICE_ID_ENTERPRISE_YEARLY")
   }
 };
 
@@ -25,7 +33,7 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"), {
 
 const handleCreateCheckoutSession = async (payload, user, base44, origin) => {
     const { planId, isYearly } = payload;
-    if (planId !== 'premium') {
+    if (!PLAN_PRICE_IDS[planId]) {
         return new Response(JSON.stringify({ error: "Invalid plan ID" }), { status: 400 });
     }
 
