@@ -1,5 +1,18 @@
 import React, { createContext, useState, useEffect, useCallback, useContext, useRef } from 'react';
+<<<<<<< claude/review-changes-mle0rg901q0h2krk-o6oCa
+import { Person } from "@/entities/Person";
+import { Chore } from "@/entities/Chore";
+import { Assignment } from "@/entities/Assignment";
+import { Reward } from "@/entities/Reward";
+import { RedeemableItem } from "@/entities/RedeemableItem";
+import { User } from "@/entities/User";
+import { FamilyGoal } from "@/entities/FamilyGoal";
+import { ChoreCompletion } from "@/entities/ChoreCompletion";
+import { Family } from "@/entities/Family";
+import { Achievement } from "@/entities/Achievement";
+=======
 import { base44 } from '@/api/base44Client';
+>>>>>>> main
 import { useOfflineSync } from '../hooks/useOfflineSync';
 import { offlineStorage, STORES } from '../utils/offlineStorage';
 import { canManageFamily as canManageFamilyUtil, isFamilyOwner as isFamilyOwnerUtil } from '@/components/utils';
