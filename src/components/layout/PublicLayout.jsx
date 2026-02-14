@@ -83,12 +83,12 @@ export default function PublicLayout({ children }) {
             <h1 className="header-font text-3xl text-[#2B59C3]">ChoreBuddy</h1>
           </Link>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" className="body-font text-[#5E3B85] hidden sm:block" onClick={() => User.loginWithRedirect('https://chorebuddyapp.com/Dashboard')}>
+            <Button variant="ghost" className="body-font text-[#5E3B85] hidden sm:block" onClick={() => User.loginWithRedirect(createPageUrl("Dashboard"))}>
               Log In
             </Button>
             <Button
               className="funky-button bg-[#FF6B35] hover:bg-[#fa5a1f] text-white header-font text-lg px-6 py-2"
-              onClick={() => User.loginWithRedirect('https://chorebuddyapp.com/Dashboard')}
+              onClick={() => User.loginWithRedirect(createPageUrl("Dashboard"))}
             >
               Sign Up
             </Button>
