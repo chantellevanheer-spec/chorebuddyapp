@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Target, Trophy } from "lucide-react";
 import { parseISO, isAfter } from "date-fns";
 import { toast } from "sonner";
+import { stripHTMLTags } from '@/components/lib/sanitization';
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import FamilyGoalCard from "../components/goals/FamilyGoalCard";
 import GoalFormModal from "../components/goals/GoalFormModal";
@@ -32,7 +33,9 @@ export default function Goals() {
     setGoalLoading(true);
     try {
       const goalsData = user?.family_id
-        ? await FamilyGoal.list().then(r => (Array.isArray(r) ? r : []).filter(g => g.family_id === user.family_id).sort((a, b) => (b.created_date || '').localeCompare(a.created_date || '')))
+        ? await FamilyGoal.filter({ family_id: user.family_id })
+            .then(all => [...all].sort((a, b) => (b.created_date || '').localeCompare(a.created_date || '')))
+            .catch(() => [])
         : [];
       setGoals(goalsData);
     } catch (error) {
@@ -97,13 +100,18 @@ export default function Goals() {
   };
 
   const handleSubmit = async (goalData) => {
+    const sanitized = {
+      ...goalData,
+      title: stripHTMLTags(goalData.title),
+      description: stripHTMLTags(goalData.description),
+    };
     try {
       if (goalToEdit) {
-        await FamilyGoal.update(goalToEdit.id, goalData);
+        await FamilyGoal.update(goalToEdit.id, sanitized);
         toast.success("Goal updated!");
       } else {
         await FamilyGoal.create({
-          ...goalData,
+          ...sanitized,
           current_points: familyPoints
         });
         toast.success("New family goal created!");

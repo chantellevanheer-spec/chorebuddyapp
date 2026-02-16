@@ -37,6 +37,18 @@ export function sanitizeAndTruncate(str, maxLength = 200) {
 }
 
 /**
+ * Strip HTML tags from user input before storing
+ * Use this on text fields before .create()/.update() API calls.
+ * React JSX already escapes on render, but stripping tags prevents stored malicious content.
+ * @param {string} str - The string to clean
+ * @returns {string} - String with all HTML tags removed
+ */
+export function stripHTMLTags(str) {
+  if (!str) return '';
+  return String(str).replace(/<[^>]*>/g, '').trim();
+}
+
+/**
  * Sanitize URL to prevent javascript: protocol and other malicious URLs
  * @param {string} url - The URL to sanitize
  * @returns {string} - Safe URL or empty string if malicious

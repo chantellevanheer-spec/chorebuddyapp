@@ -29,11 +29,8 @@ export function useRealTimeSync(familyId, enabled = true, onUpdate = null) {
           const lastCheck = lastCheckRef.current[entityType] || new Date(0).toISOString();
           
           try {
-            // Fetch all items and filter client-side (SDK .filter() returns 500)
-            const result = await base44.entities[entityType].list();
-            const all = Array.isArray(result) ? result : [];
+            const all = await base44.entities[entityType].filter({ family_id: familyId });
             const updated = all.filter(item =>
-              item.family_id === familyId &&
               item.updated_date && item.updated_date > lastCheck
             );
 

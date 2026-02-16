@@ -12,10 +12,8 @@ export default function Achievements() {
     queryKey: ['achievements', user?.family_id],
     queryFn: async () => {
       if (!user?.family_id) return [];
-      const result = await base44.entities.Achievement.list();
-      const all = Array.isArray(result) ? result : [];
-      return all.filter(item => item.family_id === user.family_id)
-        .sort((a, b) => (b.earned_date || '').localeCompare(a.earned_date || ''));
+      const data = await base44.entities.Achievement.filter({ family_id: user.family_id });
+      return [...data].sort((a, b) => (b.earned_date || '').localeCompare(a.earned_date || ''));
     },
     enabled: !!user?.family_id,
     initialData: []

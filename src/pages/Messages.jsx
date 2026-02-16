@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { MessageCircle, Send, Users, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { stripHTMLTags } from '@/components/lib/sanitization';
 
 export default function Messages() {
   const [messages, setMessages] = useState([]);
@@ -36,10 +37,12 @@ export default function Messages() {
 
       const [messagesData, usersData] = await Promise.all([
         userData.family_id
-          ? base44.entities.Message.list().then(r => (Array.isArray(r) ? r : []).filter(m => m.family_id === userData.family_id).sort((a, b) => (b.created_date || '').localeCompare(a.created_date || '')))
+          ? base44.entities.Message.filter({ family_id: userData.family_id })
+              .then(all => [...all].sort((a, b) => (b.created_date || '').localeCompare(a.created_date || '')))
+              .catch(() => [])
           : [],
         userData.family_id
-          ? base44.entities.User.list().then(r => (Array.isArray(r) ? r : []).filter(u => u.family_id === userData.family_id))
+          ? base44.entities.User.filter({ family_id: userData.family_id }).catch(() => [])
           : []
       ]);
 
@@ -64,7 +67,7 @@ export default function Messages() {
         sender_name: currentUser.full_name,
         recipient_user_id: selectedRecipient === 'all' ? null : selectedRecipient,
         recipient_name: recipient ? recipient.full_name : null,
-        content: newMessage,
+        content: stripHTMLTags(newMessage),
         is_family_wide: selectedRecipient === 'all',
         family_id: currentUser.family_id
       });
