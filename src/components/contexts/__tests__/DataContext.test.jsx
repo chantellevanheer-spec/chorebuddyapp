@@ -20,15 +20,15 @@ vi.mock('@/api/base44Client', () => ({
       updateMe: vi.fn().mockResolvedValue(true),
     },
     entities: {
-      Family:          { create: vi.fn().mockResolvedValue({ id: 'fam-new' }), get: vi.fn(), update: vi.fn().mockResolvedValue({ id: 'fam-1' }), filter: vi.fn().mockResolvedValue([]) },
-      Person:          { create: vi.fn().mockResolvedValue({ id: 'person-new' }), update: vi.fn().mockResolvedValue({}), delete: vi.fn().mockResolvedValue(true), filter: vi.fn().mockResolvedValue([]) },
-      Chore:           { create: vi.fn().mockResolvedValue({ id: 'chore-new' }), update: vi.fn().mockResolvedValue({}), delete: vi.fn().mockResolvedValue(true), filter: vi.fn().mockResolvedValue([]) },
-      Assignment:      { create: vi.fn().mockResolvedValue({ id: 'assign-new' }), update: vi.fn().mockResolvedValue({}), delete: vi.fn().mockResolvedValue(true), filter: vi.fn().mockResolvedValue([]) },
-      Reward:          { create: vi.fn().mockResolvedValue({ id: 'reward-new' }), delete: vi.fn().mockResolvedValue(true), filter: vi.fn().mockResolvedValue([]) },
-      RedeemableItem:  { create: vi.fn().mockResolvedValue({ id: 'item-new' }), update: vi.fn().mockResolvedValue({}), delete: vi.fn().mockResolvedValue(true), filter: vi.fn().mockResolvedValue([]) },
-      FamilyGoal:      { create: vi.fn().mockResolvedValue({ id: 'goal-new' }), update: vi.fn().mockResolvedValue({}), delete: vi.fn().mockResolvedValue(true), filter: vi.fn().mockResolvedValue([]) },
-      ChoreCompletion: { create: vi.fn().mockResolvedValue({ id: 'comp-new' }), filter: vi.fn().mockResolvedValue([]) },
-      Achievement:     { filter: vi.fn().mockResolvedValue([]) },
+      Family:          { create: vi.fn().mockResolvedValue({ id: 'fam-new' }), get: vi.fn(), update: vi.fn().mockResolvedValue({ id: 'fam-1' }), list: vi.fn().mockResolvedValue([]), filter: vi.fn().mockResolvedValue([]) },
+      Person:          { create: vi.fn().mockResolvedValue({ id: 'person-new' }), update: vi.fn().mockResolvedValue({}), delete: vi.fn().mockResolvedValue(true), list: vi.fn().mockResolvedValue([]), filter: vi.fn().mockResolvedValue([]) },
+      Chore:           { create: vi.fn().mockResolvedValue({ id: 'chore-new' }), update: vi.fn().mockResolvedValue({}), delete: vi.fn().mockResolvedValue(true), list: vi.fn().mockResolvedValue([]), filter: vi.fn().mockResolvedValue([]) },
+      Assignment:      { create: vi.fn().mockResolvedValue({ id: 'assign-new' }), update: vi.fn().mockResolvedValue({}), delete: vi.fn().mockResolvedValue(true), list: vi.fn().mockResolvedValue([]), filter: vi.fn().mockResolvedValue([]) },
+      Reward:          { create: vi.fn().mockResolvedValue({ id: 'reward-new' }), delete: vi.fn().mockResolvedValue(true), list: vi.fn().mockResolvedValue([]), filter: vi.fn().mockResolvedValue([]) },
+      RedeemableItem:  { create: vi.fn().mockResolvedValue({ id: 'item-new' }), update: vi.fn().mockResolvedValue({}), delete: vi.fn().mockResolvedValue(true), list: vi.fn().mockResolvedValue([]), filter: vi.fn().mockResolvedValue([]) },
+      FamilyGoal:      { create: vi.fn().mockResolvedValue({ id: 'goal-new' }), update: vi.fn().mockResolvedValue({}), delete: vi.fn().mockResolvedValue(true), list: vi.fn().mockResolvedValue([]), filter: vi.fn().mockResolvedValue([]) },
+      ChoreCompletion: { create: vi.fn().mockResolvedValue({ id: 'comp-new' }), list: vi.fn().mockResolvedValue([]), filter: vi.fn().mockResolvedValue([]) },
+      Achievement:     { list: vi.fn().mockResolvedValue([]), filter: vi.fn().mockResolvedValue([]) },
     },
   },
 }));
@@ -143,8 +143,9 @@ beforeEach(() => {
   base44.auth.me.mockResolvedValue({ ...defaultUser });
   base44.entities.Family.get.mockResolvedValue({ ...defaultFamily });
 
-  // All filters return empty arrays by default
+  // All list/filter methods return empty arrays by default
   for (const entity of Object.values(base44.entities)) {
+    if (entity.list) entity.list.mockResolvedValue([]);
     if (entity.filter) entity.filter.mockResolvedValue([]);
   }
 
@@ -184,23 +185,23 @@ describe('fetchData - initial load', () => {
     await waitFor(() => expect(getCtx().user).toBeNull());
   });
 
-  it('fetches all entity types with family_id filter', async () => {
+  it('fetches all entity types via list', async () => {
     const getCtx = await renderProvider();
     await waitFor(() => expect(getCtx().loading).toBe(false));
 
-    expect(base44.entities.Person.filter).toHaveBeenCalledWith({ family_id: 'fam-1' });
-    expect(base44.entities.Chore.filter).toHaveBeenCalledWith({ family_id: 'fam-1' });
-    expect(base44.entities.Assignment.filter).toHaveBeenCalledWith({ family_id: 'fam-1' });
-    expect(base44.entities.Reward.filter).toHaveBeenCalledWith({ family_id: 'fam-1' });
-    expect(base44.entities.RedeemableItem.filter).toHaveBeenCalledWith({ family_id: 'fam-1' });
-    expect(base44.entities.FamilyGoal.filter).toHaveBeenCalledWith({ family_id: 'fam-1' });
-    expect(base44.entities.ChoreCompletion.filter).toHaveBeenCalledWith({ family_id: 'fam-1' });
-    expect(base44.entities.Achievement.filter).toHaveBeenCalledWith({ family_id: 'fam-1' });
+    expect(base44.entities.Person.list).toHaveBeenCalled();
+    expect(base44.entities.Chore.list).toHaveBeenCalled();
+    expect(base44.entities.Assignment.list).toHaveBeenCalled();
+    expect(base44.entities.Reward.list).toHaveBeenCalled();
+    expect(base44.entities.RedeemableItem.list).toHaveBeenCalled();
+    expect(base44.entities.FamilyGoal.list).toHaveBeenCalled();
+    expect(base44.entities.ChoreCompletion.list).toHaveBeenCalled();
+    expect(base44.entities.Achievement.list).toHaveBeenCalled();
   });
 
-  it('populates people state from filter results', async () => {
-    const mockPeople = [{ id: 'p1', name: 'Alice' }];
-    base44.entities.Person.filter.mockResolvedValue(mockPeople);
+  it('populates people state from list results', async () => {
+    const mockPeople = [{ id: 'p1', name: 'Alice', family_id: 'fam-1' }];
+    base44.entities.Person.list.mockResolvedValue(mockPeople);
 
     const getCtx = await renderProvider();
     await waitFor(() => expect(getCtx().people).toEqual(mockPeople));
@@ -244,15 +245,15 @@ describe('fetchData - data caching', () => {
 });
 
 describe('fetchData - safeFilter error handling', () => {
-  it('returns empty array when a single entity filter fails', async () => {
-    base44.entities.Person.filter.mockRejectedValue(new Error('Network error'));
+  it('returns empty array when a single entity list fails', async () => {
+    base44.entities.Person.list.mockRejectedValue(new Error('Network error'));
 
     const getCtx = await renderProvider();
     await waitFor(() => expect(getCtx().loading).toBe(false));
 
     // People should be empty due to error, but other entities should still work
     expect(getCtx().people).toEqual([]);
-    expect(base44.entities.Chore.filter).toHaveBeenCalled();
+    expect(base44.entities.Chore.list).toHaveBeenCalled();
   });
 });
 
@@ -395,10 +396,10 @@ describe('error handling', () => {
 describe('utility functions', () => {
   it('getPersonByUserId finds person by linked_user_id', async () => {
     const mockPeople = [
-      { id: 'p1', linked_user_id: 'user-1', name: 'Alice' },
-      { id: 'p2', linked_user_id: 'user-2', name: 'Bob' },
+      { id: 'p1', linked_user_id: 'user-1', name: 'Alice', family_id: 'fam-1' },
+      { id: 'p2', linked_user_id: 'user-2', name: 'Bob', family_id: 'fam-1' },
     ];
-    base44.entities.Person.filter.mockResolvedValue(mockPeople);
+    base44.entities.Person.list.mockResolvedValue(mockPeople);
 
     const getCtx = await renderProvider();
     await waitFor(() => expect(getCtx().people).toHaveLength(2));
@@ -419,9 +420,9 @@ describe('utility functions', () => {
 
   it('getCurrentPerson returns person matching user.id', async () => {
     const mockPeople = [
-      { id: 'p1', linked_user_id: 'user-1', name: 'Me' },
+      { id: 'p1', linked_user_id: 'user-1', name: 'Me', family_id: 'fam-1' },
     ];
-    base44.entities.Person.filter.mockResolvedValue(mockPeople);
+    base44.entities.Person.list.mockResolvedValue(mockPeople);
 
     const getCtx = await renderProvider();
     await waitFor(() => expect(getCtx().people).toHaveLength(1));

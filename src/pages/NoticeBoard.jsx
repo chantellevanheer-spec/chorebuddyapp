@@ -8,6 +8,7 @@ import { Megaphone, Plus, Pin, Loader2, Trash2, AlertCircle } from 'lucide-react
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
+import { isParent as checkParent } from '@/utils/roles';
 
 export default function NoticeBoard() {
   const [notices, setNotices] = useState([]);

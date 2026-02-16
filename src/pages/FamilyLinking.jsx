@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { familyLinking } from '@/functions/familyLinking';
+import { isParent as checkParent } from '@/utils/roles';
 
 export default function FamilyLinking() {
     const navigate = useNavigate();
