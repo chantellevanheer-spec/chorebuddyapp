@@ -16,5 +16,7 @@ export async function listForFamily(entity, familyId, sort) {
       return 0;
     });
   }
-  return filtered;
+
+  console.warn('[listForFamily] All retries failed, returning []:', lastError?.message || lastError);
+  return [];
 }

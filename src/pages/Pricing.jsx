@@ -5,6 +5,7 @@ import { Loader2, Star, ShieldCheck, AlertCircle, Users, Building2 } from 'lucid
 import PlanCard from '../components/pricing/PlanCard';
 import { stripeCheckout } from '@/functions/stripeCheckout';
 import { toast } from 'sonner';
+import { createPageUrl } from '@/utils';
 
 const plans = [
   {
@@ -104,7 +105,7 @@ export default function Pricing() {
   const handleSelectPlan = async (planId) => {
     if (!currentUser) {
       toast.info("Please sign up or log in to choose a plan.");
-      base44.auth.redirectToLogin('https://chorebuddyapp.com/pricing');
+      base44.auth.redirectToLogin(createPageUrl("Pricing"));
       return;
     }
 

@@ -11,7 +11,7 @@ import ChoresSection from './ChoresSection';
 import DashboardEmptyState from './DashboardEmptyState';
 
 export default function ParentDashboard({ assignChoresForWeek, isAssigning }) {
-  const { people = [], chores = [], assignments = [], loading } = useData();
+  const { people = [], chores = [], assignments = [], user, loading } = useData();
   const [activeTab, setActiveTab] = useState('overview');
 
   const hasData = people.length > 0 || chores.length > 0;
@@ -36,7 +36,12 @@ export default function ParentDashboard({ assignChoresForWeek, isAssigning }) {
           assignChoresForWeek={assignChoresForWeek}
           isAssigning={isAssigning} />
 
-        <DashboardEmptyState />
+        <DashboardEmptyState
+          currentWeekAssignments={assignments}
+          people={people}
+          chores={chores}
+          user={user}
+        />
       </div>);
 
   }

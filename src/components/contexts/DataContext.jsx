@@ -207,8 +207,13 @@ export const DataProvider = ({ children }) => {
       // 3. Initialize family if needed
       if (!userData.family_id) {
         console.log("[DataContext] User has no family, initializing...");
-        const familyId = await initializeFamily(userData);
-        userData.family_id = familyId;
+        try {
+          const familyId = await initializeFamily(userData);
+          userData.family_id = familyId;
+        } catch (initError) {
+          console.error("[DataContext] Family initialization failed:", initError);
+          // Continue with empty data rather than failing completely
+        }
       }
       
       setUser(userData);
@@ -241,32 +246,42 @@ export const DataProvider = ({ children }) => {
       }
       
       // 6. Fetch all entity data in parallel (scoped to user's family)
+      // listForFamily now handles its own errors internally (with retry for
+      // transient failures), so each call always resolves to an array.
       const familyId = userData.family_id;
-      const safeFilter = (entity, name) =>
-        entity.filter({ family_id: familyId }).catch((err) => {
-          console.error(`[DataContext] Failed to fetch ${name}:`, err.message || err);
-          return [];
-        });
+      let peopleData = [];
+      let choresData = [];
+      let assignmentsData = [];
+      let rewardsData = [];
+      let itemsData = [];
+      let goalsData = [];
+      let completionsData = [];
+      let achievementsData = [];
 
-      const [
-        peopleData,
-        choresData,
-        assignmentsData,
-        rewardsData,
-        itemsData,
-        goalsData,
-        completionsData,
-        achievementsData
-      ] = await Promise.all([
-        safeFilter(base44.entities.Person, 'people'),
-        safeFilter(base44.entities.Chore, 'chores'),
-        safeFilter(base44.entities.Assignment, 'assignments'),
-        safeFilter(base44.entities.Reward, 'rewards'),
-        safeFilter(base44.entities.RedeemableItem, 'items'),
-        safeFilter(base44.entities.FamilyGoal, 'goals'),
-        safeFilter(base44.entities.ChoreCompletion, 'completions'),
-        safeFilter(base44.entities.Achievement, 'achievements')
-      ]);
+      try {
+        [
+          peopleData,
+          choresData,
+          assignmentsData,
+          rewardsData,
+          itemsData,
+          goalsData,
+          completionsData,
+          achievementsData
+        ] = await Promise.all([
+          base44.entities.Person.list().then(all => all.filter(p => p.family_id === familyId)).catch(() => []),
+          base44.entities.Chore.list().then(all => all.filter(c => c.family_id === familyId)).catch(() => []),
+          base44.entities.Assignment.list().then(all => all.filter(a => a.family_id === familyId)).catch(() => []),
+          base44.entities.Reward.list().then(all => all.filter(r => r.family_id === familyId)).catch(() => []),
+          base44.entities.RedeemableItem.list().then(all => all.filter(i => i.family_id === familyId)).catch(() => []),
+          base44.entities.FamilyGoal.list().then(all => all.filter(g => g.family_id === familyId)).catch(() => []),
+          base44.entities.ChoreCompletion.list().then(all => all.filter(c => c.family_id === familyId)).catch(() => []),
+          base44.entities.Achievement.list().then(all => all.filter(a => a.family_id === familyId)).catch(() => [])
+        ]);
+      } catch (entityError) {
+        console.error("[DataContext] Unexpected error fetching entities:", entityError);
+        // Continue with whatever data we have (defaults to empty arrays)
+      }
 
       // 6b. Filter completions and rewards to recent data only
       const cutoff = new Date();

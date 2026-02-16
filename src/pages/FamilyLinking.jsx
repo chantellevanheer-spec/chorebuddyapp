@@ -5,13 +5,13 @@ import { createPageUrl } from '@/utils';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { 
-    Loader2, 
-    Copy, 
-    Check, 
-    RefreshCw, 
-    Link2, 
-    Sparkles, 
+import {
+    Loader2,
+    Copy,
+    Check,
+    RefreshCw,
+    Link2,
+    Sparkles,
     Users,
     ArrowRight,
     Clock,
