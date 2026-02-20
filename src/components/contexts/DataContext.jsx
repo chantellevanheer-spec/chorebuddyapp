@@ -269,14 +269,14 @@ export const DataProvider = ({ children }) => {
           completionsData,
           achievementsData
         ] = await Promise.all([
-          base44.entities.Person.list().then(all => all.filter(p => p.family_id === familyId)).catch(() => []),
-          base44.entities.Chore.list().then(all => all.filter(c => c.family_id === familyId)).catch(() => []),
-          base44.entities.Assignment.list().then(all => all.filter(a => a.family_id === familyId)).catch(() => []),
-          base44.entities.Reward.list().then(all => all.filter(r => r.family_id === familyId)).catch(() => []),
-          base44.entities.RedeemableItem.list().then(all => all.filter(i => i.family_id === familyId)).catch(() => []),
-          base44.entities.FamilyGoal.list().then(all => all.filter(g => g.family_id === familyId)).catch(() => []),
-          base44.entities.ChoreCompletion.list().then(all => all.filter(c => c.family_id === familyId)).catch(() => []),
-          base44.entities.Achievement.list().then(all => all.filter(a => a.family_id === familyId)).catch(() => [])
+          base44.entities.Person.filter({ family_id: familyId }).catch(() => []),
+          base44.entities.Chore.filter({ family_id: familyId }).catch(() => []),
+          base44.entities.Assignment.filter({ family_id: familyId }).catch(() => []),
+          base44.entities.Reward.filter({ family_id: familyId }).catch(() => []),
+          base44.entities.RedeemableItem.filter({ family_id: familyId }).catch(() => []),
+          base44.entities.FamilyGoal.filter({ family_id: familyId }).catch(() => []),
+          base44.entities.ChoreCompletion.filter({ family_id: familyId }).catch(() => []),
+          base44.entities.Achievement.filter({ family_id: familyId }).catch(() => [])
         ]);
       } catch (entityError) {
         console.error("[DataContext] Unexpected error fetching entities:", entityError);
