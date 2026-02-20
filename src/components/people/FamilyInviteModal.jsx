@@ -26,13 +26,13 @@ export default function FamilyInviteModal({ isOpen, onClose, onSuccess }) {
     try {
       const result = await base44.functions.invoke('inviteFamilyMember', { generateLinkingCode: true });
 
-      if (result.error) {
-        toast.error(result.error || 'Failed to generate linking code');
+      if (result.error || result.data?.error) {
+        toast.error(result.error || result.data?.error || 'Failed to generate linking code');
         return;
       }
-      
-      setGeneratedLinkingCode(result.linkingCode);
-      setLinkingCodeExpiry(result.linkingCodeExpires);
+
+      setGeneratedLinkingCode(result.data.linkingCode);
+      setLinkingCodeExpiry(result.data.linkingCodeExpires);
       toast.success('Linking code generated successfully!');
     } catch (error) {
       console.error('Error generating linking code:', error);
@@ -56,9 +56,9 @@ export default function FamilyInviteModal({ isOpen, onClose, onSuccess }) {
     setIsInviting(true);
     try {
       const result = await base44.functions.invoke('inviteFamilyMember', formData);
-      
-      if (result.error) {
-        toast.error(result.error || 'Failed to send invitation');
+
+      if (result.error || result.data?.error) {
+        toast.error(result.error || result.data?.error || 'Failed to send invitation');
         return;
       }
       
