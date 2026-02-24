@@ -156,16 +156,8 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
       };
 
     checkAuth();
-  }, [currentPageName, isPublicPage, navigate]);
+  }, [currentPageName, navigate]);
 
-  if (isPublicPage) {
-    return (
-      <ErrorBoundary>
-        <PublicLayout>
-          {children}
-        </PublicLayout>
-      </ErrorBoundary>
-    );
   }
 
   // For private pages, show a loader until the auth check is complete
