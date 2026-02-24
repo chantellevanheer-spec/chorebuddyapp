@@ -158,8 +158,6 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
     checkAuth();
   }, [currentPageName, navigate]);
 
-  }
-
   // For private pages, show a loader until the auth check is complete
   if (!authChecked || !isAuthenticated) {
     return (
