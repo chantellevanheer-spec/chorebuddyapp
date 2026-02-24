@@ -160,11 +160,9 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
 
   if (isPublicPage) {
     return (
-      <ErrorBoundary>
-        <PublicLayout>
-          {children}
-        </PublicLayout>
-      </ErrorBoundary>
+      <PublicLayout>
+        {children}
+      </PublicLayout>
     );
   }
 
@@ -394,7 +392,7 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
           <div className="border-t-2 border-dashed border-gray-300 mt-8 pt-6">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <p className="body-font-light text-sm text-gray-600">
-                © 2025 ChoreBuddy App. All rights reserved.
+                © 2026 ChoreBuddy App. All rights reserved.
               </p>
               <div className="flex items-center gap-4 body-font-light text-sm text-gray-600">
                 <span>Version 1.0.0</span>
