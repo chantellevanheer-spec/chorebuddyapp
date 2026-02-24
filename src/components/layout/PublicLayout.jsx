@@ -8,6 +8,7 @@ import { setCookie, getCookie } from '../utils/cookies';
 
 export default function PublicLayout({ children }) {
   const [showCookieBanner, setShowCookieBanner] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     // Check if user has already accepted cookies
@@ -15,6 +16,17 @@ export default function PublicLayout({ children }) {
     if (!consent) {
       setShowCookieBanner(true);
     }
+
+    // Check auth status silently for adaptive header
+    const checkAuth = async () => {
+      try {
+        await User.me();
+        setIsAuthenticated(true);
+      } catch {
+        setIsAuthenticated(false);
+      }
+    };
+    checkAuth();
   }, []);
 
   const handleAcceptCookies = () => {
@@ -83,15 +95,27 @@ export default function PublicLayout({ children }) {
             <h1 className="header-font text-3xl text-[#2B59C3]">ChoreBuddy</h1>
           </Link>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" className="body-font text-[#5E3B85] hidden sm:block" onClick={() => User.loginWithRedirect(createPageUrl("Dashboard"))}>
-              Log In
-            </Button>
-            <Button
-              className="funky-button bg-[#FF6B35] hover:bg-[#fa5a1f] text-white header-font text-lg px-6 py-2"
-              onClick={() => User.loginWithRedirect(createPageUrl("Dashboard"))}
-            >
-              Sign Up
-            </Button>
+            {isAuthenticated ? (
+              <Link to={createPageUrl("Dashboard")}>
+                <Button
+                  className="funky-button bg-[#FF6B35] hover:bg-[#fa5a1f] text-white header-font text-lg px-6 py-2"
+                >
+                  Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Button variant="ghost" className="body-font text-[#5E3B85] hidden sm:block" onClick={() => User.loginWithRedirect(createPageUrl("Dashboard"))}>
+                  Log In
+                </Button>
+                <Button
+                  className="funky-button bg-[#FF6B35] hover:bg-[#fa5a1f] text-white header-font text-lg px-6 py-2"
+                  onClick={() => User.loginWithRedirect(createPageUrl("Dashboard"))}
+                >
+                  Sign Up
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </header>
