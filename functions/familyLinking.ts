@@ -7,13 +7,14 @@ import {
   requireAuth,
   requireParent,
   isParent,
-  generateCode,
+  generateUniqueFamilyCode,
   sanitizeCode,
   calculateExpiryDate,
   getUserFamilyId,
   getFamily,
   updateEntityWithEnv,
   canUserJoinFamily,
+  checkRateLimit,
   errorResponse,
   successResponse,
   logError,
@@ -42,8 +43,8 @@ async function handleGenerateCode(base44: any, user: any, familyId: string) {
     return errorResponse('Family not found', 404);
   }
 
-  // Generate new code
-  const newCode = generateCode(6);
+  // Generate new code with collision checking
+  const newCode = await generateUniqueFamilyCode(base44, 6);
   const expiresAt = calculateExpiryDate(24); // 24 hours
 
   // Update family
@@ -105,10 +106,12 @@ async function handleJoinFamily(base44: any, user: any, linkingCode: string) {
     return errorResponse(joinCheck.message, joinCheck.reason === 'already_in_family' ? 409 : 400);
   }
 
-  // Add user to family
+  // Add user to family and clear the used linking code
   const updatedMembers = [...currentMembers, user.id];
   await base44.asServiceRole.entities.Family.update(family.id, {
     members: updatedMembers,
+    linking_code: null,
+    linking_code_expires: null,
   });
 
   // Update user's family_id
@@ -152,11 +155,17 @@ Deno.serve(async (req) => {
         }
         return await handleGenerateCode(base44, user, familyId);
 
-      case 'join':
+      case 'join': {
+        // Rate limit join attempts to prevent brute-force code guessing
+        const joinRate = checkRateLimit(user.id, 'family_join', 10, 5 * 60 * 1000);
+        if (!joinRate.allowed) {
+          return errorResponse('Too many join attempts. Please try again later.', 429);
+        }
         if (!linkingCode) {
           return errorResponse('Linking code required to join family');
         }
         return await handleJoinFamily(base44, user, linkingCode);
+      }
 
       default:
         return errorResponse('Invalid action. Use "generate" or "join"');

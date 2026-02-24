@@ -80,15 +80,34 @@ export function sanitizeCode(code: string): { valid: boolean; code?: string; err
 }
 
 /**
- * Generate secure random code
+ * Generate cryptographically secure random code
  */
 export function generateCode(length = 6): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Exclude ambiguous characters
+  const randomBytes = new Uint8Array(length);
+  crypto.getRandomValues(randomBytes);
   let code = '';
   for (let i = 0; i < length; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
+    code += chars.charAt(randomBytes[i] % chars.length);
   }
   return code;
+}
+
+/**
+ * Generate a unique family linking code, retrying on collision
+ */
+export async function generateUniqueFamilyCode(base44: any, length = 6, maxAttempts = 5): Promise<string> {
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const code = generateCode(length);
+    const existing = await base44.asServiceRole.entities.Family.filter({
+      linking_code: code,
+    });
+    if (existing.length === 0) {
+      return code;
+    }
+  }
+  // Fallback: use a longer code to reduce collision probability
+  return generateCode(length + 2);
 }
 
 // ==========================================

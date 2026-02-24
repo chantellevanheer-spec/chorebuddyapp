@@ -11,6 +11,7 @@ import {
   validateFamilyAccess,
   validateLinkingCode,
   sanitizeCode,
+  checkRateLimit,
   errorResponse,
   successResponse,
   logError,
@@ -59,6 +60,11 @@ async function handleParentLink(base44: any, user: any, personId: string) {
   // Link the user to the person
   await base44.asServiceRole.entities.Person.update(personId, {
     linked_user_id: user.id,
+  });
+
+  // Update user's linked_person_id for easy reference
+  await base44.auth.updateMe({
+    linked_person_id: personId,
   });
 
   logInfo('linkAccount', 'Parent linked account to person', {
@@ -251,19 +257,31 @@ Deno.serve(async (req) => {
         if (parentError) return parentError;
         return await handleParentLink(base44, user, personId);
 
-      case 'code_link':
+      case 'code_link': {
+        // Rate limit code attempts to prevent brute-force
+        const codeLinkRate = checkRateLimit(user.id, 'code_link', 10, 5 * 60 * 1000);
+        if (!codeLinkRate.allowed) {
+          return errorResponse('Too many linking attempts. Please try again later.', 429);
+        }
         // User linking with a code
         if (!linkingCode) {
           return errorResponse('Linking code required for code-based linking');
         }
         return await handleCodeLink(base44, user, linkingCode);
+      }
 
-      case 'select_person':
+      case 'select_person': {
+        // Rate limit selection attempts
+        const selectRate = checkRateLimit(user.id, 'select_person', 10, 5 * 60 * 1000);
+        if (!selectRate.allowed) {
+          return errorResponse('Too many linking attempts. Please try again later.', 429);
+        }
         // User selecting from multiple unlinked people
         if (!personId) {
           return errorResponse('Person ID required for manual selection');
         }
         return await handleManualSelection(base44, user, personId);
+      }
 
       default:
         return errorResponse(
