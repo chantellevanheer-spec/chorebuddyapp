@@ -15,7 +15,7 @@ export default function Home() {
       try {
         await User.me();
         setIsAuthenticated(true);
-      } catch (error) {
+      } catch {
         setIsAuthenticated(false);
       }
     };
