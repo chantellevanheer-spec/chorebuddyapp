@@ -1,37 +1,26 @@
 import React, { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { User } from '@/entities/User';
 import { Button } from '@/components/ui/button';
-import { Zap, Users, Gift, Loader2 } from 'lucide-react';
+import { Zap, Users, Gift } from 'lucide-react';
 import FeatureCard from '../components/landing/FeatureCard';
 import StepCard from '../components/landing/StepCard';
 
 export default function Home() {
-  const [isAuthenticated, setIsAuthenticated] = React.useState(null);
-  const navigate = useNavigate();
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
 
   useEffect(() => {
     const checkUserStatus = async () => {
       try {
         await User.me();
         setIsAuthenticated(true);
-        navigate(createPageUrl("Dashboard"), { replace: true });
       } catch (error) {
         setIsAuthenticated(false);
       }
     };
     checkUserStatus();
-  }, [navigate]);
-
-  // Show loading while checking auth to prevent flash of landing page
-  if (isAuthenticated === null) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-12 h-12 animate-spin text-[#C3B1E1]" />
-      </div>
-    );
-  }
+  }, []);
 
   return (
     <div className="bg-[#FDFBF5] text-[#5E3B85]">
@@ -45,12 +34,22 @@ export default function Home() {
               ChoreBuddy turns household tasks into an engaging game. Motivate your family with smart assignments, fun rewards, and a little help from AI.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row justify-center items-center gap-4">
-              <Button
-                className="funky-button bg-[#FF6B35] hover:bg-[#fa5a1f] text-white header-font text-2xl px-12 py-8"
-                onClick={() => User.loginWithRedirect(createPageUrl("Dashboard"))} // Using createPageUrl
-              >
-                Get Started for Free
-              </Button>
+              {isAuthenticated ? (
+                <Link to={createPageUrl("Dashboard")}>
+                  <Button
+                    className="funky-button bg-[#FF6B35] hover:bg-[#fa5a1f] text-white header-font text-2xl px-12 py-8"
+                  >
+                    Go to Dashboard
+                  </Button>
+                </Link>
+              ) : (
+                <Button
+                  className="funky-button bg-[#FF6B35] hover:bg-[#fa5a1f] text-white header-font text-2xl px-12 py-8"
+                  onClick={() => User.loginWithRedirect(createPageUrl("Dashboard"))}
+                >
+                  Get Started for Free
+                </Button>
+              )}
               <Link to={createPageUrl("Pricing")}>
                 <Button variant="outline" className="funky-button bg-white hover:bg-gray-100 text-[#5E3B85] border-3 border-[#5E3B85] header-font text-2xl px-12 py-8">
                   View Plans
@@ -121,12 +120,22 @@ export default function Home() {
             <p className="body-font-light text-xl text-white/90 mb-8 max-w-2xl mx-auto">
               Join thousands of families who have transformed their chore routine. Sign up today and bring peace and productivity to your household.
             </p>
-            <Button
-              className="funky-button bg-white hover:bg-gray-100 text-[#5E3B85] border-3 border-[#5E3B85] header-font text-2xl px-12 py-8"
-              onClick={() => User.loginWithRedirect(createPageUrl("Dashboard"))} // Using createPageUrl
-            >
-              Get Started Now
-            </Button>
+            {isAuthenticated ? (
+              <Link to={createPageUrl("Dashboard")}>
+                <Button
+                  className="funky-button bg-white hover:bg-gray-100 text-[#5E3B85] border-3 border-[#5E3B85] header-font text-2xl px-12 py-8"
+                >
+                  Go to Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <Button
+                className="funky-button bg-white hover:bg-gray-100 text-[#5E3B85] border-3 border-[#5E3B85] header-font text-2xl px-12 py-8"
+                onClick={() => User.loginWithRedirect(createPageUrl("Dashboard"))}
+              >
+                Get Started Now
+              </Button>
+            )}
           </div>
         </section>
       </main>
