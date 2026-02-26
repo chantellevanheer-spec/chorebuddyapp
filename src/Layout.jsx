@@ -158,6 +158,11 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
     checkAuth();
   }, [currentPageName, navigate]);
 
+  // Public pages render immediately with PublicLayout for unauthenticated visitors
+  if (isPublicPage && !isAuthenticated) {
+    return <PublicLayout>{children}</PublicLayout>;
+  }
+
   // For private pages, show a loader until the auth check is complete
   if (!authChecked || !isAuthenticated) {
     return (
