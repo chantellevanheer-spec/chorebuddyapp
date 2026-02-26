@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { checkRateLimit, isParent, getUserFamilyId } from './lib/security.js';
+import { checkRateLimit, isParent, getUserFamilyId } from './lib/shared-utils.ts';
 
 // Constants
 const AI_TIMEOUT_MS = 30000;

@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { checkRateLimit, isValidEmail, isParent, getUserFamilyId, validateFamilyAccess } from './lib/security.js';
+import { checkRateLimit, isValidEmail, isParent, getUserFamilyId, validateFamilyAccess } from './lib/shared-utils.ts';
 
 Deno.serve(async (req) => {
   try {

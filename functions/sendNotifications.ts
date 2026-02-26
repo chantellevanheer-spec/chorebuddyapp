@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { format, addDays, startOfWeek, isBefore, parseISO } from 'npm:date-fns@3.6.0';
-import { TIME, APP } from './lib/constants.js';
+import { TIME, APP } from './lib/shared-utils.ts';
 
 Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);

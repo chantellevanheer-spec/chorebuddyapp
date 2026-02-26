@@ -22,6 +22,11 @@ export const HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
+export const APP = {
+  URL: 'https://chorebuddyapp.com',
+  NAME: 'ChoreBuddy',
+};
+
 export const VALID_ROLES = ['parent', 'teen', 'child', 'toddler'];
 export const PARENT_ROLES = ['parent'];
 
@@ -451,6 +456,16 @@ export function isExpired(dateString: string): boolean {
 export function sanitizeString(input: string, maxLength = 500): string {
   if (!input) return '';
   return input.trim().slice(0, maxLength);
+}
+
+/**
+ * Sanitize user input to prevent injection attacks.
+ * Alias for sanitizeString with a generous default limit.
+ * @deprecated Prefer sanitizeString() which has an explicit maxLength parameter.
+ */
+export function sanitizeInput(input: any): any {
+  if (typeof input !== 'string') return input;
+  return input.trim().slice(0, 10000);
 }
 
 /**

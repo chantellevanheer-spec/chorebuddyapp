@@ -130,9 +130,10 @@ export default function PersonFormModal({
                       <SelectValue/>
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="parent">👨‍👩‍ parent</SelectItem>
+                      <SelectItem value="parent">👨‍👩‍ Parent</SelectItem>
                       <SelectItem value="teen">🧑‍🎓 Teen</SelectItem>
                       <SelectItem value="child">🧒 Child</SelectItem>
+                      <SelectItem value="toddler">👶 Toddler</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

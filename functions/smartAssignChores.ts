@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { isParent, getUserFamilyId } from './lib/security.js';
+import { isParent, getUserFamilyId } from './lib/shared-utils.ts';
 import { advancedFairAssignment } from './lib/choreAssignment.ts';
 
 Deno.serve(async (req) => {

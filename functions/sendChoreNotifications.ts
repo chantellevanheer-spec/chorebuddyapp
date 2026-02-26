@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { startOfWeek, endOfWeek, format, addDays } from 'npm:date-fns';
-import { isParent } from './lib/shared-utils.ts';
+import { isParent, APP } from './lib/shared-utils.ts';
 
 Deno.serve(async (req) => {
   try {
