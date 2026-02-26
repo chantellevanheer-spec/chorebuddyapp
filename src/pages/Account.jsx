@@ -19,7 +19,7 @@ import ThemeSelector from '@/components/profile/ThemeSelector';
 import { useTheme } from '@/components/contexts/ThemeContext';
 import NotificationPreferences from '@/components/profile/NotificationPreferences';
 import AccessibilitySettings from '@/components/profile/AccessibilitySettings';
-import { isParent as checkParent, FAMILY_ROLES } from '@/utils/roles';
+import { isParent as checkParent, isChild, FAMILY_ROLES } from '@/utils/roles';
 
 export default function Account() {
   const [user, setUser] = useState(null);
@@ -42,10 +42,10 @@ export default function Account() {
   const [notificationPreferences, setNotificationPreferences] = useState({});
   const { currentTheme, updateTheme } = useTheme();
 
-  // Determine effective subscription tier (child/teen inherits parent's)
+  // Determine effective subscription tier (child/teen/toddler inherits parent's)
   const getEffectiveSubscriptionTier = () => {
-    if (user?.family_role === FAMILY_ROLES.CHILD && linkedPerson) {
-      // Child uses parent's subscription
+    if (isChild(user) && linkedPerson) {
+      // Non-parent members use parent's subscription
       return user?.data?.parent_subscription_tier || 'free';
     }
     return user?.subscription_tier || 'free';
@@ -63,7 +63,7 @@ export default function Account() {
           receives_chore_reminders: userData.receives_chore_reminders ?? true,
           receives_achievement_alerts: userData.receives_achievement_alerts ?? true,
           receives_weekly_reports: userData.receives_weekly_reports ?? false,
-          simplified_view: userData.simplified_view ?? (userData.family_role === FAMILY_ROLES.CHILD),
+          simplified_view: userData.simplified_view ?? isChild(userData),
           high_contrast: userData.high_contrast ?? false,
           text_size: userData.text_size ?? 'normal'
         });
@@ -153,7 +153,7 @@ export default function Account() {
         receives_chore_reminders: updatedUser.receives_chore_reminders ?? true,
         receives_achievement_alerts: updatedUser.receives_achievement_alerts ?? true,
         receives_weekly_reports: updatedUser.receives_weekly_reports ?? false,
-        simplified_view: updatedUser.simplified_view ?? (updatedUser.family_role === FAMILY_ROLES.CHILD),
+        simplified_view: updatedUser.simplified_view ?? isChild(updatedUser),
         high_contrast: updatedUser.high_contrast ?? false,
         text_size: updatedUser.text_size ?? 'normal'
       });
@@ -332,11 +332,11 @@ export default function Account() {
                 <div>
                     <p className="body-font text-lg">
                       Your current plan: <span className="header-font text-xl text-[#FF6B35] capitalize">{getEffectiveSubscriptionTier()}</span>
-                      {user?.family_role === FAMILY_ROLES.CHILD && linkedPerson && <span className="body-font-light text-sm text-gray-500 ml-2">(from parent's account)</span>}
+                      {isChild(user) && linkedPerson && <span className="body-font-light text-sm text-gray-500 ml-2">(from parent's account)</span>}
                     </p>
                     <p className="body-font-light text-sm text-gray-500">Status: <span className="capitalize">{user.subscription_status || 'active'}</span></p>
                 </div>
-                {user?.family_role === FAMILY_ROLES.CHILD && linkedPerson ? (
+                {isChild(user) && linkedPerson ? (
                     <p className="body-font-light text-gray-600">Your parent manages the subscription. Contact them to upgrade.</p>
                 ) : getEffectiveSubscriptionTier() !== 'free' ? (
                     <Button 

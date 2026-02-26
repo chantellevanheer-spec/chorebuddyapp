@@ -6,6 +6,7 @@ describe('FAMILY_ROLES', () => {
     expect(FAMILY_ROLES.PARENT).toBe('parent');
     expect(FAMILY_ROLES.TEEN).toBe('teen');
     expect(FAMILY_ROLES.CHILD).toBe('child');
+    expect(FAMILY_ROLES.TODDLER).toBe('toddler');
   });
 });
 
@@ -30,6 +31,10 @@ describe('isParent', () => {
     expect(isParent({ family_role: 'teen' })).toBe(false);
   });
 
+  it('should return false for toddler role', () => {
+    expect(isParent({ family_role: 'toddler' })).toBe(false);
+  });
+
   it('should return false for null/undefined user', () => {
     expect(isParent(null)).toBe(false);
     expect(isParent(undefined)).toBe(false);
@@ -47,6 +52,10 @@ describe('isChild', () => {
 
   it('should return true for teen role', () => {
     expect(isChild({ family_role: 'teen' })).toBe(true);
+  });
+
+  it('should return true for toddler role', () => {
+    expect(isChild({ family_role: 'toddler' })).toBe(true);
   });
 
   it('should return false for parent role', () => {

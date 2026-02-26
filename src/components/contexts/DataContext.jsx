@@ -7,6 +7,12 @@ import { toast } from "sonner";
 
 const DataContext = createContext();
 
+// Timestamp convention:
+// Base44 auto-generates `created_date` / `updated_date` on every record.
+// Application code also sets `created_at` / `updated_at` explicitly for consistency.
+// When filtering or sorting by timestamp, use the fallback pattern:
+//   item.created_at || item.created_date
+
 // Only keep completions and rewards from the last 60 days to avoid unbounded growth
 const DATA_RETENTION_DAYS = 60;
 
@@ -726,7 +732,7 @@ export const DataProvider = ({ children }) => {
 
   /**
    * Check if user can manage family (owner or co-owner)
-   * Delegates to the shared utility in familyHelpers.js
+   * Delegates to the shared utility in components/utils.jsx
    */
   const canManageFamily = useCallback(() => {
     return canManageFamilyUtil(user, family);
@@ -734,7 +740,7 @@ export const DataProvider = ({ children }) => {
 
   /**
    * Check if user is family owner
-   * Delegates to the shared utility in familyHelpers.js
+   * Delegates to the shared utility in components/utils.jsx
    */
   const isFamilyOwner = useCallback(() => {
     return isFamilyOwnerUtil(user, family);

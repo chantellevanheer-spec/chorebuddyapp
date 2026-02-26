@@ -58,6 +58,7 @@ export default function Chores() {
     custom_points: "",
     requires_approval: false,
     photo_required: false,
+    early_completion_bonus: null,
     sub_tasks: [],
     is_template: false,
     template_name: ""
@@ -93,6 +94,7 @@ export default function Chores() {
       custom_points: chore.custom_points || "",
       requires_approval: chore.requires_approval || false,
       photo_required: chore.photo_required || false,
+      early_completion_bonus: chore.early_completion_bonus || null,
       sub_tasks: chore.sub_tasks || [],
       is_template: chore.is_template || false,
       template_name: chore.template_name || ""

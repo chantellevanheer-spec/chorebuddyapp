@@ -65,6 +65,7 @@ export default function ChoreTrades() {
       from_assignment_id: selectedFromAssignment,
       to_assignment_id: selectedToAssignment && selectedToAssignment !== 'none' ? selectedToAssignment : null,
       message: stripHTMLTags(message),
+      status: 'pending',
       family_id: user.family_id
     });
 
