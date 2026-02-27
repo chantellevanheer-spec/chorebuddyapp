@@ -32,11 +32,10 @@ export default function Goals() {
     return [...goals].sort((a, b) => (b.created_date || '').localeCompare(a.created_date || ''));
   }, [goals]);
 
-  // Update goal progress based on current points (parent-only system operation)
-  // Uses FamilyGoal entity directly since this is an automated sync, not user-initiated CRUD
+  // Update goal progress based on current points (runs for all users).
+  // Uses FamilyGoal entity directly since this is an automated sync, not user-initiated CRUD,
+  // so it bypasses DataContext's requireParentRole() guard intentionally.
   useEffect(() => {
-    if (!isParent) return; // Only parents trigger progress sync
-
     const updateGoalProgress = async () => {
       const updates = sortedGoals.filter((goal) =>
       goal.status === 'active' && goal.current_points !== familyPoints
@@ -75,7 +74,7 @@ export default function Goals() {
       const timer = setTimeout(updateGoalProgress, 500); // Debounce 500ms
       return () => clearTimeout(timer);
     }
-  }, [sortedGoals, familyPoints, isParent, refresh]);
+  }, [sortedGoals, familyPoints, refresh]);
 
   const handleShowAddForm = () => {
     if (!canAccess('family_goals')) {
