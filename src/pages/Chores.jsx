@@ -109,6 +109,10 @@ export default function Chores() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!isParent) {
+      toast.error("Only parents can manage chores");
+      return;
+    }
     if (!formData.title.trim()) return;
 
     if (formData.is_template && !formData.template_name.trim()) {
@@ -134,6 +138,10 @@ export default function Chores() {
   };
 
   const handleDeleteConfirm = async () => {
+    if (!isParent) {
+      toast.error("Only parents can delete chores");
+      return;
+    }
     if (choreToDelete) {
       await deleteChore(choreToDelete.id);
       toast.success("Chore deleted.");
@@ -151,6 +159,10 @@ export default function Chores() {
   };
 
   const handleAssignChore = async (assignments) => {
+    if (!isParent) {
+      toast.error("Only parents can assign chores");
+      return;
+    }
     setIsAssigning(true);
     try {
       // assignments is now an array from the enhanced modal
@@ -174,6 +186,10 @@ export default function Chores() {
   };
 
   const handleBulkAssign = async ({ choreIds, personIds, week_start, due_date }) => {
+    if (!isParent) {
+      toast.error("Only parents can assign chores");
+      return;
+    }
     setIsAssigning(true);
     try {
       const assignments = [];
@@ -217,6 +233,10 @@ export default function Chores() {
   };
 
   const handleApplyAISuggestion = async (suggestion) => {
+    if (!isParent) {
+      toast.error("Only parents can add chores");
+      return;
+    }
     const choreData = {
       title: suggestion.title,
       description: suggestion.description,

@@ -104,7 +104,7 @@ export function generateCode(length = 6): string {
  * Check if user is a parent
  */
 export function isParent(user: any): boolean {
-  return user?.family_role === 'parent' || user?.data?.family_role === 'parent';
+  return user?.family_role === 'parent' || user?.data?.family_role === 'parent' || user?.role === 'admin';
 }
 
 /**

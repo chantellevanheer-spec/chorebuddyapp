@@ -59,6 +59,10 @@ export default function Store() {
   };
 
   const handleSubmit = async (itemData) => {
+    if (!isParent) {
+      toast.error("Only parents can manage reward items");
+      return;
+    }
     if (itemToEdit) {
       await updateItem(itemToEdit.id, itemData);
       toast.success("Reward item updated!");
@@ -71,6 +75,10 @@ export default function Store() {
 
   // New function to handle confirmation of deletion
   const handleDeleteConfirm = async () => {
+    if (!isParent) {
+      toast.error("Only parents can delete reward items");
+      return;
+    }
     if (itemToDelete) {
       await deleteItem(itemToDelete.id);
       toast.success("Reward item deleted.");
@@ -83,13 +91,17 @@ export default function Store() {
     setItemToRedeem(item);
     setIsRedeemModalOpen(true);
   };
-  
+
   const handleConfirmRedemption = async (personId) => {
+    if (!isParent) {
+      toast.error("Only parents can process redemptions");
+      return;
+    }
     if (!itemToRedeem || !personId) {
       toast.error("Could not process redemption.");
       return;
     }
-    
+
     const person = people.find(p => p.id === personId);
     if (!person) {
         toast.error("Selected person not found.");
@@ -111,6 +123,10 @@ export default function Store() {
   };
 
   const handleApplyAISuggestion = async (suggestion) => {
+    if (!isParent) {
+      toast.error("Only parents can add reward items");
+      return;
+    }
     const itemData = {
       name: suggestion.name,
       description: suggestion.description,

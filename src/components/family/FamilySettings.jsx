@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { isParent as checkParent } from '@/utils/roles';
 
 export default function FamilySettings() {
   const [family, setFamily] = useState(null);
@@ -66,7 +67,8 @@ export default function FamilySettings() {
     if (!family || !user) return false;
     return (
       family.owner_user_id === user.id ||
-      family.co_owners?.includes(user.id)
+      family.co_owners?.includes(user.id) ||
+      checkParent(user)
     );
   };
 

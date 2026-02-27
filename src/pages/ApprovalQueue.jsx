@@ -32,7 +32,9 @@ export default function ApprovalQueue() {
 
       // Approve the assignment
       await updateAssignment(assignment.id, {
-        approval_status: 'approved'
+        approval_status: 'approved',
+        approved_by: user.id,
+        approved_date: new Date().toISOString()
       });
 
       // Award points
@@ -66,6 +68,8 @@ export default function ApprovalQueue() {
     try {
       await updateAssignment(assignment.id, {
         approval_status: 'rejected',
+        approved_by: user.id,
+        approved_date: new Date().toISOString(),
         completed: false,
         completed_date: null
       });
