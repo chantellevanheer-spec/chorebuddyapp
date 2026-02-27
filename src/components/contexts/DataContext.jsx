@@ -5,6 +5,7 @@ import { offlineStorage, STORES } from '../utils/offlineStorage';
 import { canManageFamily as canManageFamilyUtil, isFamilyOwner as isFamilyOwnerUtil } from '@/components/utils';
 import { isParent as isParentRole } from '@/utils/roles';
 import { toast } from "sonner";
+import { useAuth } from '@/lib/AuthContext';
 
 const DataContext = createContext();
 
@@ -26,6 +27,8 @@ export const useData = () => {
 };
 
 export const DataProvider = ({ children }) => {
+  const { isAuthenticated: isAuthed, isLoadingAuth } = useAuth();
+
   // Core state
   const [people, setPeople] = useState([]);
   const [chores, setChores] = useState([]);
@@ -37,7 +40,7 @@ export const DataProvider = ({ children }) => {
   const [achievements, setAchievements] = useState([]);
   const [user, setUser] = useState(null);
   const [family, setFamily] = useState(null);
-  
+
   // Loading states
   const [loading, setLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -356,10 +359,14 @@ export const DataProvider = ({ children }) => {
     }
   }, [initializeFamily, isOnline]);
 
-  // Initial data load
+  // Initial data load — only when user is confirmed authenticated
   useEffect(() => {
-    fetchData();
-  }, []); // Only run once on mount
+    if (!isLoadingAuth && isAuthed) {
+      fetchData();
+    } else if (!isLoadingAuth) {
+      setLoading(false);
+    }
+  }, [isLoadingAuth, isAuthed]);
 
   /**
    * Generic wrapper for processing operations

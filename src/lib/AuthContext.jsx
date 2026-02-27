@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }) => {
           'X-App-Id': appParams.appId
         },
         token: appParams.token, // Include token if available
-        interceptResponses: true
+        interceptResponses: false
       });
       
       try {

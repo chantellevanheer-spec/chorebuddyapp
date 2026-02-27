@@ -5,10 +5,11 @@ import { Sparkles } from 'lucide-react';
 import { createPageUrl } from '@/utils';
 import { User } from '@/entities/User';
 import { setCookie, getCookie } from '../utils/cookies';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function PublicLayout({ children }) {
+  const { isAuthenticated } = useAuth();
   const [showCookieBanner, setShowCookieBanner] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     // Check if user has already accepted cookies
@@ -16,17 +17,6 @@ export default function PublicLayout({ children }) {
     if (!consent) {
       setShowCookieBanner(true);
     }
-
-    // Check auth status silently for adaptive header
-    const checkAuth = async () => {
-      try {
-        await User.me();
-        setIsAuthenticated(true);
-      } catch {
-        setIsAuthenticated(false);
-      }
-    };
-    checkAuth();
   }, []);
 
   const handleAcceptCookies = () => {
