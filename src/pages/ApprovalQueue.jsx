@@ -28,7 +28,9 @@ export default function ApprovalQueue() {
     setProcessingId(assignment.id);
     try {
       const chore = chores.find(c => c.id === assignment.chore_id);
-      const points = assignment.points_awarded || 10;
+      const pointMap = { easy: 10, medium: 20, hard: 30 };
+      const basePoints = chore?.custom_points || pointMap[chore?.difficulty] || 15;
+      const points = Math.round(basePoints * (assignment.bonus_multiplier || 1));
 
       // Approve the assignment
       await updateAssignment(assignment.id, {
@@ -226,7 +228,7 @@ export default function ApprovalQueue() {
                       <div className="funky-button bg-yellow-400 text-yellow-800 px-4 py-2 inline-flex items-center gap-2">
                         <Star className="w-5 h-5 fill-current" />
                         <span className="body-font text-lg">
-                          {assignment.points_awarded || 10} points
+                          {chore?.custom_points || ({ easy: 10, medium: 20, hard: 30 }[chore?.difficulty]) || 15} points
                         </span>
                       </div>
                     </div>

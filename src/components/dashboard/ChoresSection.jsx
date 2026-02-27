@@ -1,4 +1,5 @@
 import React from "react";
+import { AlertCircle } from "lucide-react";
 import ChoreCard from "../chores/ChoreCard";
 import SimpleChoreCard from "../chores/SimpleChoreCard";
 import { isParent as checkParent, isChild } from '@/utils/roles';

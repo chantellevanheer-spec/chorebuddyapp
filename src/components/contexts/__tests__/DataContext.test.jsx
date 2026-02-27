@@ -19,6 +19,9 @@ vi.mock('@/api/base44Client', () => ({
       me: vi.fn(),
       updateMe: vi.fn().mockResolvedValue(true),
     },
+    functions: {
+      invoke: vi.fn().mockResolvedValue({ data: { record: { id: 'crud-new' } } }),
+    },
     entities: {
       Family:          { create: vi.fn().mockResolvedValue({ id: 'fam-new' }), get: vi.fn(), update: vi.fn().mockResolvedValue({ id: 'fam-1' }), list: vi.fn().mockResolvedValue([]), filter: vi.fn().mockResolvedValue([]) },
       Person:          { create: vi.fn().mockResolvedValue({ id: 'person-new' }), update: vi.fn().mockResolvedValue({}), delete: vi.fn().mockResolvedValue(true), list: vi.fn().mockResolvedValue([]), filter: vi.fn().mockResolvedValue([]) },
@@ -99,6 +102,7 @@ const defaultUser = {
   id: 'user-1',
   family_id: 'fam-1',
   full_name: 'Test User',
+  family_role: 'parent',
   subscription_tier: 'free',
 };
 
@@ -285,9 +289,8 @@ describe('initializeFamily', () => {
 });
 
 describe('CRUD operations', () => {
-  it('addPerson creates person with family_id', async () => {
+  it('addPerson creates person via parentCrud', async () => {
     base44.auth.me.mockResolvedValue({ ...defaultUser });
-    base44.entities.Person.create.mockResolvedValue({ id: 'new-person' });
 
     const getCtx = await renderProvider();
     await waitFor(() => expect(getCtx().loading).toBe(false));
@@ -296,13 +299,14 @@ describe('CRUD operations', () => {
       await getCtx().addPerson({ name: 'Alice' });
     });
 
-    expect(base44.entities.Person.create).toHaveBeenCalledWith(
-      expect.objectContaining({ name: 'Alice', family_id: 'fam-1' })
+    expect(base44.functions.invoke).toHaveBeenCalledWith(
+      'parentCrud',
+      expect.objectContaining({ entity: 'Person', operation: 'create', data: expect.objectContaining({ name: 'Alice' }) })
     );
     expect(toast.success).toHaveBeenCalledWith('Family member added!');
   });
 
-  it('updatePerson calls Person.update with updated_at', async () => {
+  it('updatePerson calls parentCrud update with updated_at', async () => {
     const getCtx = await renderProvider();
     await waitFor(() => expect(getCtx().loading).toBe(false));
 
@@ -310,14 +314,14 @@ describe('CRUD operations', () => {
       await getCtx().updatePerson('p1', { name: 'Bob' });
     });
 
-    expect(base44.entities.Person.update).toHaveBeenCalledWith(
-      'p1',
-      expect.objectContaining({ name: 'Bob' })
+    expect(base44.functions.invoke).toHaveBeenCalledWith(
+      'parentCrud',
+      expect.objectContaining({ entity: 'Person', operation: 'update', data: expect.objectContaining({ name: 'Bob' }), id: 'p1' })
     );
     expect(toast.success).toHaveBeenCalledWith('Family member updated!');
   });
 
-  it('deletePerson calls Person.delete', async () => {
+  it('deletePerson calls parentCrud delete', async () => {
     const getCtx = await renderProvider();
     await waitFor(() => expect(getCtx().loading).toBe(false));
 
@@ -325,11 +329,14 @@ describe('CRUD operations', () => {
       await getCtx().deletePerson('p1');
     });
 
-    expect(base44.entities.Person.delete).toHaveBeenCalledWith('p1');
+    expect(base44.functions.invoke).toHaveBeenCalledWith(
+      'parentCrud',
+      expect.objectContaining({ entity: 'Person', operation: 'delete', id: 'p1' })
+    );
     expect(toast.success).toHaveBeenCalledWith('Family member removed');
   });
 
-  it('addChore creates chore with family_id', async () => {
+  it('addChore creates chore via parentCrud', async () => {
     const getCtx = await renderProvider();
     await waitFor(() => expect(getCtx().loading).toBe(false));
 
@@ -337,13 +344,14 @@ describe('CRUD operations', () => {
       await getCtx().addChore({ title: 'Dishes' });
     });
 
-    expect(base44.entities.Chore.create).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'Dishes', family_id: 'fam-1' })
+    expect(base44.functions.invoke).toHaveBeenCalledWith(
+      'parentCrud',
+      expect.objectContaining({ entity: 'Chore', operation: 'create', data: expect.objectContaining({ title: 'Dishes' }) })
     );
     expect(toast.success).toHaveBeenCalledWith('Chore added!');
   });
 
-  it('createAssignment creates with completed: false', async () => {
+  it('createAssignment creates with completed: false via parentCrud', async () => {
     const getCtx = await renderProvider();
     await waitFor(() => expect(getCtx().loading).toBe(false));
 
@@ -351,13 +359,14 @@ describe('CRUD operations', () => {
       await getCtx().createAssignment({ chore_id: 'c1', person_id: 'p1' });
     });
 
-    expect(base44.entities.Assignment.create).toHaveBeenCalledWith(
-      expect.objectContaining({ completed: false, family_id: 'fam-1' })
+    expect(base44.functions.invoke).toHaveBeenCalledWith(
+      'parentCrud',
+      expect.objectContaining({ entity: 'Assignment', operation: 'create', data: expect.objectContaining({ completed: false }) })
     );
     expect(toast.success).toHaveBeenCalledWith('Chore assigned!');
   });
 
-  it('addItem creates redeemable item with family_id', async () => {
+  it('addItem creates redeemable item via parentCrud', async () => {
     const getCtx = await renderProvider();
     await waitFor(() => expect(getCtx().loading).toBe(false));
 
@@ -365,8 +374,9 @@ describe('CRUD operations', () => {
       await getCtx().addItem({ name: 'Cookie' });
     });
 
-    expect(base44.entities.RedeemableItem.create).toHaveBeenCalledWith(
-      expect.objectContaining({ name: 'Cookie', family_id: 'fam-1' })
+    expect(base44.functions.invoke).toHaveBeenCalledWith(
+      'parentCrud',
+      expect.objectContaining({ entity: 'RedeemableItem', operation: 'create', data: expect.objectContaining({ name: 'Cookie' }) })
     );
     expect(toast.success).toHaveBeenCalledWith('Reward item added!');
   });
@@ -374,8 +384,7 @@ describe('CRUD operations', () => {
 
 describe('error handling', () => {
   it('sets error state when CRUD operation fails', async () => {
-    base44.entities.Person.create.mockRejectedValue(new Error('Create failed'));
-    // Also make the auth.me for ensureFamily work
+    base44.functions.invoke.mockRejectedValue(new Error('Create failed'));
     base44.auth.me.mockResolvedValue({ ...defaultUser });
 
     const getCtx = await renderProvider();

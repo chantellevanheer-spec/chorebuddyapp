@@ -19,7 +19,7 @@ import ThemeSelector from '@/components/profile/ThemeSelector';
 import { useTheme } from '@/components/contexts/ThemeContext';
 import NotificationPreferences from '@/components/profile/NotificationPreferences';
 import AccessibilitySettings from '@/components/profile/AccessibilitySettings';
-import { isParent as checkParent, isChild, FAMILY_ROLES } from '@/utils/roles';
+import { isParent as checkParent, isChild } from '@/utils/roles';
 
 export default function Account() {
   const [user, setUser] = useState(null);
