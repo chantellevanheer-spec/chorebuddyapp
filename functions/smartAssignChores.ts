@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { isParent, getUserFamilyId } from './lib/shared-utils.ts';
+import { isParent, getUserFamilyId, getUserSubscriptionTier } from './lib/shared-utils.ts';
 import { advancedFairAssignment } from './lib/choreAssignment.ts';
 
 Deno.serve(async (req) => {
@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
             });
         }
 
-        if (user.subscription_tier === 'free') {
+        if (getUserSubscriptionTier(user) === 'free') {
             return new Response(JSON.stringify({ error: 'ChoreAI assignment requires a Basic or Premium plan.' }), { 
                 status: 403, headers: { 'Content-Type': 'application/json' }
             });

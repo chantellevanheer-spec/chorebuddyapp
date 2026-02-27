@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { jsPDF } from 'npm:jspdf@2.5.1';
 import { format, subWeeks, parseISO } from 'npm:date-fns@3.6.0';
-import { isParent } from './lib/shared-utils.ts';
+import { isParent, getUserSubscriptionTier } from './lib/shared-utils.ts';
 
 Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
         }
 
         const reportTiers = ['family_plus', 'enterprise'];
-        if (!reportTiers.includes(user.subscription_tier)) {
+        if (!reportTiers.includes(getUserSubscriptionTier(user))) {
             return Response.json({ error: 'Report generation requires a Family Plus or Enterprise subscription.' }, { status: 403 });
         }
 
