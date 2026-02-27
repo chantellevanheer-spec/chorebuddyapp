@@ -411,6 +411,19 @@ export const DataProvider = ({ children }) => {
     }
   }, [user]);
 
+  /**
+   * Invoke the parentCrud serverless function for parent-only CRUD operations.
+   * This enforces parent role, entity whitelist, and family ownership at the
+   * API level (server-side), not just in the client.
+   */
+  const invokeParentCrud = useCallback(async (entity, operation, data = null, id = null) => {
+    const result = await base44.functions.invoke('parentCrud', { entity, operation, data, id });
+    if (result.error || result.data?.error) {
+      throw new Error(result.error || result.data?.error || 'Operation failed');
+    }
+    return result.data.record;
+  }, []);
+
   // ==========================================
   // PERSON ACTIONS
   // ==========================================
@@ -418,19 +431,16 @@ export const DataProvider = ({ children }) => {
   const addPerson = useCallback((data) =>
     wrapProcessing(async () => {
       requireParentRole();
-      const familyId = await ensureFamily();
-      console.log("[DataContext] Adding person to family:", familyId);
+      await ensureFamily();
 
-      const newPerson = await base44.entities.Person.create({
+      const newPerson = await invokeParentCrud('Person', 'create', {
         ...data,
-        family_id: familyId,
         is_active: true,
         points_balance: 0,
         total_points_earned: 0,
         chores_completed_count: 0,
         current_streak: 0,
         best_streak: 0,
-        created_by: user?.id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       });
@@ -438,30 +448,30 @@ export const DataProvider = ({ children }) => {
       console.log("[DataContext] Person created:", newPerson.id);
       return newPerson;
     }, "Family member added!")
-  , [wrapProcessing, ensureFamily, requireParentRole, user]);
+  , [wrapProcessing, ensureFamily, requireParentRole, invokeParentCrud]);
 
   const updatePerson = useCallback((id, data) =>
     wrapProcessing(
       () => {
         requireParentRole();
-        return base44.entities.Person.update(id, {
+        return invokeParentCrud('Person', 'update', {
           ...data,
           updated_at: new Date().toISOString()
-        });
+        }, id);
       },
       "Family member updated!"
     )
-  , [wrapProcessing, requireParentRole]);
+  , [wrapProcessing, requireParentRole, invokeParentCrud]);
 
   const deletePerson = useCallback((id) =>
     wrapProcessing(
       () => {
         requireParentRole();
-        return base44.entities.Person.delete(id);
+        return invokeParentCrud('Person', 'delete', null, id);
       },
       "Family member removed"
     )
-  , [wrapProcessing, requireParentRole]);
+  , [wrapProcessing, requireParentRole, invokeParentCrud]);
 
   // ==========================================
   // CHORE ACTIONS
@@ -470,12 +480,10 @@ export const DataProvider = ({ children }) => {
   const addChore = useCallback((data) =>
     wrapProcessing(async () => {
       requireParentRole();
-      const familyId = await ensureFamily();
+      await ensureFamily();
 
-      const newChore = await base44.entities.Chore.create({
+      const newChore = await invokeParentCrud('Chore', 'create', {
         ...data,
-        family_id: familyId,
-        created_by: user?.id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       });
@@ -483,30 +491,30 @@ export const DataProvider = ({ children }) => {
       console.log("[DataContext] Chore created:", newChore.id);
       return newChore;
     }, "Chore added!")
-  , [wrapProcessing, ensureFamily, requireParentRole, user]);
+  , [wrapProcessing, ensureFamily, requireParentRole, invokeParentCrud]);
 
   const updateChore = useCallback((id, data) =>
     wrapProcessing(
       () => {
         requireParentRole();
-        return base44.entities.Chore.update(id, {
+        return invokeParentCrud('Chore', 'update', {
           ...data,
           updated_at: new Date().toISOString()
-        });
+        }, id);
       },
       "Chore updated!"
     )
-  , [wrapProcessing, requireParentRole]);
+  , [wrapProcessing, requireParentRole, invokeParentCrud]);
 
   const deleteChore = useCallback((id) =>
     wrapProcessing(
       () => {
         requireParentRole();
-        return base44.entities.Chore.delete(id);
+        return invokeParentCrud('Chore', 'delete', null, id);
       },
       "Chore deleted"
     )
-  , [wrapProcessing, requireParentRole]);
+  , [wrapProcessing, requireParentRole, invokeParentCrud]);
 
   // ==========================================
   // ASSIGNMENT ACTIONS (with offline support)
@@ -549,13 +557,11 @@ export const DataProvider = ({ children }) => {
   const createAssignment = useCallback((data) =>
     wrapProcessing(async () => {
       requireParentRole();
-      const familyId = await ensureFamily();
+      await ensureFamily();
 
-      const newAssignment = await base44.entities.Assignment.create({
+      const newAssignment = await invokeParentCrud('Assignment', 'create', {
         ...data,
-        family_id: familyId,
         completed: false,
-        created_by: user?.id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       });
@@ -563,17 +569,17 @@ export const DataProvider = ({ children }) => {
       console.log("[DataContext] Assignment created:", newAssignment.id);
       return newAssignment;
     }, "Chore assigned!")
-  , [wrapProcessing, ensureFamily, requireParentRole, user]);
+  , [wrapProcessing, ensureFamily, requireParentRole, invokeParentCrud]);
 
   const deleteAssignment = useCallback((id) =>
     wrapProcessing(
       () => {
         requireParentRole();
-        return base44.entities.Assignment.delete(id);
+        return invokeParentCrud('Assignment', 'delete', null, id);
       },
       "Assignment removed"
     )
-  , [wrapProcessing, requireParentRole]);
+  , [wrapProcessing, requireParentRole, invokeParentCrud]);
 
   // ==========================================
   // REDEEMABLE ITEM ACTIONS
@@ -582,13 +588,11 @@ export const DataProvider = ({ children }) => {
   const addItem = useCallback((data) =>
     wrapProcessing(async () => {
       requireParentRole();
-      const familyId = await ensureFamily();
+      await ensureFamily();
 
-      const newItem = await base44.entities.RedeemableItem.create({
+      const newItem = await invokeParentCrud('RedeemableItem', 'create', {
         ...data,
-        family_id: familyId,
         is_active: true,
-        created_by: user?.id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       });
@@ -596,30 +600,30 @@ export const DataProvider = ({ children }) => {
       console.log("[DataContext] Item created:", newItem.id);
       return newItem;
     }, "Reward item added!")
-  , [wrapProcessing, ensureFamily, requireParentRole, user]);
+  , [wrapProcessing, ensureFamily, requireParentRole, invokeParentCrud]);
 
   const updateItem = useCallback((id, data) =>
     wrapProcessing(
       () => {
         requireParentRole();
-        return base44.entities.RedeemableItem.update(id, {
+        return invokeParentCrud('RedeemableItem', 'update', {
           ...data,
           updated_at: new Date().toISOString()
-        });
+        }, id);
       },
       "Reward item updated!"
     )
-  , [wrapProcessing, requireParentRole]);
+  , [wrapProcessing, requireParentRole, invokeParentCrud]);
 
   const deleteItem = useCallback((id) =>
     wrapProcessing(
       () => {
         requireParentRole();
-        return base44.entities.RedeemableItem.delete(id);
+        return invokeParentCrud('RedeemableItem', 'delete', null, id);
       },
       "Reward item deleted"
     )
-  , [wrapProcessing, requireParentRole]);
+  , [wrapProcessing, requireParentRole, invokeParentCrud]);
 
   // ==========================================
   // REWARD/PENALTY ACTIONS
@@ -671,14 +675,12 @@ export const DataProvider = ({ children }) => {
   const addGoal = useCallback((data) =>
     wrapProcessing(async () => {
       requireParentRole();
-      const familyId = await ensureFamily();
+      await ensureFamily();
 
-      const newGoal = await base44.entities.FamilyGoal.create({
+      const newGoal = await invokeParentCrud('FamilyGoal', 'create', {
         ...data,
-        family_id: familyId,
         status: 'active',
         current_points: 0,
-        created_by: user?.id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       });
@@ -686,30 +688,30 @@ export const DataProvider = ({ children }) => {
       console.log("[DataContext] Goal created:", newGoal.id);
       return newGoal;
     }, "Family goal created!")
-  , [wrapProcessing, ensureFamily, requireParentRole, user]);
+  , [wrapProcessing, ensureFamily, requireParentRole, invokeParentCrud]);
 
   const updateGoal = useCallback((id, data) =>
     wrapProcessing(
       () => {
         requireParentRole();
-        return base44.entities.FamilyGoal.update(id, {
+        return invokeParentCrud('FamilyGoal', 'update', {
           ...data,
           updated_at: new Date().toISOString()
-        });
+        }, id);
       },
       "Goal updated!"
     )
-  , [wrapProcessing, requireParentRole]);
+  , [wrapProcessing, requireParentRole, invokeParentCrud]);
 
   const deleteGoal = useCallback((id) =>
     wrapProcessing(
       () => {
         requireParentRole();
-        return base44.entities.FamilyGoal.delete(id);
+        return invokeParentCrud('FamilyGoal', 'delete', null, id);
       },
       "Goal deleted"
     )
-  , [wrapProcessing, requireParentRole]);
+  , [wrapProcessing, requireParentRole, invokeParentCrud]);
 
   // ==========================================
   // CHORE COMPLETION ACTIONS
