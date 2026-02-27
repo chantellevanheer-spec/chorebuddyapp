@@ -41,7 +41,9 @@ export default function Admin() {
 
     const updateData = {
       approval_status: status,
-      admin_notes: adminNotes[assignmentId] || undefined
+      admin_notes: adminNotes[assignmentId] || undefined,
+      approved_by: user.id,
+      approved_date: new Date().toISOString()
     };
 
     // If approved, award points

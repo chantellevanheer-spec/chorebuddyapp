@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { isParent } from './lib/shared-utils.ts';
+import { isParent, getUserFamilyId } from './lib/shared-utils.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -13,8 +13,15 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Get all recurring chores
-    const chores = await base44.asServiceRole.entities.Chore.filter({ is_recurring: true });
+    // Get recurring chores scoped to the parent's family
+    const familyId = getUserFamilyId(user);
+    if (!familyId) {
+      return Response.json(
+        { error: 'No family found for user' },
+        { status: 400 }
+      );
+    }
+    const chores = await base44.asServiceRole.entities.Chore.filter({ is_recurring: true, family_id: familyId });
     
     const today = new Date();
     const todayString = today.toISOString().split('T')[0];

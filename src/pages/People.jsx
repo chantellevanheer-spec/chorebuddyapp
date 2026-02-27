@@ -154,6 +154,10 @@ export default function People() {
    * Handle form submission for add/edit
    */
   const handleSubmit = useCallback(async (personData) => {
+    if (!isParent) {
+      toast.error('Only parents can manage family members');
+      return;
+    }
     try {
       if (entities.personToEdit) {
         await updatePerson(entities.personToEdit.id, personData);
@@ -167,12 +171,16 @@ export default function People() {
       console.error('Failed to save person:', error);
       toast.error(error.message || 'Failed to save family member');
     }
-  }, [entities.personToEdit, updatePerson, addPerson, closeModal]);
+  }, [entities.personToEdit, updatePerson, addPerson, closeModal, isParent]);
 
   /**
    * Handle person deletion
    */
   const handleDeleteConfirm = useCallback(async () => {
+    if (!isParent) {
+      toast.error('Only parents can remove family members');
+      return;
+    }
     if (!entities.personToDelete) return;
 
     try {
@@ -183,7 +191,7 @@ export default function People() {
       console.error('Failed to delete person:', error);
       toast.error(error.message || 'Failed to delete family member');
     }
-  }, [entities.personToDelete, deletePerson]);
+  }, [entities.personToDelete, deletePerson, isParent]);
 
   /**
    * Handle showing invite modal

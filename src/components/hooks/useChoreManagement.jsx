@@ -16,14 +16,15 @@ export const useChoreManagement = () => {
 
     // Calculate points with bonuses
     const points = calculateChorePoints(chore, assignment);
+    const needsApproval = chore.requires_approval;
 
     // 1. Create ChoreCompletion record for difficulty learning
     await addCompletion({
       assignment_id: assignmentId,
       person_id: assignment.person_id,
       chore_id: choreId,
-      completion_status: 'submitted',
-      points_awarded: points,
+      completion_status: needsApproval ? 'pending_approval' : 'submitted',
+      points_awarded: needsApproval ? 0 : points,
       notes: notes || '',
       photo_url: photoUrl || '',
       difficulty_rating: difficultyRating || undefined
@@ -33,26 +34,33 @@ export const useChoreManagement = () => {
     await updateAssignment(assignmentId, {
       completed: true,
       completed_date: new Date().toISOString(),
-      points_awarded: points,
+      approval_status: needsApproval ? 'pending' : undefined,
+      points_awarded: needsApproval ? 0 : points,
       notes: notes || undefined,
       photo_url: photoUrl || undefined
     });
 
-    // 3. Award points
-    await addReward({
-      person_id: assignment.person_id,
-      chore_id: choreId,
-      points: points,
-      reward_type: "points",
-      week_start: assignment.week_start,
-      description: `Completed: ${chore.title}`
-    });
+    // 3. Award points only if no approval needed
+    // For approval-required chores, points are awarded when the parent
+    // approves via ApprovalQueue or Admin (prevents double-awarding).
+    if (!needsApproval) {
+      await addReward({
+        person_id: assignment.person_id,
+        chore_id: choreId,
+        points: points,
+        reward_type: "points",
+        week_start: assignment.week_start,
+        description: `Completed: ${chore.title}`
+      });
+    }
 
-    // 4. Show point notification
+    // 4. Show appropriate notification
     setPointsEarned({
       visible: true,
-      amount: points,
-      reason: `${chore.title} completed!`
+      amount: needsApproval ? 0 : points,
+      reason: needsApproval
+        ? `${chore.title} submitted for approval!`
+        : `${chore.title} completed!`
     });
     
     // 5. Trigger confetti

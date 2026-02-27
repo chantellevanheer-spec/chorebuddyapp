@@ -15,11 +15,9 @@ import FeatureGate from "../components/ui/FeatureGate";
 import { isParent as checkParent } from '@/utils/roles';
 
 export default function Goals() {
-  const { people, rewards, user, loading } = useData();
+  const { people, rewards, goals, user, loading, addGoal, updateGoal, deleteGoal, refresh } = useData();
   const { canAccess } = useSubscriptionAccess();
   const isParent = checkParent(user);
-  const [goals, setGoals] = useState([]);
-  const [goalLoading, setGoalLoading] = useState(false);
   const [isFormModalOpen, setFormModalOpen] = useState(false);
   const [goalToEdit, setGoalToEdit] = useState(null);
   const [goalToDelete, setGoalToDelete] = useState(null);
@@ -29,30 +27,17 @@ export default function Goals() {
     return rewards.filter((r) => r.points > 0).reduce((sum, r) => sum + r.points, 0);
   }, [rewards]);
 
-  const fetchGoals = async () => {
-    setGoalLoading(true);
-    try {
-      const goalsData = user?.family_id
-        ? await FamilyGoal.filter({ family_id: user.family_id })
-            .then(all => [...all].sort((a, b) => (b.created_date || '').localeCompare(a.created_date || '')))
-            .catch(() => [])
-        : [];
-      setGoals(goalsData);
-    } catch (error) {
-      console.error("Error fetching goals:", error);
-    } finally {
-      setGoalLoading(false);
-    }
-  };
+  // Sort goals by creation date (newest first)
+  const sortedGoals = useMemo(() => {
+    return [...goals].sort((a, b) => (b.created_date || '').localeCompare(a.created_date || ''));
+  }, [goals]);
 
-  useEffect(() => {
-    fetchGoals();
-  }, []);
-
-  // Update goal progress based on current points (debounced to avoid excessive updates)
+  // Update goal progress based on current points (runs for all users).
+  // Uses FamilyGoal entity directly since this is an automated sync, not user-initiated CRUD,
+  // so it bypasses DataContext's requireParentRole() guard intentionally.
   useEffect(() => {
     const updateGoalProgress = async () => {
-      const updates = goals.filter((goal) =>
+      const updates = sortedGoals.filter((goal) =>
       goal.status === 'active' && goal.current_points !== familyPoints
       );
 
@@ -65,26 +50,31 @@ export default function Goals() {
             status: 'completed',
             completed_date: new Date().toISOString()
           });
-          toast.success(`🎉 Family goal "${goal.title}" completed!`);
+          toast.success(`Family goal "${goal.title}" completed!`);
         }
       }
 
       // Check for expired goals
       const now = new Date();
-      const expiredGoals = goals.filter((goal) =>
+      const expiredGoals = sortedGoals.filter((goal) =>
       goal.status === 'active' && goal.end_date && isAfter(now, parseISO(goal.end_date))
       );
 
       for (const goal of expiredGoals) {
         await FamilyGoal.update(goal.id, { status: 'expired' });
       }
+
+      // Refresh DataContext to pick up changes
+      if (updates.length > 0 || expiredGoals.length > 0) {
+        await refresh();
+      }
     };
 
-    if (goals.length > 0 && familyPoints >= 0) {
+    if (sortedGoals.length > 0 && familyPoints >= 0) {
       const timer = setTimeout(updateGoalProgress, 500); // Debounce 500ms
       return () => clearTimeout(timer);
     }
-  }, [goals, familyPoints]);
+  }, [sortedGoals, familyPoints, refresh]);
 
   const handleShowAddForm = () => {
     if (!canAccess('family_goals')) {
@@ -100,6 +90,10 @@ export default function Goals() {
   };
 
   const handleSubmit = async (goalData) => {
+    if (!isParent) {
+      toast.error("Only parents can manage goals");
+      return;
+    }
     const sanitized = {
       ...goalData,
       title: stripHTMLTags(goalData.title),
@@ -107,18 +101,15 @@ export default function Goals() {
     };
     try {
       if (goalToEdit) {
-        await FamilyGoal.update(goalToEdit.id, sanitized);
-        toast.success("Goal updated!");
+        await updateGoal(goalToEdit.id, sanitized);
       } else {
-        await FamilyGoal.create({
+        await addGoal({
           ...sanitized,
           current_points: familyPoints
         });
-        toast.success("New family goal created!");
       }
       setFormModalOpen(false);
       setGoalToEdit(null);
-      await fetchGoals();
     } catch (error) {
       console.error("Error saving goal:", error);
       toast.error("Failed to save goal");
@@ -131,10 +122,12 @@ export default function Goals() {
 
   const handleDeleteConfirm = async () => {
     if (!goalToDelete) return;
+    if (!isParent) {
+      toast.error("Only parents can delete goals");
+      return;
+    }
     try {
-      await FamilyGoal.delete(goalToDelete);
-      toast.success("Goal deleted");
-      await fetchGoals();
+      await deleteGoal(goalToDelete);
     } catch (error) {
       console.error("Error deleting goal:", error);
       toast.error("Failed to delete goal");
@@ -144,22 +137,24 @@ export default function Goals() {
   };
 
   const handleClaimReward = async (goalId) => {
+    if (!isParent) {
+      toast.error("Only parents can claim rewards");
+      return;
+    }
     try {
-      await FamilyGoal.update(goalId, { status: 'completed' });
-      toast.success("Reward claimed! 🎉");
-      await fetchGoals();
+      await updateGoal(goalId, { status: 'completed' });
     } catch (error) {
       console.error("Error claiming reward:", error);
       toast.error("Failed to claim reward");
     }
   };
 
-  if (loading || goalLoading) {
+  if (loading) {
     return <LoadingSpinner size="large" message="Loading family goals..." />;
   }
 
-  const activeGoals = goals.filter((g) => g.status === 'active');
-  const completedGoals = goals.filter((g) => g.status === 'completed');
+  const activeGoals = sortedGoals.filter((g) => g.status === 'active');
+  const completedGoals = sortedGoals.filter((g) => g.status === 'completed');
 
   return (
     <FeatureGate
@@ -267,7 +262,7 @@ export default function Goals() {
         }
 
         {/* Empty State */}
-        {goals.length === 0 &&
+        {sortedGoals.length === 0 &&
         <div className="funky-card p-12 text-center border-4 border-dashed border-green-400">
             <Target className="w-24 h-24 mx-auto mb-6 text-green-400" />
             <h3 className="header-font text-3xl text-[#2B59C3] mb-4">No Family Goals Yet</h3>

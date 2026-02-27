@@ -22,7 +22,7 @@ export const FAMILY_ROLES = {
  *   user?.role === 'admin' || user?.family_role === 'parent'
  */
 export function isParent(user) {
-  return user?.family_role === FAMILY_ROLES.PARENT || user?.role === 'admin';
+  return user?.family_role === FAMILY_ROLES.PARENT || user?.role === 'admin' || user?.data?.family_role === FAMILY_ROLES.PARENT;
 }
 
 /**
