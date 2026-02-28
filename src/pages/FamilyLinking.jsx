@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Family } from '@/entities/Family';
 import { createPageUrl } from '@/utils';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -58,13 +57,17 @@ export default function FamilyLinking() {
 
                 // For parents/admins, fetch their family data
                 if (checkParent(userData) && userData.family_id) {
-                    const familyData = await Family.get(userData.family_id);
-                    if (familyData) {
-                        setFamily(familyData);
-                        if (familyData.linking_code) {
-                            setLinkingCode(familyData.linking_code);
-                            setCodeExpiry(familyData.linking_code_expires);
+                    try {
+                        const familyData = await base44.entities.Family.get(userData.family_id);
+                        if (familyData) {
+                            setFamily(familyData);
+                            if (familyData.linking_code) {
+                                setLinkingCode(familyData.linking_code);
+                                setCodeExpiry(familyData.linking_code_expires);
+                            }
                         }
+                    } catch (err) {
+                        console.error('Error loading family:', err);
                     }
                 }
             } catch (error) {
@@ -78,26 +81,28 @@ export default function FamilyLinking() {
     }, [navigate]);
 
     const generateNewCode = async () => {
-        if (!family) return;
+        const familyId = family?.id || user?.family_id;
+        if (!familyId) {
+            toast.error('No family found. Please refresh the page.');
+            return;
+        }
         setIsGenerating(true);
         try {
-            const result = await familyLinking({
-                action: 'generate',
-                familyId: family.id
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let newCode = '';
+            for (let i = 0; i < 6; i++) {
+                newCode += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
+            await base44.entities.Family.update(familyId, {
+                linking_code: newCode,
+                linking_code_expires: expiresAt,
             });
 
-            if (result.error || result.data?.error) {
-                toast.error(result.error || result.data?.error || 'Failed to generate code');
-                return;
-            }
-
-            if (result.data?.success) {
-                setLinkingCode(result.data.linkingCode);
-                setCodeExpiry(result.data.expiresAt);
-                toast.success('New linking code generated!');
-            } else {
-                toast.error('Failed to generate code');
-            }
+            setLinkingCode(newCode);
+            setCodeExpiry(expiresAt);
+            toast.success('New linking code generated!');
         } catch (error) {
             console.error('Error generating code:', error);
             toast.error('Failed to generate linking code');

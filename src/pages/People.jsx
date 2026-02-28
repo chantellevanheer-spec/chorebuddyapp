@@ -233,25 +233,19 @@ export default function People() {
    */
   const handleLinkAccount = useCallback(async (personId) => {
     setIsLinking(true);
-    
-    try {
-      const result = await base44.functions.invoke('linkAccount', { method: 'parent_link', personId });
 
-      if (result?.data?.error) {
-        toast.error(result.data.error || TOAST_MESSAGES.ERROR_LINK_ACCOUNT);
-      } else {
-        toast.success(TOAST_MESSAGES.ACCOUNT_LINKED);
-        closeModal('link', 'personToLink');
-        // Refresh data to reflect linked account
-        await fetchData();
-      }
+    try {
+      await base44.entities.Person.update(personId, { linked_user_id: user?.id });
+      toast.success(TOAST_MESSAGES.ACCOUNT_LINKED);
+      closeModal('link', 'personToLink');
+      await fetchData();
     } catch (error) {
       console.error('Failed to link account:', error);
       toast.error(TOAST_MESSAGES.ERROR_LINK_ACCOUNT);
     } finally {
       setIsLinking(false);
     }
-  }, [closeModal]);
+  }, [closeModal, fetchData, user?.id]);
 
   /**
    * Handle marking person as absent

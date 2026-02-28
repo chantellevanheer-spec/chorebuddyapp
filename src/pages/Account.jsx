@@ -83,24 +83,31 @@ export default function Account() {
         }
 
         if (userData.family_id) {
-          // Fetch family data using user's authentication
-          const familyData = await base44.entities.Family.get(userData.family_id);
-          setFamily(familyData);
-          setFamilyName(familyData?.name || '');
+          // Fetch family data — isolated so a failure doesn't block people fetch
+          try {
+            const familyData = await base44.entities.Family.get(userData.family_id);
+            setFamily(familyData);
+            setFamilyName(familyData?.name || '');
 
-          // Initialize linking code from family data
-          if (familyData?.linking_code) {
-            setLinkingCode(familyData.linking_code);
-            setCodeExpiry(familyData.linking_code_expires);
+            if (familyData?.linking_code) {
+              setLinkingCode(familyData.linking_code);
+              setCodeExpiry(familyData.linking_code_expires);
+            }
+          } catch (err) {
+            console.error('Failed to fetch family data:', err);
+            setFamily(null);
           }
 
-          // Fetch family people (scoped to user's family)
-          const familyPeople = await listForFamily(Person, userData.family_id);
-          setPeople(familyPeople);
+          // Fetch family people even if family fetch failed
+          try {
+            const familyPeople = await listForFamily(Person, userData.family_id);
+            setPeople(familyPeople);
 
-          // Find linked person
-          const linked = familyPeople.find(p => p.linked_user_id === userData.id);
-          setLinkedPerson(linked || null);
+            const linked = familyPeople.find(p => p.linked_user_id === userData.id);
+            setLinkedPerson(linked || null);
+          } catch (err) {
+            console.error('Failed to fetch family people:', err);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch user data", error);
