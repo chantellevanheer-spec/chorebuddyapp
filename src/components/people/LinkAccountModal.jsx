@@ -22,7 +22,12 @@ export default function LinkAccountModal({ isOpen, onClose, onLink, isProcessing
     setIsProcessing(true);
     try {
       const result = await base44.functions.invoke('linkAccount', { method: 'code_link', linkingCode: linkingCode.trim() });
-      
+
+      if (result.error || result.data?.error) {
+        toast.error(result.error || result.data?.error || 'Failed to link account');
+        return;
+      }
+
       if (result.data.needsSelection) {
         // Multiple unlinked people - let child choose
         setUnlinkedPeople(result.data.unlinkedPeople);
@@ -51,7 +56,12 @@ export default function LinkAccountModal({ isOpen, onClose, onLink, isProcessing
     try {
       // Confirm the selection by calling the link function again with personId
       const result = await base44.functions.invoke('linkAccount', { method: 'select_person', personId: selectedPersonId });
-      
+
+      if (result.error || result.data?.error) {
+        toast.error(result.error || result.data?.error || 'Failed to link account');
+        return;
+      }
+
       if (result.data.success) {
         toast.success("Account linked successfully!");
         if (onLink) onLink(selectedPersonId);

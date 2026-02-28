@@ -197,43 +197,46 @@ export default function Account() {
   };
 
   const handleLinkAccount = async (personId) => {
+    // LinkAccountModal already performed the linking via linkAccount function.
+    // This callback only needs to refresh local state to reflect the change.
     setIsLinking(true);
     try {
-      const result = await base44.functions.invoke('linkAccount', { method: 'parent_link', personId });
-      if (result.data.success) {
-        toast.success("Account linked successfully!");
-        setLinkModalOpen(false);
-        
-        // Refresh data (scoped to user's family)
-        const familyPeople = await listForFamily(Person, user.family_id);
-        setPeople(familyPeople);
-        const linked = familyPeople.find(p => p.id === personId);
-        setLinkedPerson(linked || null);
-      } else {
-        toast.error(result.data.error || "Failed to link account");
-      }
+      const familyPeople = await listForFamily(Person, user.family_id);
+      setPeople(familyPeople);
+      const linked = familyPeople.find(p => p.id === personId);
+      setLinkedPerson(linked || null);
+      toast.success("Account linked successfully!");
+      setLinkModalOpen(false);
     } catch (error) {
-      console.error("Error linking account:", error);
-      toast.error(error.message || "Failed to link account");
+      console.error("Error refreshing after link:", error);
+      toast.error("Linked successfully, but failed to refresh. Please reload.");
     } finally {
       setIsLinking(false);
     }
   };
 
   const generateOrRegenerateCode = async () => {
-    if (!family) return;
+    const familyId = family?.id || user?.family_id;
+    if (!familyId) {
+      toast.error('No family found. Please refresh the page.');
+      return;
+    }
     setIsGeneratingCode(true);
     try {
       const result = await familyLinking({
         action: 'generate',
-        familyId: family.id
+        familyId
       });
-      if (result.data.success) {
+      if (result.error || result.data?.error) {
+        toast.error(result.error || result.data?.error || 'Failed to generate code');
+        return;
+      }
+      if (result.data?.success) {
         setLinkingCode(result.data.linkingCode);
         setCodeExpiry(result.data.expiresAt);
         toast.success('Linking code generated!');
       } else {
-        toast.error(result.data.error || 'Failed to generate code');
+        toast.error('Failed to generate code');
       }
     } catch (error) {
       console.error('Error generating linking code:', error);

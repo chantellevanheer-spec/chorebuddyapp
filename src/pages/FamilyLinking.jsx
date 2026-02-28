@@ -86,12 +86,17 @@ export default function FamilyLinking() {
                 familyId: family.id
             });
 
-            if (result.data.success) {
+            if (result.error || result.data?.error) {
+                toast.error(result.error || result.data?.error || 'Failed to generate code');
+                return;
+            }
+
+            if (result.data?.success) {
                 setLinkingCode(result.data.linkingCode);
                 setCodeExpiry(result.data.expiresAt);
                 toast.success('New linking code generated!');
             } else {
-                toast.error(result.data.error || 'Failed to generate code');
+                toast.error('Failed to generate code');
             }
         } catch (error) {
             console.error('Error generating code:', error);
@@ -121,17 +126,22 @@ export default function FamilyLinking() {
                 linkingCode: inputCode.trim()
             });
 
-            if (result.data.success) {
+            if (result.error || result.data?.error) {
+                toast.error(result.error || result.data?.error || 'Failed to join family');
+                return;
+            }
+
+            if (result.data?.success) {
                 setJoinSuccess(true);
                 setJoinedFamilyName(result.data.familyName);
                 toast.success(`Welcome to ${result.data.familyName}!`);
-                
+
                 // Redirect after a short delay to show success animation
                 setTimeout(() => {
                     navigate(createPageUrl('Dashboard'));
                 }, 2000);
             } else {
-                toast.error(result.data.error || 'Failed to join family');
+                toast.error('Failed to join family');
             }
         } catch (error) {
             console.error('Error joining family:', error);
