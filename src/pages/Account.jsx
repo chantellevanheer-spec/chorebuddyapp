@@ -11,7 +11,6 @@ import { Loader2, User as UserIcon, Bell, Users, Settings, Shield, CreditCard, A
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { stripeCheckout } from '@/functions/stripeCheckout';
-import { familyLinking } from '@/functions/familyLinking';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import LinkAccountModal from '@/components/people/LinkAccountModal';
 import OnboardingTour from '@/components/onboarding/OnboardingTour';
@@ -223,21 +222,21 @@ export default function Account() {
     }
     setIsGeneratingCode(true);
     try {
-      const result = await familyLinking({
-        action: 'generate',
-        familyId
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let newCode = '';
+      for (let i = 0; i < 6; i++) {
+        newCode += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
+      await base44.entities.Family.update(familyId, {
+        linking_code: newCode,
+        linking_code_expires: expiresAt,
       });
-      if (result.error || result.data?.error) {
-        toast.error(result.error || result.data?.error || 'Failed to generate code');
-        return;
-      }
-      if (result.data?.success) {
-        setLinkingCode(result.data.linkingCode);
-        setCodeExpiry(result.data.expiresAt);
-        toast.success('Linking code generated!');
-      } else {
-        toast.error('Failed to generate code');
-      }
+
+      setLinkingCode(newCode);
+      setCodeExpiry(expiresAt);
+      toast.success('Linking code generated!');
     } catch (error) {
       console.error('Error generating linking code:', error);
       toast.error('Failed to generate linking code');
@@ -649,6 +648,13 @@ export default function Account() {
                    </>
                  ) : (
                    <div className="text-center">
+                     <div className="flex justify-center mb-4">
+                       <div className="bg-white rounded-xl px-6 py-4 border-3 border-dashed border-gray-300">
+                         <span className="header-font text-3xl md:text-4xl tracking-[0.3em] text-gray-300">
+                           ------
+                         </span>
+                       </div>
+                     </div>
                      <Button
                        onClick={generateOrRegenerateCode}
                        disabled={isGeneratingCode}
