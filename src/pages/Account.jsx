@@ -216,19 +216,27 @@ export default function Account() {
   };
 
   const generateOrRegenerateCode = async () => {
-    if (!family) return;
+    const familyId = family?.id || user?.family_id;
+    if (!familyId) {
+      toast.error('No family found. Please refresh the page.');
+      return;
+    }
     setIsGeneratingCode(true);
     try {
       const result = await familyLinking({
         action: 'generate',
-        familyId: family.id
+        familyId
       });
-      if (result.data.success) {
+      if (result.error || result.data?.error) {
+        toast.error(result.error || result.data?.error || 'Failed to generate code');
+        return;
+      }
+      if (result.data?.success) {
         setLinkingCode(result.data.linkingCode);
         setCodeExpiry(result.data.expiresAt);
         toast.success('Linking code generated!');
       } else {
-        toast.error(result.data.error || 'Failed to generate code');
+        toast.error('Failed to generate code');
       }
     } catch (error) {
       console.error('Error generating linking code:', error);
