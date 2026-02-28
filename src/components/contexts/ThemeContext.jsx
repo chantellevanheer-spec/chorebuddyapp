@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { themeOptions } from '@/components/profile/ThemeSelector';
+import { useAuth } from '@/lib/AuthContext';
 
 const ThemeContext = createContext();
 
@@ -15,10 +16,15 @@ export const useTheme = () => {
 export function ThemeProvider({ children }) {
   const [currentTheme, setCurrentTheme] = useState('default');
   const [isLoading, setIsLoading] = useState(true);
+  const { isAuthenticated, isLoadingAuth } = useAuth();
 
   useEffect(() => {
-    loadUserTheme();
-  }, []);
+    if (!isLoadingAuth && isAuthenticated) {
+      loadUserTheme();
+    } else if (!isLoadingAuth) {
+      setIsLoading(false);
+    }
+  }, [isLoadingAuth, isAuthenticated]);
 
   const loadUserTheme = async () => {
     try {

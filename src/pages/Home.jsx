@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { User } from '@/entities/User';
@@ -6,21 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Zap, Users, Gift } from 'lucide-react';
 import FeatureCard from '../components/landing/FeatureCard';
 import StepCard from '../components/landing/StepCard';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function Home() {
-  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
-
-  useEffect(() => {
-    const checkUserStatus = async () => {
-      try {
-        await User.me();
-        setIsAuthenticated(true);
-      } catch (error) {
-        setIsAuthenticated(false);
-      }
-    };
-    checkUserStatus();
-  }, []);
+  const { isAuthenticated } = useAuth();
 
   return (
     <div className="bg-[#FDFBF5] text-[#5E3B85]">
