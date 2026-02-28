@@ -197,24 +197,19 @@ export default function Account() {
   };
 
   const handleLinkAccount = async (personId) => {
+    // LinkAccountModal already performed the linking via linkAccount function.
+    // This callback only needs to refresh local state to reflect the change.
     setIsLinking(true);
     try {
-      const result = await base44.functions.invoke('linkAccount', { method: 'parent_link', personId });
-      if (result.data.success) {
-        toast.success("Account linked successfully!");
-        setLinkModalOpen(false);
-        
-        // Refresh data (scoped to user's family)
-        const familyPeople = await listForFamily(Person, user.family_id);
-        setPeople(familyPeople);
-        const linked = familyPeople.find(p => p.id === personId);
-        setLinkedPerson(linked || null);
-      } else {
-        toast.error(result.data.error || "Failed to link account");
-      }
+      const familyPeople = await listForFamily(Person, user.family_id);
+      setPeople(familyPeople);
+      const linked = familyPeople.find(p => p.id === personId);
+      setLinkedPerson(linked || null);
+      toast.success("Account linked successfully!");
+      setLinkModalOpen(false);
     } catch (error) {
-      console.error("Error linking account:", error);
-      toast.error(error.message || "Failed to link account");
+      console.error("Error refreshing after link:", error);
+      toast.error("Linked successfully, but failed to refresh. Please reload.");
     } finally {
       setIsLinking(false);
     }
