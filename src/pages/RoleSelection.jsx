@@ -6,6 +6,7 @@ import { createPageUrl } from '@/utils';
 import { useNavigate } from 'react-router-dom';
 import { Users, Baby, Sparkles, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { familyLinking } from '@/functions/familyLinking';
 
 export default function RoleSelection() {
   const navigate = useNavigate();
@@ -78,6 +79,14 @@ export default function RoleSelection() {
           family_id: family.id,
           family_role: role
         });
+
+        // Auto-generate a linking code so parents always have one ready
+        try {
+          await familyLinking({ action: 'generate', familyId: family.id });
+        } catch (e) {
+          // Non-critical: family still created, code can be generated later
+          console.error('Failed to auto-generate linking code:', e);
+        }
       } else {
         // Teen/Child - just set role, they'll join family via linking code
         await User.updateMyUserData({

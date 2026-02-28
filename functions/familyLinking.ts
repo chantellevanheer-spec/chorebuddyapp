@@ -14,6 +14,7 @@ import {
   getFamily,
   updateEntityWithEnv,
   canUserJoinFamily,
+  checkRateLimit,
   errorResponse,
   successResponse,
   logError,
@@ -28,6 +29,12 @@ async function handleGenerateCode(base44: any, user: any, familyId: string) {
   // Verify user is a parent
   if (!user || !isParent(user)) {
     return errorResponse('Only parents can generate linking codes', 403);
+  }
+
+  // Rate limit: max 5 code generations per 5 minutes
+  const rateLimit = checkRateLimit(user.id, 'generate_linking_code', 5, 5 * 60 * 1000);
+  if (!rateLimit.allowed) {
+    return errorResponse('Too many code generation requests. Please try again later.', 429);
   }
 
   // Verify user is in this family
@@ -105,10 +112,16 @@ async function handleJoinFamily(base44: any, user: any, linkingCode: string) {
     return errorResponse(joinCheck.message, joinCheck.reason === 'already_in_family' ? 409 : 400);
   }
 
-  // Add user to family
+  // Prevent duplicate member entries
+  if (currentMembers.includes(user.id)) {
+    return errorResponse('You are already a member of this family', 409);
+  }
+
+  // Add user to family and update member count
   const updatedMembers = [...currentMembers, user.id];
   await base44.asServiceRole.entities.Family.update(family.id, {
     members: updatedMembers,
+    member_count: updatedMembers.length,
   });
 
   // Update user's family_id

@@ -21,7 +21,7 @@ export default function LinkAccountModal({ isOpen, onClose, onLink, isProcessing
 
     setIsProcessing(true);
     try {
-      const result = await base44.functions.invoke('linkUserWithCode', { linkingCode: linkingCode.trim() });
+      const result = await base44.functions.invoke('linkAccount', { method: 'code_link', linkingCode: linkingCode.trim() });
       
       if (result.data.needsSelection) {
         // Multiple unlinked people - let child choose
@@ -50,10 +50,7 @@ export default function LinkAccountModal({ isOpen, onClose, onLink, isProcessing
     setIsProcessing(true);
     try {
       // Confirm the selection by calling the link function again with personId
-      const result = await base44.functions.invoke('linkUserWithCode', { 
-        linkingCode: linkingCode.trim(),
-        personId: selectedPersonId 
-      });
+      const result = await base44.functions.invoke('linkAccount', { method: 'select_person', personId: selectedPersonId });
       
       if (result.data.success) {
         toast.success("Account linked successfully!");
@@ -175,12 +172,12 @@ export default function LinkAccountModal({ isOpen, onClose, onLink, isProcessing
                   value={linkingCode}
                   onChange={(e) => setLinkingCode(e.target.value.toUpperCase())}
                   placeholder="E.g. ABC123"
-                  maxLength="6"
+                  maxLength="8"
                   className="funky-button w-full px-4 py-3 border-3 border-[#2B59C3] body-font text-center text-lg tracking-widest bg-white focus:outline-none focus:ring-2 focus:ring-[#2B59C3]"
                   disabled={isProcessing}
                 />
                 <p className="body-font-light text-xs text-gray-500 mt-2">
-                  6 characters, ask your parent for the code
+                  Enter the code from your parent
                 </p>
               </div>
 
