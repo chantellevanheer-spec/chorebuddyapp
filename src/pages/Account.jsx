@@ -7,11 +7,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { listForFamily } from '@/utils/entityHelpers';
 import { createPageUrl } from '@/utils';
 import { Link } from 'react-router-dom';
-import { Loader2, User as UserIcon, Bell, Users, Settings, Shield, CreditCard, AlertCircle, Link2, Sparkles, Palette, Crown } from 'lucide-react';
+import { Loader2, User as UserIcon, Bell, Users, Settings, Shield, CreditCard, AlertCircle, Link2, Sparkles, Palette, Crown, RefreshCw, Copy, Check, Clock } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { stripeCheckout } from '@/functions/stripeCheckout';
-import { linkUserToPerson } from '@/functions/linkUserToPerson';
+import { familyLinking } from '@/functions/familyLinking';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import LinkAccountModal from '@/components/people/LinkAccountModal';
 import OnboardingTour from '@/components/onboarding/OnboardingTour';
 import AvatarSelector from '@/components/profile/AvatarSelector';
@@ -40,6 +41,11 @@ export default function Account() {
     avoid_weekends: false
   });
   const [notificationPreferences, setNotificationPreferences] = useState({});
+  const [linkingCode, setLinkingCode] = useState('');
+  const [codeExpiry, setCodeExpiry] = useState(null);
+  const [isGeneratingCode, setIsGeneratingCode] = useState(false);
+  const [codeCopied, setCodeCopied] = useState(false);
+  const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
   const { currentTheme, updateTheme } = useTheme();
 
   // Determine effective subscription tier (child/teen/toddler inherits parent's)
@@ -82,6 +88,12 @@ export default function Account() {
           const familyData = await base44.entities.Family.get(userData.family_id);
           setFamily(familyData);
           setFamilyName(familyData?.name || '');
+
+          // Initialize linking code from family data
+          if (familyData?.linking_code) {
+            setLinkingCode(familyData.linking_code);
+            setCodeExpiry(familyData.linking_code_expires);
+          }
 
           // Fetch family people (scoped to user's family)
           const familyPeople = await listForFamily(Person, userData.family_id);
@@ -187,7 +199,7 @@ export default function Account() {
   const handleLinkAccount = async (personId) => {
     setIsLinking(true);
     try {
-      const result = await linkUserToPerson({ personId });
+      const result = await base44.functions.invoke('linkAccount', { method: 'parent_link', personId });
       if (result.data.success) {
         toast.success("Account linked successfully!");
         setLinkModalOpen(false);
@@ -207,6 +219,50 @@ export default function Account() {
       setIsLinking(false);
     }
   };
+
+  const generateOrRegenerateCode = async () => {
+    if (!family) return;
+    setIsGeneratingCode(true);
+    try {
+      const result = await familyLinking({
+        action: 'generate',
+        familyId: family.id
+      });
+      if (result.data.success) {
+        setLinkingCode(result.data.linkingCode);
+        setCodeExpiry(result.data.expiresAt);
+        toast.success('Linking code generated!');
+      } else {
+        toast.error(result.data.error || 'Failed to generate code');
+      }
+    } catch (error) {
+      console.error('Error generating linking code:', error);
+      toast.error('Failed to generate linking code');
+    } finally {
+      setIsGeneratingCode(false);
+      setShowRegenerateConfirm(false);
+    }
+  };
+
+  const copyLinkingCode = () => {
+    navigator.clipboard.writeText(linkingCode);
+    setCodeCopied(true);
+    toast.success('Code copied to clipboard!');
+    setTimeout(() => setCodeCopied(false), 2000);
+  };
+
+  const formatExpiry = (expiryDate) => {
+    if (!expiryDate) return '';
+    const expiry = new Date(expiryDate);
+    const now = new Date();
+    if (expiry <= now) return 'Expired';
+    const hoursLeft = Math.max(0, Math.floor((expiry - now) / (1000 * 60 * 60)));
+    if (hoursLeft > 1) return `${hoursLeft} hours`;
+    const minutesLeft = Math.max(0, Math.floor((expiry - now) / (1000 * 60)));
+    return `${minutesLeft} minutes`;
+  };
+
+  const isCodeExpired = codeExpiry && new Date(codeExpiry) <= new Date();
 
   if (loading) {
     return (
@@ -523,6 +579,107 @@ export default function Account() {
                </div>
              </div>
            )}
+
+           {/* Family Linking Code (Parents Only) */}
+           {checkParent(user) && (
+             <div className="funky-card p-8 mb-6">
+               <h2 className="header-font text-3xl text-[#2B59C3] mb-6 flex items-center gap-3">
+                 <Link2 className="w-8 h-8 text-[#C3B1E1]" />
+                 Family Linking Code
+               </h2>
+
+               <div className="bg-gradient-to-br from-[#2B59C3]/10 to-[#C3B1E1]/20 rounded-2xl p-6">
+                 <p className="body-font-light text-sm text-gray-600 mb-4">
+                   Share this code with family members so they can join your household on their own device.
+                 </p>
+
+                 {linkingCode && !isCodeExpired ? (
+                   <>
+                     <div className="flex justify-center mb-4">
+                       <div className="bg-white rounded-xl px-6 py-4 border-3 border-[#5E3B85] shadow-md">
+                         <span className="header-font text-3xl md:text-4xl tracking-[0.3em] text-[#2B59C3]">
+                           {linkingCode}
+                         </span>
+                       </div>
+                     </div>
+
+                     <div className="flex justify-center gap-3 mb-4">
+                       <Button
+                         onClick={copyLinkingCode}
+                         className="funky-button bg-[#2B59C3] text-white"
+                       >
+                         {codeCopied ? (
+                           <>
+                             <Check className="w-4 h-4 mr-2" />
+                             Copied!
+                           </>
+                         ) : (
+                           <>
+                             <Copy className="w-4 h-4 mr-2" />
+                             Copy Code
+                           </>
+                         )}
+                       </Button>
+                       <Button
+                         onClick={() => setShowRegenerateConfirm(true)}
+                         disabled={isGeneratingCode}
+                         variant="outline"
+                         className="funky-button border-2 border-[#5E3B85]"
+                       >
+                         {isGeneratingCode ? (
+                           <Loader2 className="w-4 h-4 animate-spin" />
+                         ) : (
+                           <>
+                             <RefreshCw className="w-4 h-4 mr-2" />
+                             Regenerate
+                           </>
+                         )}
+                       </Button>
+                     </div>
+
+                     {codeExpiry && (
+                       <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+                         <Clock className="w-4 h-4" />
+                         <span>Expires in {formatExpiry(codeExpiry)}</span>
+                       </div>
+                     )}
+                   </>
+                 ) : (
+                   <div className="text-center">
+                     <Button
+                       onClick={generateOrRegenerateCode}
+                       disabled={isGeneratingCode}
+                       className="funky-button bg-[#2B59C3] text-white px-8 py-4 text-lg"
+                     >
+                       {isGeneratingCode ? (
+                         <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                       ) : (
+                         <Sparkles className="w-5 h-5 mr-2" />
+                       )}
+                       Generate Linking Code
+                     </Button>
+                   </div>
+                 )}
+               </div>
+
+               <div className="flex items-start gap-3 p-4 mt-4 bg-amber-50 border-2 border-amber-200 rounded-xl">
+                 <Shield className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                 <p className="body-font-light text-sm text-amber-800">
+                   Codes expire after 24 hours for security. Generate a new one any time you need to invite more family members.
+                 </p>
+               </div>
+             </div>
+           )}
+
+           <ConfirmDialog
+             isOpen={showRegenerateConfirm}
+             onClose={() => setShowRegenerateConfirm(false)}
+             onConfirm={generateOrRegenerateCode}
+             title="Regenerate Linking Code?"
+             message="This will invalidate the current code. Anyone who hasn't used it yet will need the new code."
+             confirmText="Regenerate"
+             variant="warning"
+           />
 
            {/* Account Linking */}
            <div className="funky-card p-8 mb-6">

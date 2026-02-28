@@ -14,7 +14,6 @@ import LinkAccountModal from "../components/people/LinkAccountModal";
 import { useSubscriptionAccess } from '../components/hooks/useSubscriptionAccess';
 import LimitReachedModal from "../components/ui/LimitReachedModal";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
-import { linkUserToPerson } from '@/functions/linkUserToPerson';
 import { isParent as checkParent } from '@/utils/roles';
 
 // Constants
@@ -236,10 +235,10 @@ export default function People() {
     setIsLinking(true);
     
     try {
-      const { error } = await linkUserToPerson({ personId });
-      
-      if (error) {
-        toast.error(error.message || TOAST_MESSAGES.ERROR_LINK_ACCOUNT);
+      const result = await base44.functions.invoke('linkAccount', { method: 'parent_link', personId });
+
+      if (result?.data?.error) {
+        toast.error(result.data.error || TOAST_MESSAGES.ERROR_LINK_ACCOUNT);
       } else {
         toast.success(TOAST_MESSAGES.ACCOUNT_LINKED);
         closeModal('link', 'personToLink');
