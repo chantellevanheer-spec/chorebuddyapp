@@ -465,7 +465,7 @@ export default function LayoutWrapper(props) {
           <CookieBanner />
           <OnboardingTour 
             isOpen={showOnboarding} 
-            onClose={() => setShowOnboarding(false)} 
+            onClose={() => setShowOnboarding(true)} 
           />
         </DataProvider>
       </ThemeProvider>
