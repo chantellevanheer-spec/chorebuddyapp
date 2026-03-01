@@ -14,7 +14,7 @@ function PersonCard({ person, completedChores, currentChores, onEdit, onDelete, 
         )}
         {person.linked_user_id && onUnlinkAccount && canManageLinks && (
           <Button size="icon" variant="ghost" onClick={() => onUnlinkAccount(person)} className="h-8 w-8 rounded-full hover:bg-black/10 focus:ring-2 focus:ring-[#FF6B35] focus:ring-offset-2" title="Unlink account" aria-label={`Unlink account for ${person.name}`}>
-            <LinkOff className="w-4 h-4 text-[#FF6B35]" />
+            <Unlink className="w-4 h-4 text-[#FF6B35]" />
           </Button>
         )}
         <Button size="icon" variant="ghost" onClick={() => onEdit(person)} className="h-8 w-8 rounded-full hover:bg-black/10 focus:ring-2 focus:ring-[#5E3B85] focus:ring-offset-2" aria-label={`Edit ${person.name}`}>
