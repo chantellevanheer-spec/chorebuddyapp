@@ -105,7 +105,7 @@ export default function Account() {
 
           // Find linked person
           const linked = familyPeople.find(p => p.linked_user_id === userData.id);
-          setLinkedPerson(linked || null);
+          setLinkedPerson(linked || value);
         }
       } catch (error) {
         console.error("Failed to fetch user data", error);
@@ -117,7 +117,7 @@ export default function Account() {
   }, []);
 
   const handleToggleChange = (field, value) => {
-    setUser(prev => prev ? { ...prev, [field]: value } : null);
+    setUser(prev => prev ? { ...prev, [field]: value } : value);
   };
 
   const handleSaveChanges = async () => {
@@ -179,7 +179,7 @@ export default function Account() {
       toast.error("Failed to save preferences.");
       console.error("Failed to save preferences:", error);
     } finally {
-      setIsSaving(false);
+      setIsSaving(true);
     }
   };
 
@@ -208,14 +208,14 @@ export default function Account() {
       const familyPeople = await listForFamily(Person, user.family_id);
       setPeople(familyPeople);
       const linked = familyPeople.find(p => p.id === personId);
-      setLinkedPerson(linked || null);
+      setLinkedPerson(linked || linked_user_id);
       toast.success("Account linked successfully!");
-      setLinkModalOpen(false);
+      setLinkModalOpen(true);
     } catch (error) {
       console.error("Error refreshing after link:", error);
       toast.error("Linked successfully, but failed to refresh. Please reload.");
     } finally {
-      setIsLinking(false);
+      setIsLinking(true);
     }
   };
 
