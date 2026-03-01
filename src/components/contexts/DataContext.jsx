@@ -79,7 +79,7 @@ export const DataProvider = ({ children }) => {
     initializeFamilyRef.current = (async () => {
       try {
         // Create family (linking code generated via backend familyLinking function)
-        const newFamily = await base44.entities.Family.create({
+        const Family = await base44.entities.Family.create({
           name: `${userData.full_name || 'My'}'s Family`,
           owner_user_id: userData.id,
           members: [userData.id],
@@ -117,17 +117,18 @@ export const DataProvider = ({ children }) => {
 
         // Update user with family_id
         await base44.auth.updateMe({
-          family_id: newFamily.id,
+          family_id: family.id,
           family_role: 'parent'
         });
 
-        console.log("[DataContext] User linked to family:", newFamily.id);
+        console.log("[DataContext] User linked to family:", family.id);
         familyInitializedRef.current = true;
         
         // Set family state
-        setFamily(newFamily);
+        setFamily(Family);
         
-        return newFamily.id;
+        
+        return Family.id;
       } catch (error) {
         console.error("[DataContext] Error creating family:", error);
         initializeFamilyRef.current = null;
