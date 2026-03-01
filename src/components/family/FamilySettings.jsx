@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Family } from '@/entities/Family';
-import { User } from '@/entities/User';
+import { useData } from '@/components/contexts/DataContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Settings as SettingsIcon, 
-  Crown, 
-  Copy, 
+import {
+  Settings as SettingsIcon,
+  Crown,
+  Copy,
   Check,
   Shield,
   Bell,
@@ -19,80 +18,35 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { isParent as checkParent } from '@/utils/roles';
+import { getMemberLimit } from '@/constants/subscriptionTiers';
 
 export default function FamilySettings() {
-  const [family, setFamily] = useState();
-  const [user, setUser] = useState();
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(true);
-  const [copiedCode, setCopiedCode] = useState(true);
-  
+  const { user, family, loading, updateFamily, canManageFamily, isFamilyOwner } = useData();
+  const [saving, setSaving] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
+
   const [formData, setFormData] = useState({
     name: '',
     settings: {}
   });
 
+  // Sync formData when family loads or changes
   useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    try {
-      // Fetch user first to get family_id
-      const userData = await User.me();
-      setUser(userData);
-
-      if (!userData?.family_id) {
-        toast.error('No family found for your account');
-        setLoading(false);
-        return;
-      }
-
-      const familyData = await Family.get(userData.family_id);
-      setFamily(familyData);
+    if (family) {
       setFormData({
-        name: familyData.name,
-        settings: familyData.settings || {}
+        name: family.name || '',
+        settings: family.settings || {}
       });
-    } catch (error) {
-      console.error('Error fetching family data:', error);
-      toast.error('Failed to load family settings');
-    } finally {
-      setLoading(false);
     }
-  };
-
-  const isOwnerOrCoOwner = () => {
-    if (!family || !user) return false;
-    return (
-      family.owner_user_id === user.id ||
-      family.co_owners?.includes(user.id) ||
-      checkParent(user)
-    );
-  };
-
-  const isOwner = () => {
-    if (!family || !user) return false;
-    return family.owner_user_id === user.id;
-  };
+  }, [family]);
 
   const handleSaveSettings = async () => {
-    if (!isOwnerOrCoOwner()) {
-      toast.error('Only owners and co-owners can update family settings');
-      return;
-    }
-
     setSaving(true);
     try {
-      await Family.update(family.id, {
+      await updateFamily({
         name: formData.name,
         settings: formData.settings,
-        updated_at: new Date().toISOString()
       });
-      
-      toast.success('Family settings updated!');
-      await fetchData();
     } catch (error) {
       console.error('Error updating family:', error);
       toast.error('Failed to update settings');
@@ -121,22 +75,10 @@ export default function FamilySettings() {
   };
 
   const handleToggleInviteCode = async () => {
-    if (!isOwnerOrCoOwner()) {
-      toast.error('Only owners and co-owners can manage invite codes');
-      return;
-    }
-
     try {
-      await Family.update(family.id, {
+      await updateFamily({
         invite_enabled: !family.invite_enabled
       });
-      
-      toast.success(
-        family.invite_enabled 
-          ? 'Invite code disabled' 
-          : 'Invite code enabled'
-      );
-      await fetchData();
     } catch (error) {
       console.error('Error toggling invite code:', error);
       toast.error('Failed to update invite code');
@@ -173,7 +115,7 @@ export default function FamilySettings() {
     );
   }
 
-  if (!isOwnerOrCoOwner()) {
+  if (!canManageFamily()) {
     return (
       <div className="funky-card p-8 text-center">
         <Shield className="w-16 h-16 mx-auto mb-4 text-gray-400" />
@@ -230,7 +172,6 @@ export default function FamilySettings() {
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Enter family name"
                 maxLength={100}
-                disabled={!isOwnerOrCoOwner()}
               />
               <p className="body-font-light text-sm text-gray-500">
                 This name helps identify your family
@@ -245,7 +186,7 @@ export default function FamilySettings() {
                 <h3 className="header-font text-xl text-[#2B59C3]">
                   Invite Code
                 </h3>
-                {isOwner() && (
+                {isFamilyOwner() && (
                   <Switch checked={family.invite_enabled} onCheckedChange={handleToggleInviteCode} />
                 )}
               </div>
@@ -302,7 +243,6 @@ export default function FamilySettings() {
                     ...formData,
                     timezone: value
                   })}
-                  disabled={!isOwnerOrCoOwner()}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -330,7 +270,6 @@ export default function FamilySettings() {
                     ...formData,
                     currency: value
                   })}
-                  disabled={!isOwnerOrCoOwner()}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -357,11 +296,7 @@ export default function FamilySettings() {
                 Family Members
               </h3>
               <p className="body-font-light text-sm text-gray-600">
-                {family.member_count} / {
-                  family.subscription_tier === 'free' ? 6 :
-                  family.subscription_tier === 'premium' ? 15 :
-                  family.subscription_tier === 'family_plus' ? 30 : 50
-                } members
+                {family.member_count} / {getMemberLimit(family.subscription_tier || 'free')} members
               </p>
             </div>
 
@@ -424,7 +359,6 @@ export default function FamilySettings() {
                 <Switch
                   checked={formData.settings.auto_assign_chores}
                   onCheckedChange={(value) => handleToggleSetting('auto_assign_chores', value)}
-                  disabled={!isOwnerOrCoOwner()}
                 />
               </div>
 
@@ -438,7 +372,6 @@ export default function FamilySettings() {
                 <Switch
                   checked={formData.settings.allow_self_assignment}
                   onCheckedChange={(value) => handleToggleSetting('allow_self_assignment', value)}
-                  disabled={!isOwnerOrCoOwner()}
                 />
               </div>
 
@@ -452,7 +385,6 @@ export default function FamilySettings() {
                 <Switch
                   checked={formData.settings.require_photo_proof}
                   onCheckedChange={(value) => handleToggleSetting('require_photo_proof', value)}
-                  disabled={!isOwnerOrCoOwner()}
                 />
               </div>
 
@@ -468,7 +400,6 @@ export default function FamilySettings() {
                   step={0.1}
                   value={formData.settings.point_multiplier}
                   onChange={(e) => handleToggleSetting('point_multiplier', parseFloat(e.target.value))}
-                  disabled={!isOwnerOrCoOwner()}
                 />
               </div>
 
@@ -483,7 +414,6 @@ export default function FamilySettings() {
                   max={100}
                   value={formData.settings.max_pending_chores}
                   onChange={(e) => handleToggleSetting('max_pending_chores', parseInt(e.target.value))}
-                  disabled={!isOwnerOrCoOwner()}
                 />
               </div>
             </div>
@@ -506,7 +436,6 @@ export default function FamilySettings() {
                 <Switch
                   checked={formData.settings.notifications_enabled}
                   onCheckedChange={(value) => handleToggleSetting('notifications_enabled', value)}
-                  disabled={!isOwnerOrCoOwner()}
                 />
               </div>
 
@@ -518,7 +447,6 @@ export default function FamilySettings() {
                 <Select
                   value={formData.settings.weekly_digest_day}
                   onValueChange={(value) => handleToggleSetting('weekly_digest_day', value)}
-                  disabled={!isOwnerOrCoOwner()}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -596,16 +524,14 @@ export default function FamilySettings() {
       </Tabs>
 
       {/* Save Button */}
-      {isOwnerOrCoOwner() && (
-        <div className="flex justify-end">
-          <Button onClick={handleSaveSettings} disabled={saving} className="funky-button bg-[#FF6B35] text-white px-8 py-3 header-font">
-            {saving ? 'Saving...' : 'Save All Changes'}
-          </Button>
-        </div>
-      )}
+      <div className="flex justify-end">
+        <Button onClick={handleSaveSettings} disabled={saving} className="funky-button bg-[#FF6B35] text-white px-8 py-3 header-font">
+          {saving ? 'Saving...' : 'Save All Changes'}
+        </Button>
+      </div>
 
       {/* Danger Zone (Owner Only) */}
-      {isOwner() && (
+      {isFamilyOwner() && (
         <div className="funky-card p-6 border-4 border-red-300">
           <div className="flex items-center gap-3 mb-4">
             <AlertTriangle className="w-6 h-6 text-red-500" />

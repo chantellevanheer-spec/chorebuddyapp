@@ -327,7 +327,7 @@ export default function FamilyLinking() {
                                         <p className="body-font-light text-sm text-blue-800">
                                             Your <strong>{formatTier(family.subscription_tier || 'free')}</strong> plan supports up to{' '}
                                             <strong>{getMemberLimit(family.subscription_tier || 'free')}</strong> members.
-                                            Currently {family.member_count || family.members?.length || 1} member{(family.member_count || family.members?.length || 1) !== 1 ? 's' : ''}.
+                                            Currently {family.member_count || 1} member{(family.member_count || 1) !== 1 ? 's' : ''}.
                                         </p>
                                         {(family.subscription_tier || 'free') === 'free' && (
                                             <Link to={createPageUrl("Pricing")} className="body-font text-sm text-blue-600 hover:text-blue-800 underline mt-1 inline-block">

@@ -123,7 +123,7 @@ export function getItemLimit(tier) {
 export function hasReachedMemberLimit(family) {
   if (!family) return false;
   const limit = getMemberLimit(family.subscription_tier || 'free');
-  const currentCount = family.member_count || family.members?.length || 0;
+  const currentCount = family.member_count || 0;
   return currentCount >= limit;
 }
 
@@ -133,7 +133,7 @@ export function hasReachedMemberLimit(family) {
 export function getRemainingSlots(family) {
   if (!family) return 0;
   const limit = getMemberLimit(family.subscription_tier || 'free');
-  const currentCount = family.member_count || family.members?.length || 0;
+  const currentCount = family.member_count || 0;
   return Math.max(0, limit - currentCount);
 }
 
