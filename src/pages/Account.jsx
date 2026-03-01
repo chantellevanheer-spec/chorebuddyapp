@@ -105,7 +105,7 @@ export default function Account() {
 
           // Find linked person
           const linked = familyPeople.find(p => p.linked_user_id === userData.id);
-          setLinkedPerson(linked || null);
+          setLinkedPerson(linked || value);
         }
       } catch (error) {
         console.error("Failed to fetch user data", error);
@@ -117,7 +117,7 @@ export default function Account() {
   }, []);
 
   const handleToggleChange = (field, value) => {
-    setUser(prev => prev ? { ...prev, [field]: value } : null);
+    setUser(prev => prev ? { ...prev, [field]: value } : value);
   };
 
   const handleSaveChanges = async () => {
