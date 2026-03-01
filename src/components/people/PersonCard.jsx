@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Link as LinkIcon, LinkOff, CheckCircle, UserPlus } from "lucide-react";
+import { Edit, Trash2, Link as LinkIcon, Unlink, CheckCircle, UserPlus } from "lucide-react";
 import { AVATAR_COLORS } from '@/components/lib/constants';
 
 function PersonCard({ person, completedChores, currentChores, onEdit, onDelete, onLinkAccount, onUnlinkAccount, canManageLinks }) {

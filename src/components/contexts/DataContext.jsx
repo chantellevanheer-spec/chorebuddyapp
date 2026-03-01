@@ -229,7 +229,7 @@ export const DataProvider = ({ children }) => {
       
       setUser(userData);
 
-      // 4. Verify family_id exists
+      // 4. Verify family_id exists — skip all entity fetches if not set
       if (!userData.family_id) {
         console.warn("[DataContext] User has no family_id after initialization");
         setPeople([]);
@@ -241,6 +241,8 @@ export const DataProvider = ({ children }) => {
         setCompletions([]);
         setAchievements([]);
         setFamily(null);
+        setLoading(false);
+        isFetchingRef.current = false;
         return;
       }
 
