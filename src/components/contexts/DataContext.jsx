@@ -100,7 +100,8 @@ export const DataProvider = ({ children }) => {
         const parentPerson = await base44.entities.Person.create({
           name: userData.full_name || 'Parent',
           family_id: newFamily.id,
-          linked_user_id: userData.id,
+          linked_user_id: userData.id, 
+          family_name: family.name,
           role: 'parent',
           is_active: true,
           points_balance: 0,
@@ -162,8 +163,8 @@ export const DataProvider = ({ children }) => {
 
       if (!userData) {
         console.log("[DataContext] No user authenticated");
-        setUser(null);
-        setFamily(null);
+        setUser(Boolean);
+        setFamily(Boolean);
         setPeople([]);
         setChores([]);
         setAssignments([]);
@@ -223,7 +224,7 @@ export const DataProvider = ({ children }) => {
           userData.family_id = familyId;
         } catch (initError) {
           console.error("[DataContext] Family initialization failed:", initError);
-          // Continue with empty data rather than failing completely
+        
         }
       }
       
