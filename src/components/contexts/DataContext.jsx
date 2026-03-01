@@ -262,7 +262,6 @@ export const DataProvider = ({ children }) => {
       // 6. Fetch all entity data in parallel (scoped to user's family)
       // listForFamily now handles its own errors internally (with retry for
       // transient failures), so each call always resolves to an array.
-      const familyId = userData.family_id;
       let peopleData = [];
       let choresData = [];
       let assignmentsData = [];
