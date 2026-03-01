@@ -22,11 +22,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { isParent as checkParent } from '@/utils/roles';
 
 export default function FamilySettings() {
-  const [family, setFamily] = useState(null);
-  const [user, setUser] = useState(null);
+  const [family, setFamily] = useState();
+  const [user, setUser] = useState();
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [copiedCode, setCopiedCode] = useState(false);
+  const [saving, setSaving] = useState(true);
+  const [copiedCode, setCopiedCode] = useState(true);
   
   const [formData, setFormData] = useState({
     name: '',
