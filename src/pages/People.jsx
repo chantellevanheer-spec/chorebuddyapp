@@ -1,7 +1,9 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { useData } from '../components/contexts/DataContext';
 import { Button } from "@/components/ui/button";
-import { Plus, Users, Mail } from "lucide-react";
+import { Plus, Users, Mail, Zap } from "lucide-react";
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import { toast } from "sonner";
 import { ListSkeleton } from '../components/ui/SkeletonLoader';
 import ErrorBoundaryWithRetry from '../components/ui/ErrorBoundaryWithRetry';
@@ -80,6 +82,9 @@ export default function People() {
 
   // Processing states
   const [isLinking, setIsLinking] = useState(false);
+
+  // Unlink states
+  const [personToUnlink, setPersonToUnlink] = useState(null);
 
   // Stable random tip that doesn't change on re-render
   const [randomTip] = useState(() => EMPTY_STATE_TIPS[Math.floor(Math.random() * EMPTY_STATE_TIPS.length)]);
@@ -275,6 +280,43 @@ export default function People() {
   }, [entities.personForAbsence, user?.family_id, closeModal]);
 
   /**
+   * Handle showing unlink confirmation
+   */
+  const handleShowUnlinkConfirm = useCallback((person) => {
+    if (!isParent) {
+      toast.error('Only parents can unlink accounts');
+      return;
+    }
+    setPersonToUnlink(person);
+  }, [isParent]);
+
+  /**
+   * Handle unlinking a user account from a Person
+   */
+  const handleUnlinkConfirm = useCallback(async () => {
+    if (!personToUnlink) return;
+
+    try {
+      const result = await base44.functions.invoke('familyLinking', {
+        action: 'unlink',
+        personId: personToUnlink.id,
+      });
+
+      if (result?.data?.error) {
+        toast.error(result.data.error || 'Failed to unlink account');
+      } else {
+        toast.success(`${personToUnlink.name}'s account has been unlinked`);
+        await fetchData();
+      }
+    } catch (error) {
+      console.error('Failed to unlink account:', error);
+      toast.error('Failed to unlink account');
+    } finally {
+      setPersonToUnlink(null);
+    }
+  }, [personToUnlink, fetchData]);
+
+  /**
    * Loading state
    */
   if (loading) {
@@ -345,6 +387,18 @@ export default function People() {
           cancelText="Cancel"
         />
 
+        {/* Unlink Confirmation Dialog */}
+        <ConfirmDialog
+          isOpen={!!personToUnlink}
+          onClose={() => setPersonToUnlink(null)}
+          onConfirm={handleUnlinkConfirm}
+          title="Unlink Account"
+          message={`Are you sure you want to unlink ${personToUnlink?.name}'s account? Their profile will remain but won't be connected to a user account.`}
+          confirmText="Unlink"
+          cancelText="Cancel"
+          variant="warning"
+        />
+
         {/* Page Header */}
         <div className="funky-card p-4 md:p-6 lg:p-8">
           <div className="flex flex-col gap-4 md:gap-6">
@@ -386,6 +440,23 @@ export default function People() {
                 Add Person
               </Button>
             </div>
+
+            {/* Upgrade CTA for free-tier parents */}
+            {isParent && !canAccess('family_invitations') && (
+              <div className="mt-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl flex items-center gap-3">
+                <Zap className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="body-font text-sm text-amber-800">
+                    Upgrade to Premium to unlock email invitations, smart chore assignment, and more.
+                  </p>
+                </div>
+                <Link to={createPageUrl("Pricing")}>
+                  <Button className="funky-button bg-amber-500 hover:bg-amber-600 text-white text-sm px-4 py-2">
+                    Upgrade
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
 
@@ -401,6 +472,7 @@ export default function People() {
                 onEdit={handleShowEditForm}
                 onDelete={() => setEntities((prev) => ({ ...prev, personToDelete: person }))}
                 onLinkAccount={handleShowLinkModal}
+                onUnlinkAccount={handleShowUnlinkConfirm}
                 onMarkAbsence={() => openModal('absence', person, 'personForAbsence')}
                 canManageLinks={isParent}
               />

@@ -20,9 +20,9 @@ export default function ConfirmDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="funky-card max-w-md border-4 border-red-500">
+      <DialogContent className={`funky-card max-w-md border-4 ${variant === 'warning' ? 'border-[#FF6B35]' : 'border-red-500'}`}>
         <DialogHeader>
-          <DialogTitle className="header-font text-2xl text-red-600 flex items-center gap-3">
+          <DialogTitle className={`header-font text-2xl flex items-center gap-3 ${variant === 'warning' ? 'text-[#FF6B35]' : 'text-red-600'}`}>
             <AlertTriangle className="w-6 h-6" />
             {title}
           </DialogTitle>

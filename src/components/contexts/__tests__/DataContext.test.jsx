@@ -87,6 +87,13 @@ vi.mock('@/components/utils', () => ({
   isFamilyOwner: vi.fn(() => true),
 }));
 
+vi.mock('@/lib/AuthContext', () => ({
+  useAuth: vi.fn(() => ({
+    isAuthenticated: true,
+    isLoadingAuth: false,
+  })),
+}));
+
 // Import mocked modules to manipulate in tests
 import { base44 } from '@/api/base44Client';
 import { offlineStorage } from '../../utils/offlineStorage';

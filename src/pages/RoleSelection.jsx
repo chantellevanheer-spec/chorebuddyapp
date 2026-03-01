@@ -63,6 +63,7 @@ export default function RoleSelection() {
         await Person.create({
           name: userData.full_name || 'Parent',
           family_id: family.id,
+          linked_user_id: userData.id,
           role: 'parent',
           is_active: true,
           points_balance: 0,

@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { listForFamily } from '@/utils/entityHelpers';
 import { createPageUrl } from '@/utils';
 import { Link } from 'react-router-dom';
-import { Loader2, User as UserIcon, Bell, Users, Settings, Shield, CreditCard, AlertCircle, Link2, Sparkles, Palette, Crown, RefreshCw, Copy, Check, Clock } from 'lucide-react';
+import { Loader2, User as UserIcon, Bell, Users, Settings, Shield, CreditCard, AlertCircle, Link2, Sparkles, Palette, Crown, RefreshCw, Copy, Check, Clock, Zap } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { stripeCheckout } from '@/functions/stripeCheckout';
@@ -21,6 +22,7 @@ import { useTheme } from '@/components/contexts/ThemeContext';
 import NotificationPreferences from '@/components/profile/NotificationPreferences';
 import AccessibilitySettings from '@/components/profile/AccessibilitySettings';
 import { isParent as checkParent, isChild } from '@/utils/roles';
+import { getMemberLimit, formatTier } from '@/constants/subscriptionTiers';
 
 export default function Account() {
   const [user, setUser] = useState(null);
@@ -46,6 +48,8 @@ export default function Account() {
   const [isGeneratingCode, setIsGeneratingCode] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
+  const [joinCode, setJoinCode] = useState('');
+  const [isJoiningFamily, setIsJoiningFamily] = useState(false);
   const { currentTheme, updateTheme } = useTheme();
 
   // Determine effective subscription tier (child/teen/toddler inherits parent's)
@@ -263,6 +267,36 @@ export default function Account() {
     if (hoursLeft > 1) return `${hoursLeft} hours`;
     const minutesLeft = Math.max(0, Math.floor((expiry - now) / (1000 * 60)));
     return `${minutesLeft} minutes`;
+  };
+
+  const handleJoinFamilyWithCode = async () => {
+    if (!joinCode.trim()) {
+      toast.error('Please enter a linking code');
+      return;
+    }
+    setIsJoiningFamily(true);
+    try {
+      const result = await familyLinking({
+        action: 'join',
+        linkingCode: joinCode.trim(),
+      });
+      if (result.error || result.data?.error) {
+        toast.error(result.error || result.data?.error || 'Failed to join family');
+        return;
+      }
+      if (result.data?.success) {
+        toast.success(`Welcome to ${result.data.familyName}!`);
+        // Reload page to reflect new family state
+        window.location.reload();
+      } else {
+        toast.error('Failed to join family');
+      }
+    } catch (error) {
+      console.error('Error joining family:', error);
+      toast.error('Failed to join family. Please check your code.');
+    } finally {
+      setIsJoiningFamily(false);
+    }
   };
 
   const isCodeExpired = codeExpiry && new Date(codeExpiry) <= new Date();
@@ -671,6 +705,24 @@ export default function Account() {
                    Codes expire after 24 hours for security. Generate a new one any time you need to invite more family members.
                  </p>
                </div>
+
+               {/* Upgrade CTA for free-tier parents */}
+               {(family?.subscription_tier || 'free') === 'free' && (
+                 <div className="mt-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl flex items-center gap-3">
+                   <Zap className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                   <div className="flex-1">
+                     <p className="body-font text-sm text-amber-800">
+                       Your {formatTier('free')} plan supports up to {getMemberLimit('free')} members.
+                       Upgrade to add more family members.
+                     </p>
+                   </div>
+                   <Link to={createPageUrl("Pricing")}>
+                     <Button className="funky-button bg-amber-500 hover:bg-amber-600 text-white text-sm px-4 py-2">
+                       Upgrade
+                     </Button>
+                   </Link>
+                 </div>
+               )}
              </div>
            )}
 
@@ -683,6 +735,46 @@ export default function Account() {
              confirmText="Regenerate"
              variant="warning"
            />
+
+           {/* Child/Teen Join Family Code Entry */}
+           {isChild(user) && !user.family_id && (
+             <div className="funky-card p-8 mb-6">
+               <h2 className="header-font text-3xl text-[#2B59C3] mb-6 flex items-center gap-3">
+                 <Users className="w-8 h-8 text-[#F7A1C4]" />
+                 Join a Family
+               </h2>
+               <p className="body-font-light text-gray-600 mb-4">
+                 Enter the linking code your parent shared with you to join their family.
+               </p>
+               <div className="space-y-4">
+                 <Input
+                   value={joinCode}
+                   onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                   placeholder="XXXXXX"
+                   maxLength={6}
+                   className="text-center header-font text-2xl tracking-[0.3em] py-4 border-3 border-[#5E3B85] rounded-xl uppercase"
+                   disabled={isJoiningFamily}
+                 />
+                 <Button
+                   onClick={handleJoinFamilyWithCode}
+                   disabled={isJoiningFamily || joinCode.length < 6}
+                   className="w-full funky-button bg-[#2B59C3] text-white py-3 text-lg header-font"
+                 >
+                   {isJoiningFamily ? (
+                     <>
+                       <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                       Joining...
+                     </>
+                   ) : (
+                     <>
+                       <Users className="w-5 h-5 mr-2" />
+                       Join Family
+                     </>
+                   )}
+                 </Button>
+               </div>
+             </div>
+           )}
 
            {/* Account Linking */}
            <div className="funky-card p-8 mb-6">
