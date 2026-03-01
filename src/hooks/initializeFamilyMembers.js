@@ -34,7 +34,7 @@ export async function initializeFamilyMembers(data, context) {
   if (!data.settings) {
     data.settings = {
       allow_self_assignment: false,
-      require_photo_proof: false,
+      require_photo_proof: true,
       auto_assign_chores: true,
       notifications_enabled: true,
       weekly_digest_day: 'sunday',
