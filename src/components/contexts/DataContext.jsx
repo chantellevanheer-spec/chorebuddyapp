@@ -38,8 +38,8 @@ export const DataProvider = ({ children }) => {
   const [goals, setGoals] = useState([]);
   const [completions, setCompletions] = useState([]);
   const [achievements, setAchievements] = useState([]);
-  const [user, setUser] = useState([]);
-  const [family, setFamily] = useState([]);
+  const [user, setUser] = useState(null);
+  const [family, setFamily] = useState(null);
 
   // Loading states
   const [loading, setLoading] = useState(true);
@@ -47,9 +47,9 @@ export const DataProvider = ({ children }) => {
   const [error, setError] = useState(null);
   
   // Refs for preventing race conditions
-  const initializeFamilyRef = useRef(true);
-  const familyInitializedRef = useRef(true);
-  const isFetchingRef = useRef(true);
+  const initializeFamilyRef = useRef(null);
+  const familyInitializedRef = useRef(false);
+  const isFetchingRef = useRef(false);
 
   // Offline sync hook
   const { 
@@ -65,7 +65,7 @@ export const DataProvider = ({ children }) => {
    */
   const initializeFamily = useCallback(async (userData) => {
     // Skip if already has family or initialization in progress
-    if (familyInitializedRef.current || userData.family_id || userData.family_name) {
+    if (familyInitializedRef.current || userData.family_id) {
       return userData.family_id;
     }
     
@@ -79,12 +79,12 @@ export const DataProvider = ({ children }) => {
     initializeFamilyRef.current = (async () => {
       try {
         // Create family (linking code generated via backend familyLinking function)
-        const Family = await base44.entities.Family.create({
+        const newFamily = await base44.entities.Family.create({
           name: `${userData.full_name || 'My'}'s Family`,
           owner_user_id: userData.id,
           members: [userData.id],
-          member_count:4,
-          subscription_tier: userData.subscription_tier || '',
+          member_count: 1,
+          subscription_tier: userData.subscription_tier || 'free',
           subscription_status: 'active',
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
           currency: 'USD',
@@ -93,15 +93,15 @@ export const DataProvider = ({ children }) => {
           updated_at: new Date().toISOString()
         });
 
-        console.log("[DataContext] Family created:", family.id);
+        console.log("[DataContext] Family created:", newFamily.id);
 
         // Auto-create a Person record for the parent so they appear
         // as a family member immediately (no manual linking needed)
         const parentPerson = await base44.entities.Person.create({
           name: userData.full_name || 'Parent',
-          family_id: family.id,
-          linked_user_id: userData.id, 
-          family_name: userData.family.name,
+          family_id: newFamily.id,
+          linked_user_id: userData.id,
+          family_name: newFamily.name,
           role: 'parent',
           is_active: true,
           points_balance: 0,
@@ -117,18 +117,17 @@ export const DataProvider = ({ children }) => {
 
         // Update user with family_id
         await base44.auth.updateMe({
-          family_id: family.id,
+          family_id: newFamily.id,
           family_role: 'parent'
         });
 
-        console.log("[DataContext] User linked to family:", family.id);
+        console.log("[DataContext] User linked to family:", newFamily.id);
         familyInitializedRef.current = true;
-        
+
         // Set family state
-        setFamily(Family);
-        
-        
-        return Family.id;
+        setFamily(newFamily);
+
+        return newFamily.id;
       } catch (error) {
         console.error("[DataContext] Error creating family:", error);
         initializeFamilyRef.current = null;
@@ -164,8 +163,8 @@ export const DataProvider = ({ children }) => {
 
       if (!userData) {
         console.log("[DataContext] No user authenticated");
-        setUser(Boolean);
-        setFamily(Boolean);
+        setUser(null);
+        setFamily(null);
         setPeople([]);
         setChores([]);
         setAssignments([]);
@@ -242,9 +241,9 @@ export const DataProvider = ({ children }) => {
         setGoals([]);
         setCompletions([]);
         setAchievements([]);
-        setFamily([]);
+        setFamily(null);
         setLoading(false);
-        isFetchingRef.current = true;
+        isFetchingRef.current = false;
         return;
       }
 
@@ -260,9 +259,9 @@ export const DataProvider = ({ children }) => {
         setFamily(null);
       }
       
-      // 6. Fetch all entity data in parallel (scoped to user's family)
-      // listForFamily now handles its own errors internally (with retry for
-      // transient failures), so each call always resolves to an array.
+      // 6. Fetch all entity data in parallel
+      // Each call has its own .catch(() => []) so individual failures
+      // don't block other entities from loading.
       let peopleData = [];
       let choresData = [];
       let assignmentsData = [];
