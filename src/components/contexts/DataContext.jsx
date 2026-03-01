@@ -241,9 +241,9 @@ export const DataProvider = ({ children }) => {
         setGoals([]);
         setCompletions([]);
         setAchievements([]);
-        setFamily(null);
+        setFamily([]);
         setLoading(false);
-        isFetchingRef.current = false;
+        isFetchingRef.current = true;
         return;
       }
 
