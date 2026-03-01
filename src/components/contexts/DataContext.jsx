@@ -83,8 +83,8 @@ export const DataProvider = ({ children }) => {
           name: `${userData.full_name || 'My'}'s Family`,
           owner_user_id: userData.id,
           members: [userData.id],
-          member_count: 1,
-          subscription_tier: userData.subscription_tier || 'free',
+          member_count:4,
+          subscription_tier: userData.subscription_tier || '',
           subscription_status: 'active',
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
           currency: 'USD',
@@ -93,15 +93,15 @@ export const DataProvider = ({ children }) => {
           updated_at: new Date().toISOString()
         });
 
-        console.log("[DataContext] Family created:", newFamily.id);
+        console.log("[DataContext] Family created:", family.id);
 
         // Auto-create a Person record for the parent so they appear
         // as a family member immediately (no manual linking needed)
         const parentPerson = await base44.entities.Person.create({
           name: userData.full_name || 'Parent',
-          family_id: newFamily.id,
+          family_id: family.id,
           linked_user_id: userData.id, 
-          family_name: family.name,
+          family_name: userData.family.name,
           role: 'parent',
           is_active: true,
           points_balance: 0,
