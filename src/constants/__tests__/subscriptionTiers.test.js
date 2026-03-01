@@ -140,9 +140,10 @@ describe('hasReachedMemberLimit', () => {
     expect(hasReachedMemberLimit(null)).toBe(false);
   });
 
-  it('should use members array length as fallback', () => {
+  it('should use member_count only, ignoring deprecated members array', () => {
     const family = { subscription_tier: 'free', members: ['a', 'b', 'c', 'd', 'e', 'f'] };
-    expect(hasReachedMemberLimit(family)).toBe(true);
+    // Without member_count, count defaults to 0 — stale members array is ignored
+    expect(hasReachedMemberLimit(family)).toBe(false);
   });
 });
 
