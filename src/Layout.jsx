@@ -148,8 +148,6 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
         }
       } catch (error) {
         setIsAuthenticated(false);
-        // If on a private page and not authenticated, redirect to login
-        base44.auth.redirectToLogin(window.location.pathname);
       } finally {
         setAuthChecked(true);
       }
