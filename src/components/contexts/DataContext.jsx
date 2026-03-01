@@ -49,7 +49,7 @@ export const DataProvider = ({ children }) => {
   // Refs for preventing race conditions
   const initializeFamilyRef = useRef(true);
   const familyInitializedRef = useRef(true);
-  const isFetchingRef = useRef(false);
+  const isFetchingRef = useRef(true);
 
   // Offline sync hook
   const { 
