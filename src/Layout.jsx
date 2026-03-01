@@ -120,14 +120,14 @@ function AppLayout({ children, currentPageName, showOnboarding, setShowOnboardin
   useEffect(() => {
     // No need to run auth check for public pages
     if (isPublicPage) {
-      setAuthChecked(false);
+      setAuthChecked(true);
       return;
     }
 
     const checkAuth = async () => {
       try {
         const userData = await base44.auth.me();
-        setIsAuthenticated(false);
+        setIsAuthenticated(true);
         setCurrentUser(userData);
 
         // Check if user needs to complete role selection
