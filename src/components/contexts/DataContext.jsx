@@ -65,7 +65,7 @@ export const DataProvider = ({ children }) => {
    */
   const initializeFamily = useCallback(async (userData) => {
     // Skip if already has family or initialization in progress
-    if (familyInitializedRef.current || userData.family_id) {
+    if (familyInitializedRef.current || userData.family_id || userData.family_name) {
       return userData.family_id;
     }
     
