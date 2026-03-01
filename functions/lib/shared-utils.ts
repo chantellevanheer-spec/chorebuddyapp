@@ -42,6 +42,14 @@ export const SUBSCRIPTION_TIERS = {
 export const MAX_FAMILY_SIZE = 50;
 export const CODE_EXPIRY_HOURS = 24;
 
+// Tier-specific member limits (keep in sync with src/constants/subscriptionTiers.js)
+export const TIER_MEMBER_LIMITS: Record<string, number> = {
+  free: 6,
+  premium: 15,
+  family_plus: 30,
+  enterprise: 50,
+};
+
 // ==========================================
 // VALIDATION UTILITIES
 // ==========================================
@@ -349,6 +357,33 @@ export function canUserJoinFamily(
       allowed: false,
       reason: 'family_full',
       message: 'This family has reached its maximum size',
+    };
+  }
+
+  return { allowed: true };
+}
+
+/**
+ * Check if user can join family, respecting subscription tier limits
+ */
+export function canUserJoinFamilyWithTier(
+  user: any,
+  family: any,
+  currentSize: number
+): { allowed: boolean; reason?: string; message?: string } {
+  const baseCheck = canUserJoinFamily(user, family, currentSize);
+  if (!baseCheck.allowed) {
+    return baseCheck;
+  }
+
+  const tier = family.subscription_tier || 'free';
+  const tierLimit = TIER_MEMBER_LIMITS[tier] || TIER_MEMBER_LIMITS.free;
+
+  if (currentSize >= tierLimit) {
+    return {
+      allowed: false,
+      reason: 'tier_limit_reached',
+      message: `This family has reached its ${tier} plan limit of ${tierLimit} members. The family owner needs to upgrade their plan.`,
     };
   }
 

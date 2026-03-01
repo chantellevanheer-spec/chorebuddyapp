@@ -100,6 +100,7 @@ export const DataProvider = ({ children }) => {
         const parentPerson = await base44.entities.Person.create({
           name: userData.full_name || 'Parent',
           family_id: newFamily.id,
+          linked_user_id: userData.id,
           role: 'parent',
           is_active: true,
           points_balance: 0,

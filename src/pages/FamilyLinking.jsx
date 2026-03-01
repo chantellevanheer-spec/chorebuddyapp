@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Family } from '@/entities/Family';
 import { createPageUrl } from '@/utils';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -21,6 +21,7 @@ import {
 import { toast } from 'sonner';
 import { familyLinking } from '@/functions/familyLinking';
 import { isParent as checkParent } from '@/utils/roles';
+import { getMemberLimit, formatTier } from '@/constants/subscriptionTiers';
 
 export default function FamilyLinking() {
     const navigate = useNavigate();
@@ -317,6 +318,23 @@ export default function FamilyLinking() {
                                     <strong>Security tip:</strong> Codes expire after 24 hours. Only share with people you want in your family.
                                 </p>
                             </div>
+
+                            {/* Member limit info */}
+                            {family && (
+                              <div className="flex items-start gap-3 p-4 bg-blue-50 border-2 border-blue-200 rounded-xl">
+                                <Users className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                                <p className="body-font-light text-sm text-blue-800">
+                                  Your <strong>{formatTier(family.subscription_tier || 'free')}</strong> plan supports up to{' '}
+                                  <strong>{getMemberLimit(family.subscription_tier || 'free')}</strong> family members.
+                                  {' '}Currently: <strong>{family.member_count || family.members?.length || 1}</strong> member(s).
+                                  {(family.subscription_tier || 'free') === 'free' && (
+                                    <Link to={createPageUrl('Pricing')} className="text-[#2B59C3] underline ml-1">
+                                      Upgrade for more
+                                    </Link>
+                                  )}
+                                </p>
+                              </div>
+                            )}
 
                             {/* Continue Button */}
                             <Button

@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { useData } from '../components/contexts/DataContext';
 import { Button } from "@/components/ui/button";
-import { Plus, Users, Mail } from "lucide-react";
+import { Plus, Users, Mail, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { ListSkeleton } from '../components/ui/SkeletonLoader';
 import ErrorBoundaryWithRetry from '../components/ui/ErrorBoundaryWithRetry';
@@ -14,6 +14,8 @@ import LinkAccountModal from "../components/people/LinkAccountModal";
 import { useSubscriptionAccess } from '../components/hooks/useSubscriptionAccess';
 import LimitReachedModal from "../components/ui/LimitReachedModal";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import { isParent as checkParent } from '@/utils/roles';
 
 // Constants
@@ -68,6 +70,7 @@ export default function People() {
     link: false,
     absence: false,
     limit: false,
+    unlinkConfirm: false,
   });
 
   // Entity states
@@ -76,6 +79,7 @@ export default function People() {
     personToDelete: null,
     personToLink: null,
     personForAbsence: null,
+    personToUnlink: null,
   });
 
   // Processing states
@@ -254,6 +258,42 @@ export default function People() {
   }, [closeModal]);
 
   /**
+   * Handle showing unlink confirmation
+   */
+  const handleShowUnlinkConfirm = useCallback((person) => {
+    if (!isParent) {
+      toast.error('Only parents can unlink accounts');
+      return;
+    }
+    openModal('unlinkConfirm', person, 'personToUnlink');
+  }, [isParent, openModal]);
+
+  /**
+   * Handle account unlinking via backend
+   */
+  const handleUnlinkConfirm = useCallback(async () => {
+    if (!entities.personToUnlink) return;
+
+    try {
+      const result = await base44.functions.invoke('familyLinking', {
+        action: 'unlink',
+        personId: entities.personToUnlink.id,
+      });
+
+      if (result?.data?.error) {
+        toast.error(result.data.error || 'Failed to unlink account');
+      } else {
+        toast.success('Account unlinked successfully');
+        closeModal('unlinkConfirm', 'personToUnlink');
+        await fetchData();
+      }
+    } catch (error) {
+      console.error('Failed to unlink account:', error);
+      toast.error('Failed to unlink account');
+    }
+  }, [entities.personToUnlink, closeModal, fetchData]);
+
+  /**
    * Handle marking person as absent
    */
   const handleMarkAbsence = useCallback(async (absenceData) => {
@@ -345,6 +385,18 @@ export default function People() {
           cancelText="Cancel"
         />
 
+        {/* Unlink Confirmation Dialog */}
+        <ConfirmDialog
+          isOpen={modals.unlinkConfirm}
+          onClose={() => closeModal('unlinkConfirm', 'personToUnlink')}
+          onConfirm={handleUnlinkConfirm}
+          title="Unlink Account"
+          message={`Are you sure you want to unlink ${entities.personToUnlink?.name}'s account? They will no longer be able to log in and see their chores. You can re-link them later.`}
+          confirmText="Unlink"
+          cancelText="Cancel"
+          variant="warning"
+        />
+
         {/* Page Header */}
         <div className="funky-card p-4 md:p-6 lg:p-8">
           <div className="flex flex-col gap-4 md:gap-6">
@@ -389,6 +441,28 @@ export default function People() {
           </div>
         </div>
 
+        {/* Upgrade CTA for free tier */}
+        {isParent && !canAccess('family_invitations') && (
+          <div className="funky-card p-6 bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-[#C3B1E1]">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="flex-1">
+                <p className="body-font text-lg text-[#5E3B85] mb-1">
+                  Unlock Email Invitations
+                </p>
+                <p className="body-font-light text-sm text-gray-600">
+                  Upgrade to Premium to send email invitations, use smart chore assignment, and manage up to 15 family members.
+                </p>
+              </div>
+              <Link to={createPageUrl("Pricing")}>
+                <Button className="funky-button bg-[#FF6B35] text-white whitespace-nowrap">
+                  <Zap className="w-4 h-4 mr-2" />
+                  View Plans
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* People List or Empty State */}
         {people.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
@@ -401,6 +475,7 @@ export default function People() {
                 onEdit={handleShowEditForm}
                 onDelete={() => setEntities((prev) => ({ ...prev, personToDelete: person }))}
                 onLinkAccount={handleShowLinkModal}
+                onUnlinkAccount={handleShowUnlinkConfirm}
                 onMarkAbsence={() => openModal('absence', person, 'personForAbsence')}
                 canManageLinks={isParent}
               />

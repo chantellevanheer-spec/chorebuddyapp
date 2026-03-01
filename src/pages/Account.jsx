@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { listForFamily } from '@/utils/entityHelpers';
 import { createPageUrl } from '@/utils';
 import { Link } from 'react-router-dom';
-import { Loader2, User as UserIcon, Bell, Users, Settings, Shield, CreditCard, AlertCircle, Link2, Sparkles, Palette, Crown, RefreshCw, Copy, Check, Clock } from 'lucide-react';
+import { Loader2, User as UserIcon, Bell, Users, Settings, Shield, CreditCard, AlertCircle, Link2, Sparkles, Palette, Crown, RefreshCw, Copy, Check, Clock, Zap } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { stripeCheckout } from '@/functions/stripeCheckout';
@@ -21,6 +21,7 @@ import { useTheme } from '@/components/contexts/ThemeContext';
 import NotificationPreferences from '@/components/profile/NotificationPreferences';
 import AccessibilitySettings from '@/components/profile/AccessibilitySettings';
 import { isParent as checkParent, isChild } from '@/utils/roles';
+import { getMemberLimit } from '@/constants/subscriptionTiers';
 
 export default function Account() {
   const [user, setUser] = useState(null);
@@ -46,6 +47,8 @@ export default function Account() {
   const [isGeneratingCode, setIsGeneratingCode] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
+  const [joinCode, setJoinCode] = useState('');
+  const [isJoiningFamily, setIsJoiningFamily] = useState(false);
   const { currentTheme, updateTheme } = useTheme();
 
   // Determine effective subscription tier (child/teen/toddler inherits parent's)
@@ -59,6 +62,8 @@ export default function Account() {
 
   const effectiveTier = getEffectiveSubscriptionTier();
   const isPaidTier = effectiveTier !== 'free';
+  const familyMemberLimit = getMemberLimit(effectiveTier);
+  const isFreeParent = checkParent(user) && effectiveTier === 'free';
 
   useEffect(() => {
     const fetchData = async () => {
@@ -266,6 +271,30 @@ export default function Account() {
   };
 
   const isCodeExpired = codeExpiry && new Date(codeExpiry) <= new Date();
+
+  const handleJoinFamilyWithCode = async () => {
+    if (!joinCode.trim() || joinCode.length < 6) return;
+    setIsJoiningFamily(true);
+    try {
+      const result = await familyLinking({
+        action: 'join',
+        linkingCode: joinCode.trim()
+      });
+      if (result.error || result.data?.error) {
+        toast.error(result.error || result.data?.error || 'Failed to join family');
+        return;
+      }
+      if (result.data?.success) {
+        toast.success(`Welcome to ${result.data.familyName}!`);
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Error joining family:', error);
+      toast.error('Failed to join family. Please check your code.');
+    } finally {
+      setIsJoiningFamily(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -554,6 +583,41 @@ export default function Account() {
         </TabsContent>
 
         <TabsContent value="family" className="mt-6">
+           {/* Join Family (Children/Teens without a family) */}
+           {isChild(user) && !user.family_id && (
+             <div className="funky-card p-8 mb-6">
+               <h2 className="header-font text-3xl text-[#2B59C3] mb-6 flex items-center gap-3">
+                 <Users className="w-8 h-8 text-[#F7A1C4]" />
+                 Join Your Family
+               </h2>
+               <p className="body-font-light text-gray-600 mb-4">
+                 Ask your parent for a linking code, then enter it below to join your family.
+               </p>
+               <div className="flex gap-3">
+                 <input
+                   type="text"
+                   value={joinCode}
+                   onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                   placeholder="XXXXXX"
+                   maxLength={6}
+                   className="funky-button border-3 border-[#5E3B85] px-4 py-3 body-font text-center text-xl tracking-[0.2em] bg-white focus:outline-none focus:ring-2 focus:ring-[#C3B1E1] flex-1 uppercase"
+                   disabled={isJoiningFamily}
+                 />
+                 <Button
+                   onClick={handleJoinFamilyWithCode}
+                   disabled={isJoiningFamily || joinCode.length < 6}
+                   className="funky-button bg-[#2B59C3] text-white px-6"
+                 >
+                   {isJoiningFamily ? (
+                     <Loader2 className="w-5 h-5 animate-spin" />
+                   ) : (
+                     'Join'
+                   )}
+                 </Button>
+               </div>
+             </div>
+           )}
+
            {/* Family Name (Parents Only) */}
            {checkParent(user) && (
              <div className="funky-card p-8 mb-6">
@@ -671,6 +735,28 @@ export default function Account() {
                    Codes expire after 24 hours for security. Generate a new one any time you need to invite more family members.
                  </p>
                </div>
+
+               {isFreeParent && (
+                 <div className="funky-card p-6 mt-4 bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-[#C3B1E1]">
+                   <div className="flex items-start gap-3">
+                     <Crown className="w-6 h-6 text-[#FF6B35] flex-shrink-0 mt-0.5" />
+                     <div>
+                       <p className="body-font text-lg text-[#5E3B85] mb-1">
+                         Free plan: up to {familyMemberLimit} family members
+                       </p>
+                       <p className="body-font-light text-sm text-gray-600 mb-3">
+                         Upgrade to invite more members and unlock premium features like email invitations, smart chore assignment, and more.
+                       </p>
+                       <Link to={createPageUrl("Pricing")}>
+                         <Button className="funky-button bg-[#FF6B35] text-white">
+                           <Zap className="w-4 h-4 mr-2" />
+                           View Plans
+                         </Button>
+                       </Link>
+                     </div>
+                   </div>
+                 </div>
+               )}
              </div>
            )}
 

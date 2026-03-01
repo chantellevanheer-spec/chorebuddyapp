@@ -13,7 +13,7 @@ import {
   getUserFamilyId,
   getFamily,
   updateEntityWithEnv,
-  canUserJoinFamily,
+  canUserJoinFamilyWithTier,
   checkRateLimit,
   errorResponse,
   successResponse,
@@ -104,9 +104,9 @@ async function handleJoinFamily(base44: any, user: any, linkingCode: string) {
     }
   }
 
-  // Check if user can join
+  // Check if user can join (tier-aware)
   const currentMembers = family.members || [];
-  const joinCheck = canUserJoinFamily(user, family, currentMembers.length);
+  const joinCheck = canUserJoinFamilyWithTier(user, family, currentMembers.length);
 
   if (!joinCheck.allowed) {
     return errorResponse(joinCheck.message, joinCheck.reason === 'already_in_family' ? 409 : 400);
@@ -129,14 +129,143 @@ async function handleJoinFamily(base44: any, user: any, linkingCode: string) {
     family_id: family.id,
   });
 
+  // Create a Person record for the joining user
+  let newPerson = null;
+  try {
+    const personRole = (user.family_role || 'child').toLowerCase();
+    newPerson = await base44.asServiceRole.entities.Person.create({
+      name: user.full_name || user.email || 'Family Member',
+      family_id: family.id,
+      linked_user_id: user.id,
+      role: personRole,
+      is_active: true,
+      points_balance: 0,
+      total_points_earned: 0,
+      chores_completed_count: 0,
+      current_streak: 0,
+      best_streak: 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+
+    if (!newPerson || !newPerson.id) {
+      throw new Error('Failed to create person record');
+    }
+  } catch (personError) {
+    logError('familyLinking', personError, { context: 'create_person_on_join' });
+
+    // Rollback: remove user from family members
+    try {
+      await base44.asServiceRole.entities.Family.update(family.id, {
+        members: currentMembers,
+        member_count: currentMembers.length,
+      });
+    } catch (rollbackErr) {
+      logError('familyLinking', rollbackErr, { context: 'rollback_family_update' });
+    }
+
+    // Rollback: clear user's family_id
+    try {
+      await base44.auth.updateMe({ family_id: null });
+    } catch (rollbackErr) {
+      logError('familyLinking', rollbackErr, { context: 'rollback_user_update' });
+    }
+
+    return errorResponse('Failed to complete family join. Please try again.', 500);
+  }
+
   logInfo('familyLinking', 'User joined family via linking code', {
     userId: user.id,
     familyId: family.id,
+    personId: newPerson.id,
   });
 
   return successResponse({
     familyName: family.name,
     familyId: family.id,
+    personId: newPerson.id,
+    personRole: newPerson.role,
+  });
+}
+
+/**
+ * Unlink a user's account from a Person record
+ * Only parents can unlink, and they cannot unlink the family owner
+ */
+async function handleUnlinkAccount(base44: any, user: any, personId: string) {
+  if (!user || !isParent(user)) {
+    return errorResponse('Only parents can unlink accounts', 403);
+  }
+
+  if (!personId) {
+    return errorResponse('Person ID is required');
+  }
+
+  // Get the person record
+  let person;
+  try {
+    person = await base44.asServiceRole.entities.Person.get(personId);
+  } catch {
+    return errorResponse('Person not found', 404);
+  }
+
+  // Verify person is in the same family
+  const userFamilyId = getUserFamilyId(user);
+  if (person.family_id !== userFamilyId) {
+    return errorResponse('You can only unlink members of your own family', 403);
+  }
+
+  // Don't allow unlinking if no linked user
+  if (!person.linked_user_id) {
+    return errorResponse('This person is not linked to any account');
+  }
+
+  // Don't allow unlinking the family owner
+  const { family } = await getFamily(base44, userFamilyId);
+  if (family && person.linked_user_id === family.owner_user_id) {
+    return errorResponse('Cannot unlink the family owner\'s account', 403);
+  }
+
+  // Clear the linked_user_id on the Person record
+  await base44.asServiceRole.entities.Person.update(personId, {
+    linked_user_id: null,
+  });
+
+  logInfo('familyLinking', 'Account unlinked from person', {
+    userId: user.id,
+    personId,
+    unlinkedUserId: person.linked_user_id,
+  });
+
+  return successResponse({
+    message: 'Account unlinked successfully',
+    personId,
+  });
+}
+
+/**
+ * Get family members list
+ */
+async function handleGetMembers(base44: any, user: any) {
+  const familyId = getUserFamilyId(user);
+  if (!familyId) {
+    return errorResponse('You are not part of any family');
+  }
+
+  const people = await base44.asServiceRole.entities.Person.filter({
+    family_id: familyId,
+  });
+
+  return successResponse({
+    members: people.map((p: any) => ({
+      id: p.id,
+      name: p.name,
+      role: p.role,
+      linked_user_id: p.linked_user_id,
+      avatar_color: p.avatar_color,
+      is_active: p.is_active,
+    })),
+    count: people.length,
   });
 }
 
@@ -171,8 +300,17 @@ Deno.serve(async (req) => {
         }
         return await handleJoinFamily(base44, user, linkingCode);
 
+      case 'unlink':
+        if (!body.personId) {
+          return errorResponse('Person ID required for unlinking');
+        }
+        return await handleUnlinkAccount(base44, user, body.personId);
+
+      case 'getMembers':
+        return await handleGetMembers(base44, user);
+
       default:
-        return errorResponse('Invalid action. Use "generate" or "join"');
+        return errorResponse('Invalid action. Use "generate", "join", "unlink", or "getMembers"');
     }
   } catch (error) {
     logError('familyLinking', error);
