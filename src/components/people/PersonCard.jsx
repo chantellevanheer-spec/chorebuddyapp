@@ -1,15 +1,20 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Link as LinkIcon, CheckCircle, UserPlus } from "lucide-react";
+import { Edit, Trash2, Link as LinkIcon, LinkOff, CheckCircle, UserPlus } from "lucide-react";
 import { AVATAR_COLORS } from '@/components/lib/constants';
 
-function PersonCard({ person, completedChores, currentChores, onEdit, onDelete, onLinkAccount, canManageLinks }) {
+function PersonCard({ person, completedChores, currentChores, onEdit, onDelete, onLinkAccount, onUnlinkAccount, canManageLinks }) {
   return (
     <div className={`funky-card-hover funky-card p-6 border-4 relative group ${AVATAR_COLORS[person.avatar_color]}`}>
       <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
         {!person.linked_user_id && onLinkAccount && canManageLinks && (
           <Button size="icon" variant="ghost" onClick={() => onLinkAccount(person)} className="h-8 w-8 rounded-full hover:bg-black/10 focus:ring-2 focus:ring-green-500 focus:ring-offset-2" title="Link account" aria-label={`Link account for ${person.name}`}>
             <UserPlus className="w-4 h-4 text-green-600" />
+          </Button>
+        )}
+        {person.linked_user_id && onUnlinkAccount && canManageLinks && (
+          <Button size="icon" variant="ghost" onClick={() => onUnlinkAccount(person)} className="h-8 w-8 rounded-full hover:bg-black/10 focus:ring-2 focus:ring-[#FF6B35] focus:ring-offset-2" title="Unlink account" aria-label={`Unlink account for ${person.name}`}>
+            <LinkOff className="w-4 h-4 text-[#FF6B35]" />
           </Button>
         )}
         <Button size="icon" variant="ghost" onClick={() => onEdit(person)} className="h-8 w-8 rounded-full hover:bg-black/10 focus:ring-2 focus:ring-[#5E3B85] focus:ring-offset-2" aria-label={`Edit ${person.name}`}>
@@ -59,8 +64,9 @@ function PersonCard({ person, completedChores, currentChores, onEdit, onDelete, 
 }
 
 export default React.memo(PersonCard, (prev, next) => {
-  return prev.person.id === next.person.id && 
+  return prev.person.id === next.person.id &&
          prev.completedChores === next.completedChores &&
          prev.currentChores === next.currentChores &&
-         prev.person.linked_user_id === next.person.linked_user_id;
+         prev.person.linked_user_id === next.person.linked_user_id &&
+         prev.onUnlinkAccount === next.onUnlinkAccount;
 });
